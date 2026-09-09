@@ -1,20 +1,31 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>돌봄플러스 혜택존 · 큰글씨 실속 혜택</title>
 <style>
   :root{
-    --bg:#fbf6ee; --bg2:#fff;
-    --card:#ffffff; --line:#ecdfce;
+    color-scheme:light;
+    --bg:#ffffff; --bg2:#fff;
+    --card:#ffffff; --line:#d8ccbb;
     --txt:#241c12; --sub:#5f5648; --mut:#8a7f6d;
     --brand:#e8622a; --brand-d:#c94e1c;
     --gov:#2563eb; --health:#16a34a; --family:#db2777;
     --shop:#d97706; --beauty:#9333ea; --cafe:#0891b2;
+    --new:#dc2626; --new-d:#991b1b;
     --badge-ok:#15803d; --badge-ok-bg:#dcfce7;
     --badge-warn:#b91c1c; --badge-warn-bg:#fee2e2;
     --badge-info:#1d4ed8; --badge-info-bg:#dbeafe;
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#1a140d; --bg2:#241b12;
+    --card:#241b12; --line:#3a2c1d;
+    --txt:#f5ede2; --sub:#c9bdac; --mut:#9a8b76;
+    --badge-ok:#4ade80; --badge-ok-bg:#14321f;
+    --badge-warn:#fca5a5; --badge-warn-bg:#3a1616;
+    --badge-info:#93c5fd; --badge-info-bg:#152a45;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
@@ -22,88 +33,91 @@
     font-family:'Apple SD Gothic Neo','Malgun Gothic',system-ui,-apple-system,sans-serif;
     font-size:18px;line-height:1.65;padding:0 0 60px;letter-spacing:-.2px}
   .wrap{max-width:720px;margin:0 auto;padding:0 16px}
-
-  header{text-align:center;padding:30px 16px 26px;
-    background:linear-gradient(180deg,#fff0e4,#fbf6ee)}
+  header{text-align:center;padding:30px 16px 26px;background:linear-gradient(180deg,#fff5ee,#ffffff)}
+  :root[data-theme="dark"] header{background:linear-gradient(180deg,#2c2013,#1a140d)}
   .brand{display:inline-block;background:var(--brand);color:#fff;font-weight:800;
     font-size:16px;padding:7px 18px;border-radius:999px;margin-bottom:14px}
   h1{font-size:30px;font-weight:900;line-height:1.3}
   h1 b{color:var(--brand)}
   .date{margin-top:12px;font-size:18px;color:var(--sub);font-weight:700}
   .hello{margin:16px auto 0;max-width:600px;font-size:18px;color:var(--sub)}
-
-  /* 목차 버튼 */
   .toc{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:24px 0 6px}
-  .toc a{display:inline-flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--line);
-    color:var(--txt);text-decoration:none;font-weight:800;font-size:16px;
-    padding:11px 16px;border-radius:14px}
+  .toc a{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--line);
+    color:var(--txt);text-decoration:none;font-weight:800;font-size:16px;padding:11px 16px;border-radius:14px}
   .toc a:active{background:#fff0e4}
-
+  .toc a.hot{border-color:var(--new);color:var(--new)}
   section{margin-top:34px;scroll-margin-top:14px}
   .cat-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
   .cat-emoji{font-size:34px;line-height:1}
   .cat-title{font-size:24px;font-weight:900}
   .cat-note{font-size:15px;color:var(--mut);margin-top:2px;font-weight:600}
-
   .card{background:var(--card);border:2px solid var(--line);border-radius:20px;
-    padding:20px;margin-bottom:16px;box-shadow:0 3px 10px #0000000a}
-  .tagrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    padding:20px;margin-bottom:16px;box-shadow:0 2px 14px #00000016}
+  .tagrow{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
   .where{font-size:16px;font-weight:900;color:#fff;padding:5px 13px;border-radius:10px;background:var(--brand)}
   .g .where{background:var(--gov)} .h .where{background:var(--health)}
   .f .where{background:var(--family)} .s .where{background:var(--shop)}
   .b .where{background:var(--beauty)} .c .where{background:var(--cafe)}
+  .nw .where{background:var(--new)}
+  .newtag{font-size:14px;font-weight:900;color:#fff;background:var(--new);padding:4px 10px;border-radius:8px}
   .what{font-size:23px;font-weight:900;line-height:1.35;margin-bottom:12px;color:var(--txt)}
   .what .hi{color:var(--brand-d);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:3px}
+  :root[data-theme="dark"] .what .hi{color:#ff8a5c}
   .how{display:flex;gap:9px;font-size:17.5px;color:var(--sub);margin-bottom:8px;align-items:flex-start}
   .how .ic{flex:0 0 auto;font-size:19px}
   .how b{color:var(--txt)}
-
   .badge{display:inline-block;font-size:15.5px;font-weight:800;padding:6px 13px;border-radius:10px;margin-top:6px}
   .badge.ok{background:var(--badge-ok-bg);color:var(--badge-ok)}
   .badge.warn{background:var(--badge-warn-bg);color:var(--badge-warn)}
   .badge.info{background:var(--badge-info-bg);color:var(--badge-info)}
-
   .btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;
     width:100%;background:var(--brand);color:#fff;text-decoration:none;
     font-size:20px;font-weight:900;padding:16px;border-radius:15px;
     box-shadow:0 4px 0 var(--brand-d);transition:.05s}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--brand-d)}
+  .btn:focus-visible{outline:3px solid #000;outline-offset:2px}
   .g .btn{background:var(--gov);box-shadow:0 4px 0 #1e40af}
   .h .btn{background:var(--health);box-shadow:0 4px 0 #15803d}
   .f .btn{background:var(--family);box-shadow:0 4px 0 #9d174d}
   .s .btn{background:var(--shop);box-shadow:0 4px 0 #b45309}
   .b .btn{background:var(--beauty);box-shadow:0 4px 0 #6b21a8}
   .c .btn{background:var(--cafe);box-shadow:0 4px 0 #0e7490}
+  .nw .btn{background:var(--new);box-shadow:0 4px 0 var(--new-d)}
   .btn .arr{font-size:22px}
-
+  #new{background:#fff5f5;border:3px solid #fecaca;border-radius:22px;padding:20px 18px 8px;margin-top:26px}
+  :root[data-theme="dark"] #new{background:#2a1414;border-color:#5a2020}
   .tips{margin-top:40px;background:#fff7ed;border:2px solid #fed7aa;border-radius:20px;padding:22px}
+  :root[data-theme="dark"] .tips{background:#2c2013;border-color:#5a3f22}
   .tips h2{font-size:22px;font-weight:900;margin-bottom:14px;color:var(--brand-d)}
+  :root[data-theme="dark"] .tips h2{color:#ff8a5c}
   .tip{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid #fde3c6;font-size:18px;color:var(--sub)}
+  :root[data-theme="dark"] .tip{border-color:#4a3620}
   .tip:last-child{border:0}
   .tip .n{flex:0 0 36px;height:36px;background:var(--brand);color:#fff;font-weight:900;
     border-radius:11px;display:grid;place-items:center;font-size:19px}
   .tip b{color:var(--txt)}
-
   .sources{margin-top:26px;font-size:14px;color:var(--mut);line-height:1.9}
   .sources h3{font-size:16px;color:var(--sub);margin-bottom:8px;font-weight:800}
-  .sources a{color:#7a6d58}
+  .sources a{color:var(--mut)}
   footer{margin-top:26px;text-align:center;font-size:14px;color:var(--mut);line-height:1.7}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
+
 <header>
   <div class="wrap">
     <div class="brand">💙 HUBRIZ 돌봄플러스 혜택존</div>
     <h1>오늘의 <b>실속 혜택</b></h1>
-    <div class="date">2026년 9월 9일 (수)</div>
+    <div class="date" id="today">2026년 9월 9일 (수)</div>
     <p class="hello">우리 선생님들, 오늘도 고생 많으십니다. 정부 지원부터 건강·장보기·커피 한 잔까지, 오늘 바로 챙길 수 있는 혜택만 큰 글씨로 모았어요. <b>버튼만 누르면</b> 바로 확인됩니다.</p>
   </div>
 </header>
 
 <div class="wrap">
 
-  <!-- 목차 -->
   <div class="toc">
+    <a class="hot" href="#new">🆕 오늘 새 소식</a>
     <a href="#gov">🏛️ 정부·동네혜택</a>
     <a href="#health">💊 내 몸 챙기기</a>
     <a href="#family">🎁 가족·경조사</a>
@@ -112,7 +126,52 @@
     <a href="#cafe">☕ 커피·먹거리</a>
   </div>
 
-  <!-- 1. 정부·동네 혜택 -->
+  <section id="new">
+    <div class="cat-head">
+      <span class="cat-emoji">🆕</span>
+      <div>
+        <div class="cat-title">오늘 새로 바뀐 혜택</div>
+        <div class="cat-note">9월 9일 기준 · 오늘 시작했거나 곧 끝나는 것만</div>
+      </div>
+    </div>
+
+    <div class="card nw">
+      <div class="tagrow"><span class="where">bhc</span><span class="newtag">오늘 당일</span></div>
+      <div class="what">오늘이 <span class="hi">9월 9일 구구데이</span> · 치킨 세트 최대 4,500원 할인</div>
+      <div class="how"><span class="ic">👉</span><span>뿌링클·커링클·콰삭킹 등 <b>세트 4종</b>을 3,500~4,500원(최대 15%) 할인</span></div>
+      <div class="how"><span class="ic">🎁</span><span>카카오톡 <b>선물하기</b>에서 교환권을 사면 자동 할인. 앱·매장에서 사용</span></div>
+      <span class="badge ok">2026.9.7 ~ 9.13</span>
+      <a class="btn" href="https://www.bhc.co.kr" target="_blank" rel="noopener">bhc 보러가기 <span class="arr">→</span></a>
+    </div>
+
+    <div class="card nw">
+      <div class="tagrow"><span class="where">배스킨라빈스</span><span class="newtag">오늘 시작</span></div>
+      <div class="what">블록팩 <span class="hi">4개 10,000원</span> (오늘부터 5일간)</div>
+      <div class="how"><span class="ic">👉</span><span>아이스크림 블록팩 4개를 만 원에. 손주·가족 간식으로 넉넉합니다</span></div>
+      <div class="how"><span class="ic">➕</span><span>이달의 맛 더블주니어는 <b>+500원</b>에 업그레이드 (9/1~9/30)</span></div>
+      <span class="badge ok">2026.9.9 ~ 9.13</span>
+      <a class="btn" href="https://www.baskinrobbins.co.kr/play/event/list.php" target="_blank" rel="noopener">이벤트 확인하기 <span class="arr">→</span></a>
+    </div>
+
+    <div class="card nw">
+      <div class="tagrow"><span class="where">마트 3사</span><span class="newtag">내일 시작</span></div>
+      <div class="what">추석 명절 전단 <span class="hi">내일(9/10 목) 일제히 시작</span></div>
+      <div class="how"><span class="ic">👉</span><span>롯데마트 · 홈플러스 · 이마트 세 곳 모두 <b>9/10(목)~9/16(수)</b> 명절 행사</span></div>
+      <div class="how"><span class="ic">📅</span><span>오늘 장을 크게 볼 계획이면 <b>하루만 미루는 게</b> 유리합니다</span></div>
+      <span class="badge info">2026.9.10 ~ 9.16</span>
+      <a class="btn" href="https://mfront.homeplus.co.kr/leaflet" target="_blank" rel="noopener">전단 미리보기 <span class="arr">→</span></a>
+    </div>
+
+    <div class="card nw">
+      <div class="tagrow"><span class="where">K-패스</span><span class="newtag">이달 마감</span></div>
+      <div class="what">교통비 환급 확대가 <span class="hi">이번 달(9월)로 종료</span></div>
+      <div class="how"><span class="ic">👉</span><span>4월부터 한시 시행된 확대 조치가 <b>9월 30일까지</b>입니다</span></div>
+      <div class="how"><span class="ic">🚌</span><span>아직 신청 안 하셨으면 이달 안에 발급받아 챙기세요</span></div>
+      <span class="badge warn">확대 적용 ~2026.9.30</span>
+      <a class="btn" href="https://www.k-pass.kr" target="_blank" rel="noopener">K-패스 알아보기 <span class="arr">→</span></a>
+    </div>
+  </section>
+
   <section id="gov">
     <div class="cat-head">
       <span class="cat-emoji">🏛️</span>
@@ -125,18 +184,20 @@
     <div class="card g">
       <div class="tagrow"><span class="where">문화누리카드</span></div>
       <div class="what">문화·여행·영화에 쓰는 <span class="hi">1인당 15만 원</span> (60~64세는 16만 원)</div>
-      <div class="how"><span class="ic">👉</span><span><b>대상</b> 기초생활수급자·차상위계층 (본인·가족 각각)</span></div>
-      <div class="how"><span class="ic">💳</span><span>영화·공연·여행·서점·체육시설 등 전국 3만 5천 곳에서 사용</span></div>
-      <span class="badge ok">신청 ~11/30 · 올해 12/31까지 사용</span>
+      <div class="how"><span class="ic">👉</span><span><b>대상</b> 6세 이상 기초생활수급자·차상위계층 (가족 각각 1장씩)</span></div>
+      <div class="how"><span class="ic">💳</span><span>영화·공연·여행·서점·체육시설 등 전국 가맹점에서 사용</span></div>
+      <div class="how"><span class="ic">🎂</span><span>13~18세와 <b>60~64세</b>는 1만 원이 더 붙어 16만 원</span></div>
+      <span class="badge ok">발급 ~2026.11.30 · 사용 ~2026.12.31</span>
       <a class="btn" href="https://www.mnuri.kr/main/main.do" target="_blank" rel="noopener">신청·잔액 확인하기 <span class="arr">→</span></a>
     </div>
 
     <div class="card g">
       <div class="tagrow"><span class="where">K-패스</span></div>
-      <div class="what">버스·지하철 요금 <span class="hi">최대 53% 돌려받기</span></div>
-      <div class="how"><span class="ic">👉</span><span>월 15회 이상 타면 <b>일반 20% · 청년 30% · 저소득 53%</b> 환급</span></div>
-      <div class="how"><span class="ic">🚌</span><span>현장을 자주 오가는 선생님께 매달 고정 환급이 됩니다</span></div>
-      <span class="badge ok">상시 운영 · 카드 발급 후 앱 가입</span>
+      <div class="what">출퇴근 시간대에 타면 <span class="hi">교통비 최대 83.3% 환급</span></div>
+      <div class="how"><span class="ic">👉</span><span>월 15회 이상 이용 시 환급. <b>시차 시간대</b>(05:30~06:30, 09:00~10:00, 16:00~17:00, 19:00~20:00)엔 <b>+30%p</b></span></div>
+      <div class="how"><span class="ic">📊</span><span>시차 시간대 기준 <b>일반 50% · 청년/어르신/2자녀 60% · 3자녀 80% · 저소득 83.3%</b></span></div>
+      <div class="how"><span class="ic">💰</span><span>최대 21만 원까지 돌려받을 수 있습니다</span></div>
+      <span class="badge warn">확대 적용은 2026.9.30까지 (한시)</span>
       <a class="btn" href="https://www.k-pass.kr" target="_blank" rel="noopener">K-패스 카드 알아보기 <span class="arr">→</span></a>
     </div>
 
@@ -144,134 +205,131 @@
       <div class="tagrow"><span class="where">국가건강검진</span></div>
       <div class="what">2년에 한 번 <span class="hi">무료 건강검진 + 여성 암검진</span></div>
       <div class="how"><span class="ic">👉</span><span><b>올해는 짝수 해 출생자</b> 대상. 유방암(40세+)·자궁경부암(20세+) 무료</span></div>
-      <div class="how"><span class="ic">🏥</span><span>건강보험 가입자면 본인부담 대부분 무료. 연말에 몰리니 미리!</span></div>
+      <div class="how"><span class="ic">🏥</span><span>건강보험 가입자면 본인부담 대부분 무료. 연말에 몰리니 미리 받으세요</span></div>
       <span class="badge info">올해 안(~12/31) 받기 · 대상자 조회 필수</span>
       <a class="btn" href="https://www.nhis.or.kr" target="_blank" rel="noopener">대상자 조회하기 <span class="arr">→</span></a>
     </div>
   </section>
 
-  <!-- 2. 내 몸 챙기기 -->
   <section id="health">
     <div class="cat-head">
       <span class="cat-emoji">💊</span>
       <div>
         <div class="cat-title">2. 내 몸 챙기기</div>
-        <div class="cat-note">건강·영양제 할인 · 서서 일하는 우리 몸부터</div>
+        <div class="cat-note">건강·영양제 할인 · 하루 종일 쓰는 우리 몸부터</div>
       </div>
     </div>
 
     <div class="card h">
       <div class="tagrow"><span class="where">올리브영</span></div>
-      <div class="what">영양제·건강식품 <span class="hi">9월 세일</span> (마그네슘·콜라겐·단백질)</div>
-      <div class="how"><span class="ic">👉</span><span>약 3만 4천 종 할인 중 + 매일 '오늘의 특가(오특)'</span></div>
-      <div class="how"><span class="ic">🕐</span><span>온라인 주문하면 <b>3시간 내 배송(오늘드림)</b>도 가능</span></div>
-      <span class="badge warn">막바지 ~9/6 · 오특은 매일 바뀜</span>
-      <a class="btn" href="https://www.oliveyoung.co.kr" target="_blank" rel="noopener">세일 상품 보기 <span class="arr">→</span></a>
+      <div class="what">영양제·건강식품 <span class="hi">매일 바뀌는 오늘의 특가</span></div>
+      <div class="how"><span class="ic">👉</span><span>앱 오특 탭에 <b>매일 아침</b> 다른 품목이 특가로 올라옵니다</span></div>
+      <div class="how"><span class="ic">🕐</span><span>온라인 주문 시 <b>3시간 내 배송(오늘드림)</b>도 가능</span></div>
+      <span class="badge info">매일 갱신 · 당일 한정</span>
+      <a class="btn" href="https://m.oliveyoung.co.kr/m/mtn?menu=todaySpecial" target="_blank" rel="noopener">오늘의 특가 보기 <span class="arr">→</span></a>
     </div>
 
     <div class="card h">
       <div class="tagrow"><span class="where">다이소</span></div>
       <div class="what">파스·찜질·발 편한 용품 <span class="hi">전부 5,000원 이하</span></div>
       <div class="how"><span class="ic">👉</span><span>온열파스, 발 마사지볼, 손목보호대 등 현장에 딱 맞는 저가템</span></div>
-      <div class="how"><span class="ic">🛍️</span><span>가까운 매장 방문 or 다이소몰 배송</span></div>
-      <span class="badge info">상시 · 매장·앱 확인</span>
+      <div class="how"><span class="ic">🛍️</span><span>가까운 매장 방문 또는 다이소몰 배송</span></div>
+      <span class="badge info">상시 · 매장·앱에서 최신 확인</span>
       <a class="btn" href="https://www.daisomall.co.kr" target="_blank" rel="noopener">다이소몰 열기 <span class="arr">→</span></a>
     </div>
 
     <div class="card h">
       <div class="tagrow"><span class="where">건강 꿀팁</span></div>
       <div class="what">우리 동네 <span class="hi">보건소 무료·저가 검사</span> 활용하기</div>
-      <div class="how"><span class="ic">👉</span><span>혈압·혈당·골밀도 등 보건소에서 무료/소액으로 확인 가능</span></div>
+      <div class="how"><span class="ic">👉</span><span>혈압·혈당·골밀도 등을 보건소에서 무료 또는 소액으로 확인 가능</span></div>
       <div class="how"><span class="ic">📞</span><span>거주지 보건소에 전화해 이번 달 프로그램만 물어봐도 됩니다</span></div>
-      <span class="badge info">지역별 상이 · 보건소 문의</span>
+      <span class="badge info">지역별로 다름 · 보건소 문의</span>
       <a class="btn" href="https://www.gov.kr" target="_blank" rel="noopener">정부24에서 찾기 <span class="arr">→</span></a>
     </div>
   </section>
 
-  <!-- 3. 가족·경조사 -->
   <section id="family">
     <div class="cat-head">
       <span class="cat-emoji">🎁</span>
       <div>
         <div class="cat-title">3. 가족·경조사·추석</div>
-        <div class="cat-note">추석(9/24~26)이 코앞 · 선물은 미리 예약이 싸요</div>
+        <div class="cat-note">추석은 9월 25일(금) · 연휴 9/24~9/26</div>
       </div>
     </div>
 
     <div class="card f">
-      <div class="tagrow"><span class="where">백화점 3사</span></div>
-      <div class="what">추석 선물세트 <span class="hi">사전예약 최대 25% 할인</span></div>
-      <div class="how"><span class="ic">👉</span><span>롯데·신세계·현대 300여 종. 정가보다 예약가가 훨씬 저렴</span></div>
-      <div class="how"><span class="ic">🎁</span><span>과일·정육·건강식품 세트. 어른 선물로 무난합니다</span></div>
-      <span class="badge ok">사전예약 진행 중 · 추석 전 마감</span>
-      <a class="btn" href="https://www.lotteon.com" target="_blank" rel="noopener">선물세트 둘러보기 <span class="arr">→</span></a>
-    </div>
-
-    <div class="card f">
-      <div class="tagrow"><span class="where">롯데마트·이마트</span></div>
-      <div class="what">알뜰 선물세트 <span class="hi">5만 원 이하</span> & 추석 먹거리</div>
-      <div class="how"><span class="ic">👉</span><span>부담 없는 가격대 세트 다양. 정육·과일 특가도 함께</span></div>
-      <div class="how"><span class="ic">💳</span><span>행사카드·포인트 회원가 적용하면 더 저렴</span></div>
-      <span class="badge info">9월 추석 사전예약 · 앱 전단 확인</span>
-      <a class="btn" href="https://www.lottemart.com" target="_blank" rel="noopener">마트 선물세트 보기 <span class="arr">→</span></a>
+      <div class="tagrow"><span class="where">백화점·마트</span></div>
+      <div class="what">추석 선물세트 <span class="hi">사전예약이 정가보다 쌉니다</span></div>
+      <div class="how"><span class="ic">👉</span><span>롯데·신세계·현대 및 대형마트에서 사전예약 진행 중. 과일·정육·건강식품 세트</span></div>
+      <div class="how"><span class="ic">💳</span><span>행사카드·멤버십 회원가를 함께 적용하면 더 저렴해집니다</span></div>
+      <span class="badge info">추석 전 마감 · 할인율은 세트별 상이, 앱에서 확인</span>
+      <a class="btn" href="https://www.lotteon.com/display/shop/seltDpShop/30009" target="_blank" rel="noopener">추석 선물세트 보기 <span class="arr">→</span></a>
     </div>
 
     <div class="card f">
       <div class="tagrow"><span class="where">가족 나들이</span></div>
-      <div class="what">서울랜드 <span class="hi">최대 71% 할인</span> (손주·가족과)</div>
-      <div class="how"><span class="ic">👉</span><span>SKT T멤버십 앱에서 쿠폰 받아 현장 사용</span></div>
+      <div class="what">서울랜드 <span class="hi">T멤버십 할인</span> (손주·가족과)</div>
+      <div class="how"><span class="ic">👉</span><span>SKT T멤버십 앱에서 쿠폰을 받아 현장에서 사용</span></div>
       <div class="how"><span class="ic">🎡</span><span>쉬는 날 손주·가족과 나들이할 때 부담을 줄여줍니다</span></div>
-      <span class="badge ok">2026.9.4 ~ 9.30</span>
+      <span class="badge info">할인율·기간은 T멤버십 앱에서 최신 확인</span>
       <a class="btn" href="https://www.tworld.co.kr/web/benefit/membership" target="_blank" rel="noopener">T멤버십 혜택 열기 <span class="arr">→</span></a>
+    </div>
+
+    <div class="card f">
+      <div class="tagrow"><span class="where">경조사 준비</span></div>
+      <div class="what">명절 전 <span class="hi">미리 사두면 싼 것들</span></div>
+      <div class="how"><span class="ic">👉</span><span>제수용품·과일은 연휴 직전에 가격이 오릅니다. 마트 전단 기간(9/10~9/16)에 미리</span></div>
+      <div class="how"><span class="ic">🧧</span><span>봉투·보자기·답례품은 다이소에서 저렴하게 해결됩니다</span></div>
+      <span class="badge info">9월 중순 구매 권장</span>
+      <a class="btn" href="https://www.daisomall.co.kr" target="_blank" rel="noopener">다이소몰 열기 <span class="arr">→</span></a>
     </div>
   </section>
 
-  <!-- 4. 장보기·생활 -->
   <section id="shop">
     <div class="cat-head">
       <span class="cat-emoji">🛒</span>
       <div>
         <div class="cat-title">4. 장보기·생활</div>
-        <div class="cat-note">일주일 장보기, 이번 주가 쌉니다</div>
+        <div class="cat-note">이번 주 장보기, 하루만 미루면 더 쌉니다</div>
       </div>
     </div>
 
     <div class="card s">
       <div class="tagrow"><span class="where">롯데마트</span></div>
-      <div class="what">가을 먹거리 <span class="hi">최대 반값 '통큰데이'</span></div>
-      <div class="how"><span class="ic">👉</span><span>미국산 찜갈비 50%, 한우 등심 40%, 생연어 40%(엘포인트)</span></div>
-      <div class="how"><span class="ic">🍎</span><span>홍로사과·샤인머스캣 등 제철 과일도 행사가</span></div>
-      <span class="badge warn">지난 행사 (9.6 종료) · 이번 주 행사는 앱에서 확인</span>
-      <a class="btn" href="https://www.lottemart.com" target="_blank" rel="noopener">이번 주 행사 보기 <span class="arr">→</span></a>
+      <div class="what">추석 성수품 <span class="hi">지갑은 가볍게 마음은 풍성하게</span></div>
+      <div class="how"><span class="ic">👉</span><span>추석 성수품·과일·정육 특가와 선물세트. 엘포인트 회원가 적용</span></div>
+      <div class="how"><span class="ic">📅</span><span><b>내일(9/10 목)부터</b> 시작합니다</span></div>
+      <span class="badge info">2026.9.10 ~ 9.16</span>
+      <a class="btn" href="https://www.lottemart.com" target="_blank" rel="noopener">롯데마트 행사 보기 <span class="arr">→</span></a>
     </div>
 
     <div class="card s">
-      <div class="tagrow"><span class="where">이마트</span></div>
-      <div class="what">신선식품·정육 <span class="hi">주간 특가 + 추석 예약</span></div>
-      <div class="how"><span class="ic">👉</span><span>매주 바뀌는 전단 특가. 신세계 유니버스 회원가 별도</span></div>
-      <span class="badge info">9월 주간 전단 · 앱 확인</span>
-      <a class="btn" href="https://emart.ssg.com" target="_blank" rel="noopener">이마트 전단 보기 <span class="arr">→</span></a>
+      <div class="tagrow"><span class="where">홈플러스</span></div>
+      <div class="what">명절 물가 잡는 <span class="hi">홈플 is BACK</span></div>
+      <div class="how"><span class="ic">👉</span><span>명절 먹거리·생필품 할인 전단. 멤버십 회원가와 앱 쿠폰을 같이 쓰세요</span></div>
+      <div class="how"><span class="ic">📅</span><span><b>내일(9/10 목)부터</b> 시작합니다</span></div>
+      <span class="badge info">2026.9.10 ~ 9.16</span>
+      <a class="btn" href="https://mfront.homeplus.co.kr/leaflet" target="_blank" rel="noopener">홈플러스 전단 보기 <span class="arr">→</span></a>
+    </div>
+
+    <div class="card s">
+      <div class="tagrow"><span class="where">GS25</span></div>
+      <div class="what">9월 <span class="hi">초특갓세일 · 1+1 / 2+1</span> 진행 중</div>
+      <div class="how"><span class="ic">👉</span><span>음료·간편식·과자 등 폭넓게 1+1, 2+1. 근무 사이 간단히 한 끼</span></div>
+      <div class="how"><span class="ic">🔎</span><span>펴늬에서 <b>오늘 행사 상품</b>을 먼저 검색하고 가까운 매장에서 구매</span></div>
+      <span class="badge ok">2026.9.1 ~ 9.15</span>
+      <a class="btn" href="https://pyony.com/brands/gs25/" target="_blank" rel="noopener">1+1 상품 찾기 <span class="arr">→</span></a>
     </div>
 
     <div class="card s">
       <div class="tagrow"><span class="where">다이소몰</span></div>
-      <div class="what">생활용품·주방·청소템 <span class="hi">인기 신상 세일</span></div>
-      <div class="how"><span class="ic">👉</span><span><b>매주 오전 9시</b> 신상 오픈. 3,000원대 실속템 많음</span></div>
-      <span class="badge info">매주 갱신 · 앱 확인</span>
+      <div class="what">생활용품·주방·청소템 <span class="hi">3,000~5,000원대 실속템</span></div>
+      <div class="how"><span class="ic">👉</span><span>매주 신상이 올라옵니다. 소모품은 여기서 한 번에 해결</span></div>
+      <span class="badge info">상시 · 앱에서 최신 확인</span>
       <a class="btn" href="https://www.daisomall.co.kr" target="_blank" rel="noopener">신상 보러가기 <span class="arr">→</span></a>
-    </div>
-
-    <div class="card s">
-      <div class="tagrow"><span class="where">편의점 1+1</span></div>
-      <div class="what">근무 중 간편식 <span class="hi">1+1·2+1 최저가 조합</span></div>
-      <div class="how"><span class="ic">👉</span><span>삼각김밥+음료, 도시락+커피 등 한 끼를 최저가로</span></div>
-      <div class="how"><span class="ic">🔎</span><span>'펴늬' 앱에서 오늘 1+1 상품 검색 후 가까운 곳에서 구매</span></div>
-      <span class="badge info">9월 행사 · 앱 확인</span>
-      <a class="btn" href="https://pyony.com" target="_blank" rel="noopener">1+1 상품 찾기 <span class="arr">→</span></a>
     </div>
   </section>
 
-  <!-- 5. 뷰티·옷 -->
   <section id="beauty">
     <div class="cat-head">
       <span class="cat-emoji">💄</span>
@@ -282,32 +340,32 @@
     </div>
 
     <div class="card b">
+      <div class="tagrow"><span class="where">다이소 뷰티</span></div>
+      <div class="what">화장품·스킨케어 <span class="hi">대부분 5,000원 이하 균일가</span></div>
+      <div class="how"><span class="ic">👉</span><span>기초·색조 모두 저가 균일가. 가성비로 가볍게 꾸미기</span></div>
+      <div class="how"><span class="ic">🛍️</span><span>인기템은 금방 품절 — 다이소몰·매장에서 확인</span></div>
+      <span class="badge info">상시 판매</span>
+      <a class="btn" href="https://www.daisomall.co.kr" target="_blank" rel="noopener">다이소 뷰티 보기 <span class="arr">→</span></a>
+    </div>
+
+    <div class="card b">
       <div class="tagrow"><span class="where">올리브영</span></div>
-      <div class="what">화장품·스킨케어 <span class="hi">9월 세일 (3.4만 종)</span></div>
-      <div class="how"><span class="ic">👉</span><span>기초·색조·헤어까지. 멤버십 등급 쿠폰 중복 적용</span></div>
-      <span class="badge warn">막바지 ~9/6</span>
-      <a class="btn" href="https://www.oliveyoung.co.kr" target="_blank" rel="noopener">세일 상품 보기 <span class="arr">→</span></a>
+      <div class="what">스킨케어·헤어 <span class="hi">1+1 기획 · 올영픽 세일</span></div>
+      <div class="how"><span class="ic">👉</span><span>세일 탭에 1+1 기획 상품과 9월 올영픽이 모여 있습니다</span></div>
+      <span class="badge info">진행 중 · 상품별 상이, 앱에서 확인</span>
+      <a class="btn" href="https://m.oliveyoung.co.kr/m/mtn?menu=sale" target="_blank" rel="noopener">올리브영 세일 보기 <span class="arr">→</span></a>
     </div>
 
     <div class="card b">
-      <div class="tagrow"><span class="where">에이블리·지그재그</span></div>
-      <div class="what">가을 여성 의류 <span class="hi">첫구매 쿠폰 + 기획전</span></div>
-      <div class="how"><span class="ic">👉</span><span>편한 니트·바지·잡화 다양. 앱 첫구매 할인 쿠폰 별도</span></div>
+      <div class="tagrow"><span class="where">에이블리</span></div>
+      <div class="what">가을 여성 의류 <span class="hi">첫구매 쿠폰 + 무료배송</span></div>
+      <div class="how"><span class="ic">👉</span><span>편한 니트·바지·잡화 다양. 앱 첫구매 할인 쿠폰 별도 제공</span></div>
       <div class="how"><span class="ic">🚚</span><span>에이블리는 전 상품 무료배송</span></div>
-      <span class="badge info">앱 기획전 쿠폰 확인</span>
+      <span class="badge info">앱 기획전·쿠폰 확인</span>
       <a class="btn" href="https://m.a-bly.com" target="_blank" rel="noopener">에이블리 열기 <span class="arr">→</span></a>
-    </div>
-
-    <div class="card b">
-      <div class="tagrow"><span class="where">SPA·백화점</span></div>
-      <div class="what">간절기 옷 <span class="hi">유니클로·탑텐 & 백화점 정기세일</span></div>
-      <div class="how"><span class="ic">👉</span><span>얇은 니트·자켓 기간한정가. 백화점 가을 정기세일도 진행</span></div>
-      <span class="badge info">9월 · 브랜드·점포별 확인</span>
-      <a class="btn" href="https://www.uniqlo.com/kr" target="_blank" rel="noopener">유니클로 보기 <span class="arr">→</span></a>
     </div>
   </section>
 
-  <!-- 6. 커피·먹거리 -->
   <section id="cafe">
     <div class="cat-head">
       <span class="cat-emoji">☕</span>
@@ -318,67 +376,72 @@
     </div>
 
     <div class="card c">
-      <div class="tagrow"><span class="where">할리스·백억커피</span></div>
-      <div class="what">음료 <span class="hi">50% 할인 & 아메리카노 무료</span></div>
-      <div class="how"><span class="ic">👉</span><span>SKT 0/청년 대상 Young Week: 할리스 50%, 백억커피 무료</span></div>
-      <div class="how"><span class="ic">📱</span><span>T멤버십 앱에서 쿠폰 받아 매장에서 보여주기</span></div>
-      <span class="badge info">9월 Young Week · 앱 확인</span>
-      <a class="btn" href="https://www.tworld.co.kr/web/benefit/membership" target="_blank" rel="noopener">T멤버십 쿠폰 열기 <span class="arr">→</span></a>
+      <div class="tagrow"><span class="where">스타벅스</span></div>
+      <div class="what">라떼 위크 룰렛 <span class="hi">하루 1회 · 최대 50% 할인</span></div>
+      <div class="how"><span class="ic">👉</span><span>리워드 회원은 앱 이벤트 페이지에서 <b>하루 1회 룰렛</b> — 50% 할인, 1+1, 사이즈업, 별 적립 중 당첨</span></div>
+      <div class="how"><span class="ic">📱</span><span>대상 라떼 10종. 출근길에 미리 돌려두고 방문 사이에 사용하세요</span></div>
+      <span class="badge ok">2026.9.7 ~ 9.20</span>
+      <a class="btn" href="https://www.starbucks.co.kr/whats_new/campaign_view.do?pro_seq=2757" target="_blank" rel="noopener">스타벅스 이벤트 보기 <span class="arr">→</span></a>
     </div>
 
     <div class="card c">
       <div class="tagrow"><span class="where">BBQ</span></div>
-      <div class="what">앱 주문 시 <span class="hi">황금올리브치킨 반 마리 무료</span></div>
-      <div class="how"><span class="ic">👉</span><span>2만 원 이상 주문하면 쿠폰함에 자동 담김 (하루 1번)</span></div>
-      <span class="badge ok">2026.9.1 ~ 9.30</span>
+      <div class="what">앱 포장 주문 <span class="hi">5,000원 할인</span> (금요일은 4,000원 추가)</div>
+      <div class="how"><span class="ic">👉</span><span>픽업 올데이 — BBQ 자사앱에서 포장 주문하면 5,000원 할인 (9월 한 달)</span></div>
+      <div class="how"><span class="ic">🗓️</span><span>매주 금요일 블랙 프라이드 데이 — 황금올리브치킨·핫크리스피 4,000원 할인. <b>쿠폰은 발급 당일만</b> 사용 가능</span></div>
+      <span class="badge ok">2026년 9월 한 달 · 자사앱 주문</span>
       <a class="btn" href="https://www.bbq.co.kr" target="_blank" rel="noopener">BBQ 주문하기 <span class="arr">→</span></a>
     </div>
 
     <div class="card c">
-      <div class="tagrow"><span class="where">파리바게뜨·롯데리아</span></div>
-      <div class="what">빵·버거 <span class="hi">T day Week 할인 (9/7~11)</span></div>
-      <div class="how"><span class="ic">👉</span><span>이 기간엔 파리바게뜨·롯데리아·VIPS가 함께 할인</span></div>
-      <span class="badge info">9/7~11 · T멤버십 앱 쿠폰</span>
-      <a class="btn" href="https://www.paris.co.kr" target="_blank" rel="noopener">파리바게뜨 보기 <span class="arr">→</span></a>
+      <div class="tagrow"><span class="where">배스킨라빈스</span></div>
+      <div class="what">이달의 맛 <span class="hi">더블주니어 +500원 업그레이드</span></div>
+      <div class="how"><span class="ic">👉</span><span>싱글 주문 시 500원만 더하면 더블주니어로. 9월 한 달 내내</span></div>
+      <div class="how"><span class="ic">💳</span><span>PAYCO 포인트로 최대 1,500원 추가 할인 (9/1~9/30)</span></div>
+      <span class="badge ok">2026.9.1 ~ 9.30</span>
+      <a class="btn" href="https://www.baskinrobbins.co.kr/play/event/list.php" target="_blank" rel="noopener">배스킨라빈스 이벤트 <span class="arr">→</span></a>
     </div>
 
     <div class="card c">
-      <div class="tagrow"><span class="where">배달의민족</span></div>
-      <div class="what">배민클럽 <span class="hi">기존 상품 가입은 9/30까지</span></div>
-      <div class="how"><span class="ic">👉</span><span>무료배달+B마트 할인. 10월 1일부터 포인트 적립형으로 바뀜</span></div>
-      <div class="how"><span class="ic">🎫</span><span>처음이면 신규 첫 주문 쿠폰(앱별 합쳐 최대 2만 원)도 챙기기</span></div>
-      <span class="badge warn">기존 상품 가입 ~9/30</span>
-      <a class="btn" href="https://www.baemin.com" target="_blank" rel="noopener">배민 열기 <span class="arr">→</span></a>
+      <div class="tagrow"><span class="where">배달앱 멤버십</span></div>
+      <div class="what">근무지 식사 <span class="hi">배달 멤버십으로 배달비 절약</span></div>
+      <div class="how"><span class="ic">👉</span><span>요기패스·배민클럽 등 월정액 멤버십에 가입하면 무료배달 혜택</span></div>
+      <div class="how"><span class="ic">🎫</span><span>처음이면 신규 첫 주문 쿠폰도 함께 챙기세요</span></div>
+      <span class="badge info">요금·조건은 앱에서 최신 확인</span>
+      <a class="btn" href="https://www.yogiyo.co.kr" target="_blank" rel="noopener">요기요 열기 <span class="arr">→</span></a>
     </div>
   </section>
 
-  <!-- 절약 꿀팁 -->
   <div class="tips">
     <h2>💡 오늘의 절약 꿀팁 3</h2>
-    <div class="tip"><span class="n">1</span><span><b>받을 수 있는 정부 혜택부터 챙기세요.</b> 문화누리카드(연 15만 원)와 K-패스(교통비 최대 53% 환급)는 금액이 커서, 대상이 되면 커피 쿠폰 수십 장보다 이득입니다.</span></div>
-    <div class="tip"><span class="n">2</span><span><b>추석 선물은 지금, 미리.</b> 추석(9/24~26)이 가까워요. 백화점·마트 <b>사전예약</b>이 정가보다 최대 25% 쌉니다. 임박하면 물량도 가격도 불리해집니다.</span></div>
-    <div class="tip"><span class="n">3</span><span><b>통신사 앱은 하루 한 번만 열어보기.</b> 9/7~11 T day Week엔 빵집·커피·외식이 몰려 할인됩니다. 이동 많은 날 커피·빵 쿠폰만 챙겨도 하루 지출이 줄어요.</span></div>
+    <div class="tip"><span class="n">1</span><span><b>장보기는 하루만 미루세요.</b> 롯데마트·홈플러스·이마트 명절 전단이 <b>내일(9/10 목)</b> 일제히 시작합니다. 오늘 크게 장을 보면 하루 차이로 손해입니다.</span></div>
+    <div class="tip"><span class="n">2</span><span><b>K-패스는 이번 달이 마지막입니다.</b> 교통비 환급 확대(시차 시간대 +30%p)가 <b>9월 30일로 종료</b>됩니다. 대중교통 이동이 많은 선생님은 이달 안에 발급받아 챙기세요.</span></div>
+    <div class="tip"><span class="n">3</span><span><b>오늘은 치킨·아이스크림이 쌉니다.</b> 오늘이 bhc 구구데이(~9/13)이고, 배스킨라빈스 블록팩 4개 1만 원도 <b>오늘 시작</b>(~9/13)입니다. 저녁 간식은 오늘 사는 게 이득이에요.</span></div>
   </div>
 
-  <!-- 출처 -->
   <div class="sources">
     <h3>📎 출처</h3>
-    <a href="https://www.nuriilbo.com/mobile/article.html?no=802139">누리일보 · 2026 문화누리카드 15만 원</a> ·
-    <a href="https://www.wegive.co.kr/wezine/detail/1371">2026 국가건강검진 대상 안내</a> ·
-    <a href="https://biz.heraldcorp.com/article/10855291">헤럴드경제 · 올리브영 9월 세일</a> ·
-    <a href="https://view.asiae.co.kr/article/2026090107561669152">아시아경제 · 롯데마트 통큰데이</a> ·
-    <a href="https://biz.heraldcorp.com/article/10839602">헤럴드경제 · 백화점 추석 선물세트</a> ·
-    <a href="https://www.ibabynews.com/news/articleView.html?idxno=120549">아이베이비뉴스 · BBQ 반마리 증정</a> ·
-    <a href="https://news.sktelecom.com/230097">SKT · 9월 T멤버십 혜택</a> ·
-    <a href="https://www.mt.co.kr/tech/2026/09/01/2026090108545764071">머니투데이 · 배민클럽 개편</a>
+    <a href="https://www.starbucks.co.kr/whats_new/campaign_view.do?pro_seq=2757" target="_blank" rel="noopener">스타벅스 공식 · 라떼 위크</a> ·
+    <a href="https://www.insightkorea.co.kr/news/articleView.html?idxno=254007" target="_blank" rel="noopener">인사이트코리아 · bhc 구구데이</a> ·
+    <a href="https://www.foodtoday.or.kr/news/article.html?no=207726" target="_blank" rel="noopener">푸드투데이 · BBQ 9월 앱 할인</a> ·
+    <a href="https://www.baskinrobbins.co.kr/play/event/list.php" target="_blank" rel="noopener">배스킨라빈스 공식 이벤트</a> ·
+    <a href="https://www.card-gorilla.com/contents/detail/4230" target="_blank" rel="noopener">카드고릴라 · K-패스 환급 확대</a> ·
+    <a href="https://www.tossbank.com/articles/mnuri" target="_blank" rel="noopener">토스뱅크 · 2026 문화누리카드</a> ·
+    <a href="https://mfront.homeplus.co.kr/leaflet" target="_blank" rel="noopener">홈플러스 공식 전단</a> ·
+    <a href="https://pyony.com/brands/gs25/" target="_blank" rel="noopener">펴늬 · GS25 9월 행사</a> ·
+    <a href="https://www.mnuri.kr/main/main.do" target="_blank" rel="noopener">문화누리카드 공식</a> ·
+    <a href="https://www.k-pass.kr" target="_blank" rel="noopener">K-패스 공식</a>
   </div>
 
   <footer>
-    HUBRIZ 돌봄플러스 혜택존 · 2026년 9월 9일 기준<br>
+    HUBRIZ 돌봄플러스 혜택존<br>
+    콘텐츠 최종 갱신: <b>2026년 9월 9일 (수)</b> · 매일 밤 자동 업데이트<br>
     ※ 혜택·기간·조건은 바뀔 수 있어요. 쓰기 전 각 앱·매장에서 다시 확인해 주세요.<br>
     ※ 정부 지원(문화누리카드 등)은 소득·나이 조건이 있어 대상이 아닐 수 있습니다.
   </footer>
 
 </div>
+
+<script>(function(){var d=new Date(),D=['일','월','화','수','목','금','토'];var e=document.getElementById('today');if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+D[d.getDay()]+')';})();</script>
 </body>
 </html>
