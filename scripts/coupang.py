@@ -7,6 +7,10 @@ DOMAIN = "https://api-gateway.coupang.com"
 BASE   = "/v2/providers/affiliate_open_api/apis/openapi/v1"
 
 def load_keys(path=None):
+    # GitHub Actions 에서는 비밀값이 환경변수로 들어옵니다. 둘 다 있으면 그걸 씁니다.
+    env = {k: os.environ[k] for k in ("COUPANG_ACCESS_KEY", "COUPANG_SECRET_KEY") if os.environ.get(k)}
+    if len(env) == 2:
+        return env
     path = path or os.path.expanduser("~/.hyetaekzone.env")
     keys = {}
     with open(path, encoding="utf-8") as f:

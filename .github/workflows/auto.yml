@@ -1,0 +1,62 @@
+# 혜택존 자동 작업 — 컴퓨터·Claude 앱이 꺼져 있어도 GitHub 서버에서 돈다.
+#   00:05 KST  기간 지난 혜택 정리 + 핫딜 새로고침
+#   07:30 KST  핫딜 새로고침 (쿠팡 골드박스가 바뀐 뒤)
+# 새 혜택 조사·블로그 원고는 AI 가 필요해 여기서 하지 않는다 (Claude 예약 작업이 담당).
+# 커밋 메시지에 '갱신'을 쓰지 않는다 — 야간 갱신의 중복 방지 검사가 그 말로 판단한다.
+name: 혜택존 자동 정리·핫딜 새로고침
+
+on:
+  schedule:
+    - cron: "5 15 * * *"
+    - cron: "30 22 * * *"
+  workflow_dispatch:
+    inputs:
+      expire:
+        description: "기간 지난 혜택 정리도 할까요"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: hyetaekzone-auto
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 준비
+        run: |
+          git config user.name "HUBRIZ"
+          git config user.email "ceo@hubriz.io"
+
+      - name: 기간 지난 혜택 정리
+        if: github.event.schedule == '5 15 * * *' || (github.event_name == 'workflow_dispatch' && inputs.expire)
+        run: python3 scripts/expire.py
+
+      - name: 핫딜 새로고침
+        env:
+          COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
+          COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
+        run: |
+          if [ -z "$COUPANG_ACCESS_KEY" ] || [ -z "$COUPANG_SECRET_KEY" ]; then
+            echo "::warning::쿠팡 키가 GitHub 비밀값에 없어 핫딜 새로고침을 건너뜁니다 (scripts/set-github-secrets.sh)"
+            exit 0
+          fi
+          python3 scripts/hotdeal.py || echo "::warning::핫딜 새로고침 실패 — 기존 상품을 그대로 둡니다"
+
+      - name: 올리기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then echo "바뀐 것 없음"; exit 0; fi
+          git add -A
+          git commit -q -m "자동 정리·핫딜 새로고침 $(TZ=Asia/Seoul date '+%-m/%-d %H:%M') (GitHub Actions)"
+          for i in 1 2 3; do git push -q && break; git pull -q --rebase; done
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" >/dev/null || true

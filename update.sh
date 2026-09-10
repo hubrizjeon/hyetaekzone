@@ -12,6 +12,8 @@ fi
 
 git add -A
 git commit -m "$MSG"
+# GitHub Actions(자동 정리·핫딜)가 먼저 올린 커밋이 있으면 합친 뒤 올립니다
+git pull --rebase -q || { echo "❌ GitHub 쪽 변경과 겹쳐 자동으로 합치지 못했습니다. git status 를 확인하세요."; exit 1; }
 git push
 
 URL=$(gh api repos/{owner}/{repo}/pages --jq '.html_url' 2>/dev/null || echo "")

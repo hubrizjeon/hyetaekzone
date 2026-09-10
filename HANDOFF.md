@@ -146,6 +146,17 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 
 ---
 
+### (C) GitHub Actions — 자동 정리·핫딜 (2026-09-10~)
+`.github/workflows/auto.yml` · 컴퓨터·Claude 앱이 꺼져 있어도 GitHub 서버에서 실행
+- **00:05 KST** 기간 지난 혜택 카드 자동 삭제(`scripts/expire.py`, 날짜가 분명한 카드만) + 핫딜 새로고침
+- **07:30 KST** 핫딜 새로고침
+- 쿠팡 키는 GitHub 저장소 비밀값 `COUPANG_ACCESS_KEY`·`COUPANG_SECRET_KEY` (등록: `scripts/set-github-secrets.sh`, 대표가 직접). 없으면 핫딜 단계만 건너뜀
+- 쿠팡 조회가 통째로 실패하면 기존 핫딜을 그대로 둠
+- 새 혜택 조사·블로그는 AI 가 필요해 (A)(B) Claude 예약 작업이 담당
+- 메일 수신: **당분간 ceo@hubriz.io 만** (대표 지시 2026-09-10 — 허수빈 제외)
+
+---
+
 ## 5. 데이터 품질 규칙 (핵심)
 
 이 페이지는 **저소득 취약계층이 포함된 독자**에게 정부 지원 정보를 안내한다. 잘못된 정보의 비용이 크다.

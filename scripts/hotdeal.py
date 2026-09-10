@@ -443,6 +443,11 @@ def main():
     except Exception as ex:  # noqa: BLE001
         items, errs = [], [str(ex)]
     picks, skipped = select(items)
+    old_src = INDEX.read_text(encoding="utf-8")
+    if not items and errs and P_START in old_src and not a.force_fallback:
+        # 쿠팡 쪽 장애·키 문제 — 어제 상품이 있으면 그대로 둡니다 (바로가기 카드로 덮지 않음)
+        print("⚠️ 쿠팡 조회가 모두 실패해 기존 핫딜을 그대로 둡니다:", "; ".join(errs[:3]))
+        return 2
     if a.force_fallback:
         picks = []
 
