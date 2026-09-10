@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""🔥 오늘의 핫딜 — 쿠팡파트너스 골드박스로 혜택존 핫딜 칸과 전용 페이지를 다시 만든다.
+"""🔥 오늘의 핫딜 — 쿠팡파트너스 상품으로 혜택존 핫딜 칸과 전용 페이지를 다시 만든다.
 
   python3 scripts/hotdeal.py                   index.html 의 핫딜 칸 + hotdeal.html 갱신
   python3 scripts/hotdeal.py --check           파일은 건드리지 않고 무엇이 올라갈지만 출력
@@ -8,16 +8,17 @@
 
 원칙 (HANDOFF 7장 · 2026-09-10 대표 결정)
 - 매일 유지: 핫딜 칸과 목차 「🔥 오늘의 핫딜」은 없어지지 않는다
-- 메인: 혜택 6개 카테고리 뒤 · 꿀팁 앞에 대표 3개 + 「핫딜 상품 전체 보기」
-- 전용 페이지 hotdeal.html: 쿠팡파트너스 상품만 (혜택 정보 섞지 않음)
-- 쿠팡 API 는 정가·할인율을 주지 않는다 → 할인율을 적지 않는다.
-  사실인 것(골드박스 선정, 판매가와 확인 시각, 로켓배송)만 적는다
-- 확인 안 되는 상품은 뺀다: 이름·가격·링크·이미지 누락 / 5만원 초과 / 대상 외 카테고리
+- 메인: 혜택 6개 카테고리 뒤 · 꿀팁 앞에 대표 3개(서로 다른 카테고리) + 카테고리 바로가기 + 「전체 보기」
+- 전용 페이지 hotdeal.html: 쿠팡파트너스 상품만. 골드박스 특가 + 전 카테고리 인기 상품
+  · 필터: 전체 / 🔥 골드박스 특가 / 카테고리별    · 정렬: 쿠팡 인기순 / 낮은 가격순 / 높은 가격순
+  · 처음 30개, 「상품 더 보기」로 30개씩
+- 가격 상한·카테고리 제한 없음 (대표 결정). 이름·가격·링크·이미지가 빠진 상품만 뺀다
+- 쿠팡 API 는 정가·할인율을 주지 않는다 → 할인율을 적지 않고, 할인순 정렬도 없다
 - 통과 상품 0개거나 API 실패 → 골드박스 바로가기 카드 1장
 - 네이버 언급 금지
 - index.html 에서는 PARTNERS 마커 안쪽, HOTDEAL-CSS 마커 안쪽, 목차 칩만 건드린다
 """
-import argparse, datetime, html, os, pathlib, re, sys
+import argparse, datetime, html, os, pathlib, re, sys, time
 
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -27,23 +28,41 @@ ROOT = HERE.parent
 INDEX = ROOT / "index.html"
 PAGE = ROOT / "hotdeal.html"
 SUB_ID = "hyetaekzone"
-PRICE_CAP = 50_000
+PER_CATEGORY = 20           # 카테고리별 인기 상품 수
 MAIN_COUNT = 3
+MAIN_CHIPS = 8              # 메인 「카테고리별로 보기」 버튼 수 (나머지는 전체 보기에서)
+PAGE_STEP = 30              # 핫딜 페이지 한 번에 보여줄 상품 수
 GOLDBOX_URL = "https://www.coupang.com/np/goldbox"
 KST = datetime.timezone(datetime.timedelta(hours=9))
 
-# 쿠팡이 상품마다 돌려주는 categoryName → 페이지 그룹. 여기 없는 카테고리는 싣지 않는다.
-# (HANDOFF 의 카테고리 ID 표는 실제 응답과 달라 쓰지 않는다 — 2026-09-10 확인:
-#  1012·1024 가 둘 다 신선식품, 1014 가 유아용품을 돌려줌)
+# 카테고리 인기 상품을 받아올 쿠팡 카테고리 번호.
+# 번호가 곧 내용은 아니다 (예: 1012·1024 → 신선식품, 1025·1026 → 여행 도서) — 그래서
+# 페이지 분류는 번호가 아니라 상품마다 쿠팡이 붙여 준 categoryName 으로 한다.
+CATEGORY_IDS = [1001, 1002, 1010, 1011, 1012, 1013, 1014, 1015, 1016, 1017,
+                1018, 1019, 1020, 1021, 1024, 1025, 1026, 1029, 1030]
+
+# (id, 제목, 카드 이름표, 쿠팡 categoryName 들) — 이 순서대로 버튼이 놓인다
 GROUPS = [
     ("life",    "🧻 생활용품",      "생활용품",     ["생활용품"]),
     ("food",    "🍚 먹거리",        "먹거리",       ["식품", "로켓프레시"]),
     ("kitchen", "🍳 주방용품",      "주방용품",     ["주방용품"]),
     ("beauty",  "💄 뷰티",          "뷰티",         ["뷰티"]),
-    ("home",    "🛏️ 침구·인테리어", "침구·인테리어", ["가구/홈인테리어", "홈인테리어"]),
+    ("fashion", "👗 패션·잡화",     "패션·잡화",    ["패션잡화", "패션의류", "여성패션", "남성패션"]),
     ("health",  "💊 건강식품",      "건강식품",     ["헬스/건강식품"]),
+    ("home",    "🛏️ 가구·인테리어", "가구·인테리어", ["가구/홈인테리어", "홈인테리어"]),
+    ("travel",  "✈️ 여행·레저",     "여행·레저",    ["국내투어", "해외투어", "여행", "국내여행", "해외여행"]),
+    ("digital", "📺 가전·디지털",   "가전·디지털",  ["가전디지털"]),
+    ("baby",    "👶 출산·유아",     "출산·유아",    ["출산/유아"]),
+    ("sports",  "⛳ 스포츠·레저",   "스포츠·레저",  ["스포츠/레저용품"]),
+    ("pet",     "🐾 반려동물",      "반려동물",     ["반려/애완용품"]),
+    ("car",     "🚗 자동차용품",    "자동차용품",   ["자동차용품"]),
+    ("book",    "📚 도서",          "도서",         ["도서/음반"]),
+    ("office",  "✏️ 문구·사무",     "문구·사무",    ["문구/사무용품"]),
+    ("toy",     "🧸 완구·취미",     "완구·취미",    ["완구/취미"]),
+    ("etc",     "🛍️ 기타",          "기타",         []),
 ]
 GROUP_BY_CAT = {c: g for g in GROUPS for c in g[3]}
+ETC = GROUPS[-1]
 
 P_START, P_END = "<!-- PARTNERS:START", "<!-- PARTNERS:END -->"
 CSS_START, CSS_END = "/* HOTDEAL-CSS:START */", "/* HOTDEAL-CSS:END */"
@@ -60,28 +79,27 @@ CSS = CSS_START + """
     padding:16px 18px;font-size:18px;color:var(--sub);line-height:1.7;margin-bottom:16px}
   .hd-notice b{color:var(--txt)}
   :root[data-theme="dark"] .hd-notice{background:#241b12}
-  .hd-group{font-size:20px;font-weight:900;margin:26px 0 12px;scroll-margin-top:14px}
   .card.ad{border:2px dashed #e5b9c4;box-shadow:none}
   .ad .where{background:#57534e}
   .adtag{font-size:14px;font-weight:900;color:#fff;background:#9ca3af;padding:4px 10px;border-radius:8px}
+  .gbtag{font-size:14px;font-weight:900;color:#fff;background:#e11d48;padding:4px 10px;border-radius:8px}
   .hd-img{display:block;width:100%;max-height:240px;object-fit:contain;background:#fff;border-radius:12px;margin:2px 0 12px}
   .ad .what{font-size:21px}
   .ad .how small{font-size:15px;color:var(--mut)}
   .ad .btn{background:#e11d48;box-shadow:0 4px 0 #9f1239}
   .hd-more{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;width:100%;
-    border:3px solid #e11d48;color:#e11d48;background:var(--card);text-decoration:none;
-    font-size:20px;font-weight:900;padding:15px;border-radius:15px}
+    border:3px solid #e11d48;color:#e11d48;background:var(--card);text-decoration:none;cursor:pointer;
+    font-family:inherit;font-size:20px;font-weight:900;padding:15px;border-radius:15px}
   .hd-back{display:inline-block;margin:18px 0 8px;font-size:18px;font-weight:800;color:var(--sub);text-decoration:none}
   .hd-stamp{font-size:15px;color:var(--mut);margin:0 0 4px}
   .hd-cats{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 12px}
-  .hd-cats b{width:100%;font-size:17px;color:var(--sub)}
-  .hd-cats a,.hd-filter a{display:inline-flex;align-items:center;background:var(--card);border:2px solid var(--line);
+  .hd-cats b,.hd-row b{width:100%;font-size:17px;color:var(--sub)}
+  .hd-cats a,.hd-filter a,.hd-sort a{display:inline-flex;align-items:center;background:var(--card);border:2px solid var(--line);
     color:var(--txt);text-decoration:none;font-weight:800;font-size:16px;padding:9px 13px;border-radius:13px}
-  .hd-filter{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px;padding-bottom:12px;border-bottom:2px solid var(--line)}
-  .hd-filter a.on{background:#e11d48;border-color:#e11d48;color:#fff}
-  .hd-sec{margin-top:6px}
-  .hd-sec[hidden]{display:none}
-  .hd-group small{font-size:16px;color:var(--mut);font-weight:700}
+  .hd-row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+  .hd-filter a.on,.hd-sort a.on{background:#e11d48;border-color:#e11d48;color:#fff}
+  .hd-count{font-size:17px;font-weight:800;color:var(--sub);margin:14px 0 10px;padding-top:12px;border-top:2px solid var(--line)}
+  #hd-list [hidden],.hd-more[hidden]{display:none!important}
   """ + CSS_END
 
 NOTICE = """
@@ -96,22 +114,38 @@ DATE_SCRIPT = ("<script>(function(){var d=new Date(),D=['일','월','화','수',
                "var e=document.getElementById('today');if(e)e.textContent=d.getFullYear()+'년 '+"
                "(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+D[d.getDay()]+')';})();</script>")
 
-
-FILTER_SCRIPT = """<script>
+# 필터·정렬·더 보기. 스크립트가 꺼져 있으면 모든 상품이 인기순으로 그대로 보인다.
+LIST_SCRIPT = """<script>
 (function(){
-  var bar=document.querySelector('.hd-filter'); if(!bar) return;
-  var btns=[].slice.call(bar.querySelectorAll('a')), secs=[].slice.call(document.querySelectorAll('.hd-sec'));
-  function show(id){
-    secs.forEach(function(g){ g.hidden = !!id && g.id!==id; });
-    btns.forEach(function(b){ var on=b.getAttribute('href')==='#'+(id||'all'); b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+  var list=document.getElementById('hd-list'); if(!list) return;
+  var cards=[].slice.call(list.querySelectorAll('.card.ad'));
+  var fBtns=[].slice.call(document.querySelectorAll('.hd-filter a')), sBtns=[].slice.call(document.querySelectorAll('.hd-sort a'));
+  var more=document.getElementById('hd-more'), cnt=document.getElementById('hd-count'), bar=document.querySelector('.hd-tools');
+  var STEP=__STEP__, st={f:'all', s:'pop', n:STEP};
+  function match(c){ return st.f==='all' || (st.f==='gb' ? c.dataset.gb==='1' : c.dataset.g===st.f); }
+  function key(c){ return st.s==='low' ? +c.dataset.p : st.s==='high' ? -c.dataset.p : +c.dataset.o; }
+  function render(){
+    var m=cards.filter(match).sort(function(a,b){ return key(a)-key(b); });
+    cards.forEach(function(c){ c.hidden=true; });
+    m.forEach(function(c,i){ list.appendChild(c); c.hidden = i>=st.n; });
+    cnt.textContent = m.length+'개 상품';
+    var left=m.length-st.n; more.hidden = left<=0;
+    if(left>0) more.textContent='상품 더 보기 (남은 '+left+'개) ↓';
+    fBtns.forEach(function(b){ var on=b.dataset.f===st.f; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+    sBtns.forEach(function(b){ var on=b.dataset.s===st.s; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
   }
-  btns.forEach(function(b){ b.addEventListener('click',function(e){
-    e.preventDefault(); var id=b.getAttribute('href').slice(1); if(id==='all') id='';
-    show(id); history.replaceState(null,'',id?'#'+id:location.pathname); window.scrollTo(0,bar.offsetTop-8);
-  }); });
-  var h=location.hash.slice(1); show(secs.some(function(g){return g.id===h;})?h:'');
+  function top(){ window.scrollTo(0, bar.offsetTop-8); }
+  fBtns.forEach(function(b){ b.addEventListener('click',function(e){ e.preventDefault();
+    st.f=b.dataset.f; st.n=STEP; render(); top();
+    history.replaceState(null,'', st.f==='all' ? location.pathname : '#g-'+st.f); }); });
+  sBtns.forEach(function(b){ b.addEventListener('click',function(e){ e.preventDefault();
+    st.s=b.dataset.s; st.n=STEP; render(); top(); }); });
+  more.addEventListener('click',function(){ st.n+=STEP; render(); });
+  var h=location.hash.replace('#g-','');
+  if(fBtns.some(function(b){ return b.dataset.f===h; })) st.f=h;
+  render();
 })();
-</script>"""
+</script>""".replace("__STEP__", str(PAGE_STEP))
 
 
 def stamp(now):
@@ -123,11 +157,29 @@ def today_text(now):
     return f"{now.year}년 {now.month}월 {now.day}일 ({'월화수목금토일'[now.weekday()]})"
 
 
+def _ok(st, body):
+    return st == 200 and isinstance(body, dict) and str(body.get("rCode")) == "0"
+
+
 def fetch():
+    """골드박스 먼저, 그다음 카테고리 인기 상품. 실패한 곳은 건너뛰고 기록한다."""
+    items, errs = [], []
     st, body = C.goldbox(limit=100, sub_id=SUB_ID)
-    if st != 200 or not isinstance(body, dict) or str(body.get("rCode")) != "0":
-        raise RuntimeError(f"골드박스 조회 실패: HTTP {st} {str(body)[:200]}")
-    return body.get("data") or []
+    if _ok(st, body):
+        items += [dict(it, _src="goldbox") for it in body.get("data") or []]
+    else:
+        errs.append(f"골드박스 HTTP {st}")
+    for cid in CATEGORY_IDS:
+        try:
+            st, body = C.best_category(cid, limit=PER_CATEGORY, sub_id=SUB_ID)
+        except Exception as ex:  # noqa: BLE001
+            st, body = 0, {"err": str(ex)}
+        if _ok(st, body):
+            items += [dict(it, _src="best") for it in body.get("data") or []]
+        else:
+            errs.append(f"카테고리 {cid} HTTP {st}")
+        time.sleep(0.2)
+    return items, errs
 
 
 def select(items):
@@ -145,19 +197,16 @@ def select(items):
             why = "정보 누락"
         elif price <= 0:
             why = "가격 없음"
-        elif price > PRICE_CAP:
-            why = f"{PRICE_CAP:,}원 초과"
-        elif cat not in GROUP_BY_CAT:
-            why = f"대상 외 카테고리({cat})"
         elif pid in seen:
             why = "중복"
         if why:
-            skipped.append((name or "(이름 없음)", why))
+            if why != "중복":
+                skipped.append((name or "(이름 없음)", why))
             continue
         seen.add(pid)
         picks.append(dict(name=name, price=price, url=url, img=img, cat=cat,
-                          group=GROUP_BY_CAT[cat], rocket=bool(it.get("isRocket")),
-                          free=bool(it.get("isFreeShipping"))))
+                          group=GROUP_BY_CAT.get(cat, ETC), src=it["_src"], order=len(picks),
+                          rocket=bool(it.get("isRocket")), free=bool(it.get("isFreeShipping"))))
     return picks, skipped
 
 
@@ -176,15 +225,22 @@ def fallback_link():
 
 
 def card(p, st):
-    ship = "🚀 로켓배송" if p["rocket"] else "📦 일반배송"
-    ship += " · 무료배송" if p["free"] else " · 배송비는 쿠팡에서 확인"
+    g, gb = p["group"], p["src"] == "goldbox"
+    if g[0] == "travel":
+        ship = "🎫 이용권 · 사용 조건은 쿠팡에서 확인"
+    else:
+        ship = ("🚀 로켓배송" if p["rocket"] else "📦 일반배송") + \
+               (" · 무료배송" if p["free"] else " · 배송비는 쿠팡에서 확인")
+    src = ('<span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span>' if gb
+           else f'<span class="ic">⭐</span><span>쿠팡 {E(g[2])} 인기 상품</span>')
+    gbtag = '<span class="gbtag">🔥 골드박스</span>' if gb else ""
     return f"""
-    <div class="card ad">
-      <div class="tagrow"><span class="where">{E(p['group'][2])}</span><span class="adtag">광고</span></div>
+    <div class="card ad" data-g="{g[0]}" data-p="{p['price']}" data-o="{p['order']}" data-gb="{1 if gb else 0}">
+      <div class="tagrow"><span class="where">{E(g[2])}</span><span class="adtag">광고</span>{gbtag}</div>
       <img class="hd-img" src="{E(p['img'])}" alt="{E(p['name'])}" loading="lazy">
       <div class="what">{E(p['name'])}</div>
       <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>{p['price']:,}원</b> <small>({E(st)} 확인)</small></span></div>
-      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how">{src}</div>
       <div class="how"><span class="ic">🚚</span><span>{ship}</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
       <a class="btn" href="{E(p['url'])}" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
@@ -204,7 +260,7 @@ def fallback_card(url, affiliate):
 
 
 def main_picks(picks):
-    """메인 대표 상품 — 되도록 서로 다른 카테고리에서 하나씩 (골드박스 순위 순)."""
+    """메인 대표 상품 — 되도록 서로 다른 카테고리에서 하나씩 (골드박스 → 인기 순)."""
     out, used = [], set()
     for p in picks:
         if p["group"][0] not in used:
@@ -225,9 +281,20 @@ def group_counts(picks):
             if any(p["group"] is g for p in picks)]
 
 
+def filters(picks):
+    """(id, 버튼 글자) — 전체, 골드박스 특가, 카테고리들"""
+    out = [("all", f"전체 {len(picks)}")]
+    n_gb = sum(1 for p in picks if p["src"] == "goldbox")
+    if n_gb:
+        out.append(("gb", f"🔥 골드박스 특가 {n_gb}"))
+    out += [(g[0], f"{g[1]} {n}") for g, n in group_counts(picks)]
+    return out
+
+
 def main_block(picks, st, fb):
     cards = "".join(card(p, st) for p in main_picks(picks)) if picks else fb
-    cats = "".join(f'\n      <a href="hotdeal.html#g-{g[0]}">{g[1]} {n}</a>' for g, n in group_counts(picks))
+    chips = [f for f in filters(picks) if f[0] != "all"][:MAIN_CHIPS]
+    cats = "".join(f'\n      <a href="hotdeal.html#g-{fid}">{E(label)}</a>' for fid, label in chips)
     more = (f'\n    <div class="hd-cats"><b>카테고리별로 보기</b>{cats}\n    </div>'
             f'\n    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 ({len(picks)}개) '
             f'<span class="arr">→</span></a>') if picks else ""
@@ -239,7 +306,7 @@ def main_block(picks, st, fb):
       <span class="cat-emoji">🔥</span>
       <div>
         <div class="cat-title">오늘의 핫딜</div>
-        <div class="cat-note">쿠팡 골드박스 상품 · 제휴 링크 · {E(st)} 기준</div>
+        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · {E(st)} 기준</div>
       </div>
     </div>{NOTICE}{cards}{more}
   </section>
@@ -274,14 +341,25 @@ def apply_index(src, block):
 def build_page(index_src, picks, st, fb, now):
     head = index_src[:index_src.index("</head>")]
     head = re.sub(r"<title>.*?</title>", "<title>오늘의 핫딜 · 돌봄플러스 혜택존</title>", head, count=1, flags=re.S)
-    counts = group_counts(picks)
-    buttons = [f'    <a href="#all" class="on" aria-pressed="true">전체 {len(picks)}</a>'] + [
-        f'    <a href="#g-{g[0]}" aria-pressed="false">{g[1]} {n}</a>' for g, n in counts]
-    groups = "".join(
-        f'\n  <section class="hd-sec" id="g-{g[0]}">\n  <div class="hd-group">{g[1]} <small>{n}개</small></div>'
-        + "".join(card(p, st) for p in picks if p["group"] is g) + "\n  </section>"
-        for g, n in counts) if picks else fb
-    toc_html = ('\n  <nav class="hd-filter" aria-label="카테고리">\n' + "\n".join(buttons) + '\n  </nav>') if picks else ""
+    if picks:
+        fbtn = "\n".join(f'      <a href="#g-{fid}" data-f="{fid}" aria-pressed="false">{E(lb)}</a>'
+                         for fid, lb in filters(picks))
+        sbtn = "\n".join(f'      <a href="#" data-s="{sid}" aria-pressed="false">{lb}</a>'
+                         for sid, lb in (("pop", "쿠팡 인기순"), ("low", "낮은 가격순"), ("high", "높은 가격순")))
+        tools = f"""
+  <div class="hd-tools">
+    <nav class="hd-row hd-filter" aria-label="카테고리"><b>무엇을 볼까요</b>
+{fbtn}
+    </nav>
+    <nav class="hd-row hd-sort" aria-label="정렬"><b>순서</b>
+{sbtn}
+    </nav>
+    <p class="hd-count" id="hd-count">{len(picks)}개 상품</p>
+  </div>"""
+        body = ('\n  <div id="hd-list">' + "".join(card(p, st) for p in picks) + "\n  </div>"
+                '\n  <button class="hd-more" id="hd-more" type="button" hidden>상품 더 보기</button>')
+    else:
+        tools, body = "", fb
     return f"""{head}</head>
 <body>
 
@@ -290,7 +368,7 @@ def build_page(index_src, picks, st, fb, now):
     <div class="brand">💙 HUBRIZ 돌봄플러스 혜택존</div>
     <h1>🔥 오늘의 <b>핫딜</b></h1>
     <div class="date" id="today">{today_text(now)}</div>
-    <p class="hello">쿠팡 골드박스에 오른 생활·먹거리·주방 상품을 모았어요. <b>이 페이지의 상품은 모두 제휴 광고</b>입니다.</p>
+    <p class="hello">쿠팡 골드박스 특가와 카테고리별 인기 상품을 모았어요. <b>이 페이지의 상품은 모두 제휴 광고</b>입니다.</p>
   </div>
 </header>
 
@@ -298,8 +376,8 @@ def build_page(index_src, picks, st, fb, now):
 
   <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
 {NOTICE}
-  <p class="hd-stamp">쿠팡 가격 확인: {E(st)} · 가격은 수시로 바뀝니다</p>{toc_html}
-{groups}
+  <p class="hd-stamp">쿠팡 가격 확인: {E(st)} · 가격은 수시로 바뀝니다</p>{tools}
+{body}
 
   <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
 
@@ -311,7 +389,7 @@ def build_page(index_src, picks, st, fb, now):
 
 </div>
 
-{FILTER_SCRIPT}
+{LIST_SCRIPT if picks else ""}
 {DATE_SCRIPT}
 </body>
 </html>
@@ -350,11 +428,10 @@ def main():
 
     now = datetime.datetime.now(KST)
     st = stamp(now)
-    err = None
     try:
-        items = fetch()
+        items, errs = fetch()
     except Exception as ex:  # noqa: BLE001
-        items, err = [], str(ex)
+        items, errs = [], [str(ex)]
     picks, skipped = select(items)
     if a.force_fallback:
         picks = []
@@ -370,15 +447,14 @@ def main():
     validate(old, new, page)
 
     print(f"쿠팡 가격 확인 시각: {st}")
-    if err:
-        print(f"⚠️ {err}")
-    print(f"골드박스 {len(items)}개 → 싣는 상품 {len(picks)}개 · 뺀 상품 {len(skipped)}개")
-    for g in GROUPS:
-        n = sum(1 for p in picks if p["group"] is g)
-        if n:
-            print(f"  {g[1]} {n}개")
+    for e in errs:
+        print(f"⚠️ {e}")
+    n_gb = sum(1 for p in picks if p["src"] == "goldbox")
+    print(f"받은 상품 {len(items)}개 → 싣는 상품 {len(picks)}개 (골드박스 {n_gb} · 카테고리 인기 {len(picks) - n_gb}) · 뺀 상품 {len(skipped)}개")
+    print("  " + " · ".join(f"{g[1]} {n}" for g, n in group_counts(picks)))
     if picks:
         print("메인 대표 3개:", " / ".join(f"[{p['group'][2]}] {p['name'][:16]} {p['price']:,}원" for p in main_picks(picks)))
+        print(f"가격 범위: {min(p['price'] for p in picks):,}원 ~ {max(p['price'] for p in picks):,}원")
     else:
         print(f"상품 0개 → 골드박스 바로가기 카드 ({'제휴 링크' if fb_aff else '일반 링크 · 수수료 없음'})")
     for name, why in skipped:
