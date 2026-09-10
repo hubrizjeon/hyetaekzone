@@ -61,3 +61,10 @@ def search(keyword, limit=10, sub_id=None):
     q = urllib.parse.urlencode({k: v for k, v in
         {"keyword": keyword, "limit": limit, "subId": sub_id}.items() if v is not None})
     return call("GET", f"{BASE}/products/search", q)
+
+def deeplink(urls, sub_id=None):
+    """쿠팡 주소를 제휴 링크로 바꾼다. data: [{originalUrl, shortenUrl, landingUrl}]"""
+    body = {"coupangUrls": list(urls)}
+    if sub_id:
+        body["subId"] = sub_id
+    return call("POST", f"{BASE}/deeplink", "", body)

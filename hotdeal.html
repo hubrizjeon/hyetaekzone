@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>오늘의 핫딜 · 돌봄플러스 혜택존</title>
+<style>
+  :root{
+    color-scheme:light;
+    --bg:#ffffff; --bg2:#fff;
+    --card:#ffffff; --line:#d8ccbb;
+    --txt:#241c12; --sub:#5f5648; --mut:#8a7f6d;
+    --brand:#e8622a; --brand-d:#c94e1c;
+    --gov:#2563eb; --health:#16a34a; --family:#db2777;
+    --shop:#d97706; --beauty:#9333ea; --cafe:#0891b2;
+    --new:#dc2626; --new-d:#991b1b;
+    --badge-ok:#15803d; --badge-ok-bg:#dcfce7;
+    --badge-warn:#b91c1c; --badge-warn-bg:#fee2e2;
+    --badge-info:#1d4ed8; --badge-info-bg:#dbeafe;
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#1a140d; --bg2:#241b12;
+    --card:#241b12; --line:#3a2c1d;
+    --txt:#f5ede2; --sub:#c9bdac; --mut:#9a8b76;
+    --badge-ok:#4ade80; --badge-ok-bg:#14321f;
+    --badge-warn:#fca5a5; --badge-warn-bg:#3a1616;
+    --badge-info:#93c5fd; --badge-info-bg:#152a45;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--txt);
+    font-family:'Apple SD Gothic Neo','Malgun Gothic',system-ui,-apple-system,sans-serif;
+    font-size:18px;line-height:1.65;padding:0 0 60px;letter-spacing:-.2px}
+  .wrap{max-width:720px;margin:0 auto;padding:0 16px}
+  header{text-align:center;padding:30px 16px 26px;background:linear-gradient(180deg,#fff5ee,#ffffff)}
+  :root[data-theme="dark"] header{background:linear-gradient(180deg,#2c2013,#1a140d)}
+  .brand{display:inline-block;background:var(--brand);color:#fff;font-weight:800;
+    font-size:16px;padding:7px 18px;border-radius:999px;margin-bottom:14px}
+  h1{font-size:30px;font-weight:900;line-height:1.3}
+  h1 b{color:var(--brand)}
+  .date{margin-top:12px;font-size:18px;color:var(--sub);font-weight:700}
+  .hello{margin:16px auto 0;max-width:600px;font-size:18px;color:var(--sub)}
+  .toc{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:24px 0 6px}
+  .toc a{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--line);
+    color:var(--txt);text-decoration:none;font-weight:800;font-size:16px;padding:11px 16px;border-radius:14px}
+  .toc a:active{background:#fff0e4}
+  .toc a.hot{border-color:var(--new);color:var(--new)}
+  section{margin-top:34px;scroll-margin-top:14px}
+  .cat-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .cat-emoji{font-size:34px;line-height:1}
+  .cat-title{font-size:24px;font-weight:900}
+  .cat-note{font-size:15px;color:var(--mut);margin-top:2px;font-weight:600}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:20px;
+    padding:20px;margin-bottom:16px;box-shadow:0 2px 14px #00000016}
+  .tagrow{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .where{font-size:16px;font-weight:900;color:#fff;padding:5px 13px;border-radius:10px;background:var(--brand)}
+  .g .where{background:var(--gov)} .h .where{background:var(--health)}
+  .f .where{background:var(--family)} .s .where{background:var(--shop)}
+  .b .where{background:var(--beauty)} .c .where{background:var(--cafe)}
+  .nw .where{background:var(--new)}
+  .newtag{font-size:14px;font-weight:900;color:#fff;background:var(--new);padding:4px 10px;border-radius:8px}
+  .what{font-size:23px;font-weight:900;line-height:1.35;margin-bottom:12px;color:var(--txt)}
+  .what .hi{color:var(--brand-d);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:3px}
+  :root[data-theme="dark"] .what .hi{color:#ff8a5c}
+  .how{display:flex;gap:9px;font-size:17.5px;color:var(--sub);margin-bottom:8px;align-items:flex-start}
+  .how .ic{flex:0 0 auto;font-size:19px}
+  .how b{color:var(--txt)}
+  .badge{display:inline-block;font-size:15.5px;font-weight:800;padding:6px 13px;border-radius:10px;margin-top:6px}
+  .badge.ok{background:var(--badge-ok-bg);color:var(--badge-ok)}
+  .badge.warn{background:var(--badge-warn-bg);color:var(--badge-warn)}
+  .badge.info{background:var(--badge-info-bg);color:var(--badge-info)}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;
+    width:100%;background:var(--brand);color:#fff;text-decoration:none;
+    font-size:20px;font-weight:900;padding:16px;border-radius:15px;
+    box-shadow:0 4px 0 var(--brand-d);transition:.05s}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--brand-d)}
+  .btn:focus-visible{outline:3px solid #000;outline-offset:2px}
+  .g .btn{background:var(--gov);box-shadow:0 4px 0 #1e40af}
+  .h .btn{background:var(--health);box-shadow:0 4px 0 #15803d}
+  .f .btn{background:var(--family);box-shadow:0 4px 0 #9d174d}
+  .s .btn{background:var(--shop);box-shadow:0 4px 0 #b45309}
+  .b .btn{background:var(--beauty);box-shadow:0 4px 0 #6b21a8}
+  .c .btn{background:var(--cafe);box-shadow:0 4px 0 #0e7490}
+  .nw .btn{background:var(--new);box-shadow:0 4px 0 var(--new-d)}
+  .btn .arr{font-size:22px}
+  #new{background:#fff5f5;border:3px solid #fecaca;border-radius:22px;padding:20px 18px 8px;margin-top:26px}
+  :root[data-theme="dark"] #new{background:#2a1414;border-color:#5a2020}
+  .tips{margin-top:40px;background:#fff7ed;border:2px solid #fed7aa;border-radius:20px;padding:22px}
+  :root[data-theme="dark"] .tips{background:#2c2013;border-color:#5a3f22}
+  .tips h2{font-size:22px;font-weight:900;margin-bottom:14px;color:var(--brand-d)}
+  :root[data-theme="dark"] .tips h2{color:#ff8a5c}
+  .tip{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid #fde3c6;font-size:18px;color:var(--sub)}
+  :root[data-theme="dark"] .tip{border-color:#4a3620}
+  .tip:last-child{border:0}
+  .tip .n{flex:0 0 36px;height:36px;background:var(--brand);color:#fff;font-weight:900;
+    border-radius:11px;display:grid;place-items:center;font-size:19px}
+  .tip b{color:var(--txt)}
+  .sources{margin-top:26px;font-size:14px;color:var(--mut);line-height:1.9}
+  .sources h3{font-size:16px;color:var(--sub);margin-bottom:8px;font-weight:800}
+  .sources a{color:var(--mut)}
+  footer{margin-top:26px;text-align:center;font-size:14px;color:var(--mut);line-height:1.7}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+  /* HOTDEAL-CSS:START */
+  .hd-rule{border:0;border-top:6px solid var(--line);margin:52px 0 0}
+  .hd-rule-label{text-align:center;margin-top:-16px}
+  .hd-rule-label span{background:var(--bg);color:var(--mut);font-size:15px;font-weight:800;padding:0 12px}
+  #hotdeal{margin-top:24px}
+  .hd-notice{background:#f7f5f2;border:2px solid var(--line);border-radius:16px;
+    padding:16px 18px;font-size:18px;color:var(--sub);line-height:1.7;margin-bottom:16px}
+  .hd-notice b{color:var(--txt)}
+  :root[data-theme="dark"] .hd-notice{background:#241b12}
+  .hd-group{font-size:20px;font-weight:900;margin:26px 0 12px;scroll-margin-top:14px}
+  .card.ad{border:2px dashed #e5b9c4;box-shadow:none}
+  .ad .where{background:#57534e}
+  .adtag{font-size:14px;font-weight:900;color:#fff;background:#9ca3af;padding:4px 10px;border-radius:8px}
+  .hd-img{display:block;width:100%;max-height:240px;object-fit:contain;background:#fff;border-radius:12px;margin:2px 0 12px}
+  .ad .what{font-size:21px}
+  .ad .how small{font-size:15px;color:var(--mut)}
+  .ad .btn{background:#e11d48;box-shadow:0 4px 0 #9f1239}
+  .hd-more{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;width:100%;
+    border:3px solid #e11d48;color:#e11d48;background:var(--card);text-decoration:none;
+    font-size:20px;font-weight:900;padding:15px;border-radius:15px}
+  .hd-back{display:inline-block;margin:18px 0 8px;font-size:18px;font-weight:800;color:var(--sub);text-decoration:none}
+  .hd-stamp{font-size:15px;color:var(--mut);margin:0 0 4px}
+  /* HOTDEAL-CSS:END */
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">💙 HUBRIZ 돌봄플러스 혜택존</div>
+    <h1>🔥 오늘의 <b>핫딜</b></h1>
+    <div class="date" id="today">2026년 9월 10일 (목)</div>
+    <p class="hello">쿠팡 골드박스에 오른 생활·먹거리·주방 상품을 모았어요. <b>이 페이지의 상품은 모두 제휴 광고</b>입니다.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
+
+    <div class="hd-notice">
+      <b>이 영역은 제휴 링크입니다.</b><br>
+      이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.<br>
+      구매하셔도 여러분이 내시는 가격은 같습니다.<br>
+      가격·할인율은 수시로 바뀌니 쿠팡에서 최종 가격을 확인해 주세요.
+    </div>
+  <p class="hd-stamp">쿠팡 가격 확인: 9월 10일 오후 10:06 · 가격은 수시로 바뀝니다</p>
+  <div class="toc">
+    <a href="#g-life">🧻 생활용품</a>
+    <a href="#g-food">🍚 먹거리</a>
+    <a href="#g-kitchen">🍳 주방용품</a>
+    <a href="#g-beauty">💄 뷰티</a>
+    <a href="#g-home">🛏️ 침구·인테리어</a>
+  </div>
+
+  <div class="hd-group" id="g-life">🧻 생활용품</div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image12.coupangcdn.com/image/retail/images/101541717288379-1e216573-e4d2-492f-af77-61c51d2f198b.jpg" alt="코멧 순백 3겹 라벤더 바닐라 롤화장지" loading="lazy">
+      <div class="what">코멧 순백 3겹 라벤더 바닐라 롤화장지</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>21,990원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=261192458&amp;itemId=7633145557&amp;vendorItemId=74924265429&amp;traceid=V0-143-5875e3f7a89a609b&amp;pt=0&amp;slot=1" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img3c.coupangcdn.com/image/retail/images/149670249588034-59dbf49c-75e3-4135-bf0b-f1be386b07ba.jpg" alt="페브리즈 항균플러스 섬유탈취제 깨끗한향 본품" loading="lazy">
+      <div class="what">페브리즈 항균플러스 섬유탈취제 깨끗한향 본품</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>16,440원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7677851491&amp;itemId=20092096381&amp;vendorItemId=87020741011&amp;traceid=V0-143-3a51046d259b00c0&amp;pt=0&amp;slot=3" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img2a.coupangcdn.com/image/vendor_inventory/ce11/6f902faf32aec4d44f0a72315eb1c5c33e62af40ca3795f0c9218b922231.jpg" alt="허브크린 오물분해제 하수구 배수구 세정제 머리카락 분해 제거 막힘 해결" loading="lazy">
+      <div class="what">허브크린 오물분해제 하수구 배수구 세정제 머리카락 분해 제거 막힘 해결</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>11,200원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7396118705&amp;itemId=19132690374&amp;vendorItemId=4146246921&amp;traceid=V0-143-302a3c4874a1b6d5&amp;pt=0&amp;slot=9" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image2.coupangcdn.com/image/retail/images/2026/05/14/17/5/568ed4e0-bcce-4348-bc39-45873b05e489.jpg" alt="퍼실 디스크 캡슐세제 라벤더" loading="lazy">
+      <div class="what">퍼실 디스크 캡슐세제 라벤더</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>16,000원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8017545584&amp;itemId=22394137594&amp;vendorItemId=95431722464&amp;traceid=V0-143-6c9bea62c665f44c&amp;pt=0&amp;slot=10" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img2a.coupangcdn.com/image/retail/images/2026/05/06/11/0/4a0931ca-7ebf-4f3d-9a67-4cc5a3500732.jpg" alt="피지 모락셀라 실내건조 섬유유연제 뽀송한 코튼향" loading="lazy">
+      <div class="what">피지 모락셀라 실내건조 섬유유연제 뽀송한 코튼향</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>14,950원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=9531514933&amp;itemId=28425125257&amp;vendorItemId=95376106284&amp;traceid=V0-143-47aa99bcba3f2068&amp;pt=0&amp;slot=16" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image10.coupangcdn.com/image/1025_amir_coupang_oct_80k/ee35/bf307d26d8cd3d9730e1b61223efa0a30bc752aae5b8c450da2259adc664.jpg" alt="샤바스 부드러운 플랫 물빠짐 욕실화 2p" loading="lazy">
+      <div class="what">샤바스 부드러운 플랫 물빠짐 욕실화 2p</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>18,290원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7695015309&amp;itemId=20587215149&amp;vendorItemId=87662138732&amp;traceid=V0-143-0fd8474bc447085c&amp;pt=0&amp;slot=20" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+  <div class="hd-group" id="g-food">🍚 먹거리</div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img4c.coupangcdn.com/image/retail/images/2025/11/07/12/0/b7a27492-ba9d-4fbd-817b-938919761021.png" alt="펩시 제로슈거 라임향 제로카페인 탄산음료" loading="lazy">
+      <div class="what">펩시 제로슈거 라임향 제로카페인 탄산음료</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>15,500원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8680308800&amp;itemId=26040599716&amp;vendorItemId=94010368737&amp;traceid=V0-143-091e5f5b0b1cdbc9&amp;pt=0&amp;slot=2" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img2c.coupangcdn.com/image/vendor_inventory/image_audit/prod/cf46c801-2786-4849-81cc-1ae8d976f682_fixing_v2.png" alt="광천김 소문난 도시락김 30봉" loading="lazy">
+      <div class="what">광천김 소문난 도시락김 30봉</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>15,900원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=4749001613&amp;itemId=6041475702&amp;vendorItemId=73338894339&amp;traceid=V0-143-4918268ce5d3c386&amp;pt=0&amp;slot=6" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img3c.coupangcdn.com/image/retail/images/559330232557735-af4785b7-d2d4-49e3-b0c7-551f9e0689ee.jpg" alt="곰곰 소중한 우리쌀 현미밥" loading="lazy">
+      <div class="what">곰곰 소중한 우리쌀 현미밥</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>23,990원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=1519292740&amp;itemId=2607030364&amp;vendorItemId=70598152745&amp;traceid=V0-143-288bab518f172e35&amp;pt=0&amp;slot=14" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image4.coupangcdn.com/image/retail/images/2250923684531220-b8e6e502-f3ea-431c-aa28-959279b5b2a2.jpg" alt="[로켓프레시] 돌돌말이 대패삼겹살 바로구이 (냉동)" loading="lazy">
+      <div class="what">[로켓프레시] 돌돌말이 대패삼겹살 바로구이 (냉동)</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>8,990원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8424867137&amp;itemId=24372873946&amp;vendorItemId=91388063062&amp;traceid=V0-143-4d4962554609f8f0&amp;pt=0&amp;slot=17" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img5a.coupangcdn.com/image/vendor_inventory/49f9/74d9c746d407351a18e1f4627dbd303a8dfd4d7547b91663c3b93f562bd2.jpg" alt="해태htb 갈배사이다 제로" loading="lazy">
+      <div class="what">해태htb 갈배사이다 제로</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>12,800원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7604723347&amp;itemId=20126093307&amp;vendorItemId=86918028403&amp;traceid=V0-143-0ebb199c680ab263&amp;pt=0&amp;slot=18" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image14.coupangcdn.com/image/retail/images/909873949694617-3cb02f98-e0f2-4009-9afa-d82f78bedc09.jpg" alt="바다온 포항시 인증 구룡포건조 원양산 반건조 오징어 5미 (냉동)" loading="lazy">
+      <div class="what">바다온 포항시 인증 구룡포건조 원양산 반건조 오징어 5미 (냉동)</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>15,890원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=2321846798&amp;itemId=4010059324&amp;vendorItemId=71994279757&amp;traceid=V0-143-f942d0c800328bc3&amp;pt=0&amp;slot=19" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image13.coupangcdn.com/image/retail/images/181501163829136-f21d322b-3bc4-442c-adaa-e0606a707544.jpg" alt="속초에서 만든 입술 백명란젓갈" loading="lazy">
+      <div class="what">속초에서 만든 입술 백명란젓갈</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>29,800원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=6131362877&amp;itemId=11694696243&amp;vendorItemId=78969011317&amp;traceid=V0-143-27804d4eef170eea&amp;pt=0&amp;slot=23" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+  <div class="hd-group" id="g-kitchen">🍳 주방용품</div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">주방용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img4c.coupangcdn.com/image/retail/images/13495700626159-c1d71c09-f888-4c75-b552-049aaf7bf85e.png" alt="포트메리온 보타닉가든 테라스 딥볼 12cm 3종 세트" loading="lazy">
+      <div class="what">포트메리온 보타닉가든 테라스 딥볼 12cm 3종 세트</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>21,900원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=6855883657&amp;itemId=16349829920&amp;vendorItemId=83541580742&amp;traceid=V0-143-1e7d898defb44116&amp;pt=0&amp;slot=5" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">주방용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image7.coupangcdn.com/image/retail/images/2025/05/07/14/2/1af0c043-bc37-48a8-a476-f1e78fe67391.jpg" alt="테팔 인덕션 티타늄 1X 데일리 컴포트 볶음팬" loading="lazy">
+      <div class="what">테팔 인덕션 티타늄 1X 데일리 컴포트 볶음팬</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>44,900원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8837896942&amp;itemId=25466871539&amp;vendorItemId=92459408589&amp;traceid=V0-143-12d05df2f5aad4e8&amp;pt=0&amp;slot=12" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+  <div class="hd-group" id="g-beauty">💄 뷰티</div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">뷰티</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image6.coupangcdn.com/image/retail/images/169267057395235-7779b097-cd74-4c07-9eee-00f9b4401c13.jpg" alt="롬앤 제로 매트 립스틱" loading="lazy">
+      <div class="what">롬앤 제로 매트 립스틱</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>7,530원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=1814412512&amp;itemId=18061774536&amp;vendorItemId=71075876955&amp;traceid=V0-143-93acc2784e14c46a&amp;pt=0&amp;slot=7" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">뷰티</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image7.coupangcdn.com/image/retail/images/721466810230422-d8e2c2ef-cceb-4f49-bd3c-e902634b65be.jpg" alt="해피바스 오리지널 컬렉션 바디워시 자몽향" loading="lazy">
+      <div class="what">해피바스 오리지널 컬렉션 바디워시 자몽향</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>8,090원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=6511888487&amp;itemId=14387059997&amp;vendorItemId=81631343027&amp;traceid=V0-143-8079f1998b4fac33&amp;pt=0&amp;slot=24" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+  <div class="hd-group" id="g-home">🛏️ 침구·인테리어</div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">침구·인테리어</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image9.coupangcdn.com/image/retail/images/359802114433440-2dc8188b-89f0-4483-9b08-034b640a3eec.jpg" alt="아망떼 타임리스 60수 고밀도 면아사 피그먼트 침대패드" loading="lazy">
+      <div class="what">아망떼 타임리스 60수 고밀도 면아사 피그먼트 침대패드</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>32,720원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7455569260&amp;itemId=19420458188&amp;vendorItemId=86531971183&amp;traceid=V0-143-a45545fab91fdd88&amp;pt=0&amp;slot=4" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+
+  <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
+
+  <footer>
+    HUBRIZ 돌봄플러스 혜택존 · 오늘의 핫딜<br>
+    이 페이지의 모든 상품 링크는 쿠팡 파트너스 제휴 링크입니다.<br>
+    ※ 가격·배송 조건은 수시로 바뀝니다. 구매 전 쿠팡에서 최종 확인해 주세요.
+  </footer>
+
+</div>
+
+<script>(function(){var d=new Date(),D=['일','월','화','수','목','금','토'];var e=document.getElementById('today');if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+D[d.getDay()]+')';})();</script>
+</body>
+</html>

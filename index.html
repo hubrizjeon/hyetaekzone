@@ -101,6 +101,29 @@
   .sources a{color:var(--mut)}
   footer{margin-top:26px;text-align:center;font-size:14px;color:var(--mut);line-height:1.7}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+  /* HOTDEAL-CSS:START */
+  .hd-rule{border:0;border-top:6px solid var(--line);margin:52px 0 0}
+  .hd-rule-label{text-align:center;margin-top:-16px}
+  .hd-rule-label span{background:var(--bg);color:var(--mut);font-size:15px;font-weight:800;padding:0 12px}
+  #hotdeal{margin-top:24px}
+  .hd-notice{background:#f7f5f2;border:2px solid var(--line);border-radius:16px;
+    padding:16px 18px;font-size:18px;color:var(--sub);line-height:1.7;margin-bottom:16px}
+  .hd-notice b{color:var(--txt)}
+  :root[data-theme="dark"] .hd-notice{background:#241b12}
+  .hd-group{font-size:20px;font-weight:900;margin:26px 0 12px;scroll-margin-top:14px}
+  .card.ad{border:2px dashed #e5b9c4;box-shadow:none}
+  .ad .where{background:#57534e}
+  .adtag{font-size:14px;font-weight:900;color:#fff;background:#9ca3af;padding:4px 10px;border-radius:8px}
+  .hd-img{display:block;width:100%;max-height:240px;object-fit:contain;background:#fff;border-radius:12px;margin:2px 0 12px}
+  .ad .what{font-size:21px}
+  .ad .how small{font-size:15px;color:var(--mut)}
+  .ad .btn{background:#e11d48;box-shadow:0 4px 0 #9f1239}
+  .hd-more{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;width:100%;
+    border:3px solid #e11d48;color:#e11d48;background:var(--card);text-decoration:none;
+    font-size:20px;font-weight:900;padding:15px;border-radius:15px}
+  .hd-back{display:inline-block;margin:18px 0 8px;font-size:18px;font-weight:800;color:var(--sub);text-decoration:none}
+  .hd-stamp{font-size:15px;color:var(--mut);margin:0 0 4px}
+  /* HOTDEAL-CSS:END */
 </style>
 </head>
 <body>
@@ -124,6 +147,7 @@
     <a href="#shop">🛒 장보기·생활</a>
     <a href="#beauty">💄 뷰티·옷</a>
     <a href="#cafe">☕ 커피·먹거리</a>
+    <a class="hot" href="hotdeal.html">🔥 오늘의 핫딜</a>
   </div>
 
   <section id="new">
@@ -411,6 +435,57 @@
       <a class="btn" href="https://www.yogiyo.co.kr" target="_blank" rel="noopener">요기요 열기 <span class="arr">→</span></a>
     </div>
   </section>
+
+  <!-- PARTNERS:START — scripts/hotdeal.py 가 만듭니다. 손으로 고치지 마세요 (야간 갱신도 건드리지 않음) -->
+  <hr class="hd-rule">
+  <div class="hd-rule-label"><span>여기부터는 제휴 광고입니다</span></div>
+  <section id="hotdeal">
+    <div class="cat-head">
+      <span class="cat-emoji">🔥</span>
+      <div>
+        <div class="cat-title">오늘의 핫딜</div>
+        <div class="cat-note">쿠팡 골드박스 상품 · 제휴 링크 · 9월 10일 오후 10:06 기준</div>
+      </div>
+    </div>
+    <div class="hd-notice">
+      <b>이 영역은 제휴 링크입니다.</b><br>
+      이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.<br>
+      구매하셔도 여러분이 내시는 가격은 같습니다.<br>
+      가격·할인율은 수시로 바뀌니 쿠팡에서 최종 가격을 확인해 주세요.
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://image12.coupangcdn.com/image/retail/images/101541717288379-1e216573-e4d2-492f-af77-61c51d2f198b.jpg" alt="코멧 순백 3겹 라벤더 바닐라 롤화장지" loading="lazy">
+      <div class="what">코멧 순백 3겹 라벤더 바닐라 롤화장지</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>21,990원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=261192458&amp;itemId=7633145557&amp;vendorItemId=74924265429&amp;traceid=V0-143-5875e3f7a89a609b&amp;pt=0&amp;slot=1" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img4c.coupangcdn.com/image/retail/images/2025/11/07/12/0/b7a27492-ba9d-4fbd-817b-938919761021.png" alt="펩시 제로슈거 라임향 제로카페인 탄산음료" loading="lazy">
+      <div class="what">펩시 제로슈거 라임향 제로카페인 탄산음료</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>15,500원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8680308800&amp;itemId=26040599716&amp;vendorItemId=94010368737&amp;traceid=V0-143-091e5f5b0b1cdbc9&amp;pt=0&amp;slot=2" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span></div>
+      <img class="hd-img" src="https://img3c.coupangcdn.com/image/retail/images/149670249588034-59dbf49c-75e3-4135-bf0b-f1be386b07ba.jpg" alt="페브리즈 항균플러스 섬유탈취제 깨끗한향 본품" loading="lazy">
+      <div class="what">페브리즈 항균플러스 섬유탈취제 깨끗한향 본품</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>16,440원</b> <small>(9월 10일 오후 10:06 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7677851491&amp;itemId=20092096381&amp;vendorItemId=87020741011&amp;traceid=V0-143-3a51046d259b00c0&amp;pt=0&amp;slot=3" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 (18개) <span class="arr">→</span></a>
+  </section>
+  <!-- PARTNERS:END -->
 
   <div class="tips">
     <h2>💡 오늘의 절약 꿀팁 3</h2>
