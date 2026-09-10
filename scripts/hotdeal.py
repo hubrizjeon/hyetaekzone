@@ -73,6 +73,15 @@ CSS = CSS_START + """
     font-size:20px;font-weight:900;padding:15px;border-radius:15px}
   .hd-back{display:inline-block;margin:18px 0 8px;font-size:18px;font-weight:800;color:var(--sub);text-decoration:none}
   .hd-stamp{font-size:15px;color:var(--mut);margin:0 0 4px}
+  .hd-cats{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 12px}
+  .hd-cats b{width:100%;font-size:17px;color:var(--sub)}
+  .hd-cats a,.hd-filter a{display:inline-flex;align-items:center;background:var(--card);border:2px solid var(--line);
+    color:var(--txt);text-decoration:none;font-weight:800;font-size:16px;padding:9px 13px;border-radius:13px}
+  .hd-filter{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px;padding-bottom:12px;border-bottom:2px solid var(--line)}
+  .hd-filter a.on{background:#e11d48;border-color:#e11d48;color:#fff}
+  .hd-sec{margin-top:6px}
+  .hd-sec[hidden]{display:none}
+  .hd-group small{font-size:16px;color:var(--mut);font-weight:700}
   """ + CSS_END
 
 NOTICE = """
@@ -86,6 +95,23 @@ NOTICE = """
 DATE_SCRIPT = ("<script>(function(){var d=new Date(),D=['일','월','화','수','목','금','토'];"
                "var e=document.getElementById('today');if(e)e.textContent=d.getFullYear()+'년 '+"
                "(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+D[d.getDay()]+')';})();</script>")
+
+
+FILTER_SCRIPT = """<script>
+(function(){
+  var bar=document.querySelector('.hd-filter'); if(!bar) return;
+  var btns=[].slice.call(bar.querySelectorAll('a')), secs=[].slice.call(document.querySelectorAll('.hd-sec'));
+  function show(id){
+    secs.forEach(function(g){ g.hidden = !!id && g.id!==id; });
+    btns.forEach(function(b){ var on=b.getAttribute('href')==='#'+(id||'all'); b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+  }
+  btns.forEach(function(b){ b.addEventListener('click',function(e){
+    e.preventDefault(); var id=b.getAttribute('href').slice(1); if(id==='all') id='';
+    show(id); history.replaceState(null,'',id?'#'+id:location.pathname); window.scrollTo(0,bar.offsetTop-8);
+  }); });
+  var h=location.hash.slice(1); show(secs.some(function(g){return g.id===h;})?h:'');
+})();
+</script>"""
 
 
 def stamp(now):
@@ -177,9 +203,33 @@ def fallback_card(url, affiliate):
     </div>"""
 
 
+def main_picks(picks):
+    """메인 대표 상품 — 되도록 서로 다른 카테고리에서 하나씩 (골드박스 순위 순)."""
+    out, used = [], set()
+    for p in picks:
+        if p["group"][0] not in used:
+            out.append(p)
+            used.add(p["group"][0])
+        if len(out) == MAIN_COUNT:
+            return out
+    for p in picks:
+        if len(out) == MAIN_COUNT:
+            break
+        if p not in out:
+            out.append(p)
+    return out
+
+
+def group_counts(picks):
+    return [(g, sum(1 for p in picks if p["group"] is g)) for g in GROUPS
+            if any(p["group"] is g for p in picks)]
+
+
 def main_block(picks, st, fb):
-    cards = "".join(card(p, st) for p in picks[:MAIN_COUNT]) if picks else fb
-    more = (f'\n    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 ({len(picks)}개) '
+    cards = "".join(card(p, st) for p in main_picks(picks)) if picks else fb
+    cats = "".join(f'\n      <a href="hotdeal.html#g-{g[0]}">{g[1]} {n}</a>' for g, n in group_counts(picks))
+    more = (f'\n    <div class="hd-cats"><b>카테고리별로 보기</b>{cats}\n    </div>'
+            f'\n    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 ({len(picks)}개) '
             f'<span class="arr">→</span></a>') if picks else ""
     return f"""  {P_START} — scripts/hotdeal.py 가 만듭니다. 손으로 고치지 마세요 (야간 갱신도 건드리지 않음) -->
   <hr class="hd-rule">
@@ -224,12 +274,14 @@ def apply_index(src, block):
 def build_page(index_src, picks, st, fb, now):
     head = index_src[:index_src.index("</head>")]
     head = re.sub(r"<title>.*?</title>", "<title>오늘의 핫딜 · 돌봄플러스 혜택존</title>", head, count=1, flags=re.S)
-    present = [g for g in GROUPS if any(p["group"] is g for p in picks)]
-    toc = "\n".join(f'    <a href="#g-{g[0]}">{g[1]}</a>' for g in present)
+    counts = group_counts(picks)
+    buttons = [f'    <a href="#all" class="on" aria-pressed="true">전체 {len(picks)}</a>'] + [
+        f'    <a href="#g-{g[0]}" aria-pressed="false">{g[1]} {n}</a>' for g, n in counts]
     groups = "".join(
-        f'\n  <div class="hd-group" id="g-{g[0]}">{g[1]}</div>'
-        + "".join(card(p, st) for p in picks if p["group"] is g) for g in present) if picks else fb
-    toc_html = f'\n  <div class="toc">\n{toc}\n  </div>' if picks else ""
+        f'\n  <section class="hd-sec" id="g-{g[0]}">\n  <div class="hd-group">{g[1]} <small>{n}개</small></div>'
+        + "".join(card(p, st) for p in picks if p["group"] is g) + "\n  </section>"
+        for g, n in counts) if picks else fb
+    toc_html = ('\n  <nav class="hd-filter" aria-label="카테고리">\n' + "\n".join(buttons) + '\n  </nav>') if picks else ""
     return f"""{head}</head>
 <body>
 
@@ -259,6 +311,7 @@ def build_page(index_src, picks, st, fb, now):
 
 </div>
 
+{FILTER_SCRIPT}
 {DATE_SCRIPT}
 </body>
 </html>
@@ -325,7 +378,7 @@ def main():
         if n:
             print(f"  {g[1]} {n}개")
     if picks:
-        print("메인 대표 3개:", " / ".join(f"{p['name'][:18]} {p['price']:,}원" for p in picks[:MAIN_COUNT]))
+        print("메인 대표 3개:", " / ".join(f"[{p['group'][2]}] {p['name'][:16]} {p['price']:,}원" for p in main_picks(picks)))
     else:
         print(f"상품 0개 → 골드박스 바로가기 카드 ({'제휴 링크' if fb_aff else '일반 링크 · 수수료 없음'})")
     for name, why in skipped:
