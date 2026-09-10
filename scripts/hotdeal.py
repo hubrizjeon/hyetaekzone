@@ -23,6 +23,7 @@ import argparse, datetime, html, os, pathlib, re, sys, time
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import coupang as C  # noqa: E402
+import site_kit as K  # noqa: E402  공유 미리보기·보내기·홈 화면 추가·방문 집계
 
 ROOT = HERE.parent
 INDEX = ROOT / "index.html"
@@ -339,12 +340,13 @@ def apply_index(src, block):
         if src.count(TIPS_ANCHOR) != 1:
             raise RuntimeError("꿀팁(<div class=\"tips\">) 위치를 정확히 찾지 못해 핫딜 칸을 넣지 않았습니다")
         src = src.replace(TIPS_ANCHOR, block + "\n" + TIPS_ANCHOR)
-    return src
+    return K.apply_main(src)
 
 
 def build_page(index_src, picks, st, fb, now):
     head = index_src[:index_src.index("</head>")]
     head = re.sub(r"<title>.*?</title>", "<title>오늘의 핫딜 · 돌봄플러스 혜택존</title>", head, count=1, flags=re.S)
+    head = K.page_head(head)
     if picks:
         fbtn = "\n".join(f'      <a href="#g-{fid}" data-f="{fid}" aria-pressed="false">{E(lb)}</a>'
                          for fid, lb in filters(picks))
@@ -394,14 +396,14 @@ def build_page(index_src, picks, st, fb, now):
 </div>
 
 {LIST_SCRIPT if picks else ""}
-{DATE_SCRIPT}
+{K.track_block("hotdeal")}{DATE_SCRIPT}
 </body>
 </html>
 """
 
 
 def validate(old, new, page):
-    problems = []
+    problems = K.problems(new, page)
     for label, text, n in [("PARTNERS 시작", P_START, 1), ("PARTNERS 끝", P_END, 1),
                            ("핫딜 CSS", CSS_START, 1), ("목차 칩", CHIP, 1),
                            ("꿀팁", '<div class="tips">', 1)]:

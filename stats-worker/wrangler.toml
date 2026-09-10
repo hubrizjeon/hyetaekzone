@@ -1,0 +1,11 @@
+# 혜택존 방문·클릭 집계 (개인정보 없이 날짜별 개수만)
+# 배포: cd stats-worker && <wrangler> deploy        조회: scripts/stats.sh
+name = "hyetaekzone-stats"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hyetaekzone-stats"
+database_id = "88642c4a-b3c4-4a39-9deb-3f58e9fa0b04"
