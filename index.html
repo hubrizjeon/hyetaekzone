@@ -443,5 +443,61 @@
 </div>
 
 <script>(function(){var d=new Date(),D=['일','월','화','수','목','금','토'];var e=document.getElementById('today');if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+D[d.getDay()]+')';})();</script>
+
+<script>
+/* ── 독자 반응 수집 (hz_track) ───────────────────────────────
+   ENDPOINT가 비어 있으면 브라우저 안에만 기록됩니다.
+   분석 도구를 연결하면 그때부터 우리에게 전송됩니다.        */
+(function(){
+  var ENDPOINT = '';           // ← 분석 도구 연결 시 여기에 주소 입력
+  var DAY = new Date().toISOString().slice(0,10);
+
+  function track(type, label){
+    if(!label) return;
+    try{
+      var k = 'hz_track|' + DAY + '|' + type + '|' + label;
+      localStorage.setItem(k, (parseInt(localStorage.getItem(k),10)||0) + 1);
+    }catch(e){}
+    if(!ENDPOINT) return;
+    try{
+      navigator.sendBeacon(ENDPOINT, new Blob(
+        [JSON.stringify({date:DAY, type:type, label:label})],
+        {type:'application/json'}));
+    }catch(e){}
+  }
+
+  /* 혜택 카드 버튼 — 어느 브랜드가 눌렸는지 */
+  document.querySelectorAll('.card .btn').forEach(function(a){
+    a.addEventListener('click', function(){
+      var c = a.closest('.card'), w = c && c.querySelector('.where');
+      var sec = c && c.closest('section');
+      track('card', (w ? w.textContent.trim() : '?') + (sec ? '@'+sec.id : ''));
+    });
+  });
+
+  /* 목차 — 어느 카테고리로 이동했는지 */
+  document.querySelectorAll('.toc a').forEach(function(a){
+    a.addEventListener('click', function(){ track('toc', a.textContent.trim()); });
+  });
+
+  /* 출처 링크 */
+  document.querySelectorAll('.sources a').forEach(function(a){
+    a.addEventListener('click', function(){ track('source', a.textContent.trim()); });
+  });
+
+  /* 방문 기록 */
+  track('visit', window.innerWidth < 600 ? 'mobile' : 'desktop');
+
+  /* 콘솔에서 hzStats() 로 지금까지 쌓인 값 확인 */
+  window.hzStats = function(){
+    var o = {};
+    for (var i=0;i<localStorage.length;i++){
+      var k = localStorage.key(i);
+      if (k && k.indexOf('hz_track|') === 0) o[k] = localStorage.getItem(k);
+    }
+    return o;
+  };
+})();
+</script>
 </body>
 </html>
