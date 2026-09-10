@@ -7,7 +7,7 @@
   python3 scripts/hotdeal.py --check --force-fallback   상품 0개인 날의 모습 점검
 
 원칙 (HANDOFF 7장 · 2026-09-10 대표 결정)
-- 매일 유지: 핫딜 칸과 목차 「🔥 오늘의 핫딜」은 없어지지 않는다
+- 매일 유지: 핫딜 칸과 목차 「🔥 핫딜 상품」(「🆕 새소식」 바로 옆)은 없어지지 않는다
 - 메인: 혜택 6개 카테고리 뒤 · 꿀팁 앞에 대표 3개(서로 다른 카테고리) + 카테고리 바로가기 + 「전체 보기」
 - 전용 페이지 hotdeal.html: 쿠팡파트너스 상품만. 골드박스 특가 + 전 카테고리 인기 상품
   · 필터: 전체 / 🔥 골드박스 특가 / 카테고리별    · 정렬: 쿠팡 인기순 / 낮은 가격순 / 높은 가격순
@@ -66,7 +66,8 @@ ETC = GROUPS[-1]
 
 P_START, P_END = "<!-- PARTNERS:START", "<!-- PARTNERS:END -->"
 CSS_START, CSS_END = "/* HOTDEAL-CSS:START */", "/* HOTDEAL-CSS:END */"
-CHIP = '<a class="hot" href="hotdeal.html">🔥 오늘의 핫딜</a>'
+CHIP = '<a class="hot" href="hotdeal.html">🔥 핫딜 상품</a>'   # 목차 두 번째 칸 (「🆕 새소식」 바로 옆)
+NEW_OLD, NEW_LABEL = ">🆕 오늘 새 소식<", ">🆕 새소식<"         # 대표 결정 2026-09-10
 TIPS_ANCHOR = '  <div class="tips">'
 E = lambda s: html.escape(str(s), quote=True)
 
@@ -320,10 +321,13 @@ def apply_index(src, block):
     else:
         src = src.replace("</style>", "  " + CSS + "\n</style>", 1)
 
+    # 목차: 「🆕 새소식」 바로 옆에 「🔥 핫딜 상품」. 야간 갱신이 문구·순서를 되돌려도 여기서 바로잡는다
     i = src.index('<div class="toc">')
     j = src.index("</div>", i)
-    if "hotdeal.html" not in src[i:j]:
-        src = src[:j] + "  " + CHIP + "\n  " + src[j:]
+    lines = [ln.replace(NEW_OLD, NEW_LABEL) for ln in src[i:j].split("\n") if 'href="hotdeal.html"' not in ln]
+    k = next((n for n, ln in enumerate(lines) if 'href="#new"' in ln), 0)
+    lines.insert(k + 1, "    " + CHIP)
+    src = src[:i] + "\n".join(lines) + src[j:]
 
     if P_START in src:
         s = src.rfind("\n", 0, src.index(P_START)) + 1
@@ -399,10 +403,14 @@ def build_page(index_src, picks, st, fb, now):
 def validate(old, new, page):
     problems = []
     for label, text, n in [("PARTNERS 시작", P_START, 1), ("PARTNERS 끝", P_END, 1),
-                           ("핫딜 CSS", CSS_START, 1), ("목차 칩", 'href="hotdeal.html">🔥 오늘의 핫딜', 1),
+                           ("핫딜 CSS", CSS_START, 1), ("목차 칩", CHIP, 1),
                            ("꿀팁", '<div class="tips">', 1)]:
         if new.count(text) != n:
             problems.append(f"index.html {label} {new.count(text)}곳 (정상 {n})")
+    toc = new[new.index('<div class="toc">'):]
+    toc = toc[:toc.index("</div>")]
+    if 'href="#new"' in toc and toc.index('href="#new"') > toc.index("hotdeal.html"):
+        problems.append("핫딜 칩이 새소식 앞에 있음")
     if new.index(P_START) > new.index('<div class="tips">'):
         problems.append("핫딜 칸이 꿀팁 뒤에 있음")
     if new.count("네이버") != old.count("네이버") or "네이버" in page:
