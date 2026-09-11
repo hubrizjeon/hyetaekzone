@@ -121,26 +121,23 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 
 `~/.claude/scheduled-tasks/` 에 저장된 두 개의 스케줄 작업이 돌아간다.
 
-### (A) 매일 23:04 — 혜택존 갱신
-`hyetaekzone-nightly-update`
+### (A) 매일 23:04 — 야간 갱신 (새 혜택 조사)
+`hyetaekzone-nightly-update` · 2026-09-11 지시문 교체
+1. `git pull` → 대상 날짜 결정 (18시 이후 실행이면 **내일자**) · 요일 2중 검증
+2. 오늘자 `야간 갱신 — M/D(요일)자` 커밋이 이미 있으면 **건너뜀** (다른 세션과 중복 방지)
+3. WebSearch로 조사 → NEW 섹션·혜택 카드·꿀팁·출처·푸터 날짜만 수정
+4. **보존 블록(PARTNERS, HZ-META/TOOLS/SHARE/TRACK/JS, HZ-KIT-CSS, HOTDEAL-CSS)과 목차 「🔥 핫딜 상품」 칩은 절대 수정 금지** — 수정 전후 블록이 글자 하나까지 같은지 검사
+5. `python3 scripts/expire.py --check --today {대상일}` 로 기간 지난 카드 없음 확인
+6. `update.sh "야간 갱신 — M/D(요일)자"` → 200·인코딩 검증
+7. 요약 메일은 **ceo@hubriz.io 만** (2026-09-10 대표 지시). 막히면 초안 + 알림
 
-1. bash `date`로 오늘 날짜·**한국 요일 2중 검증**
-2. `index.html` 읽어 스타일·구조 재사용 (디자인 불변, 내용·날짜만 교체)
-3. WebSearch로 혜택 재조사 (검색어에 반드시 현재 연·월 포함)
-4. 종료된 이벤트 제외 / NEW 섹션 재구성
-5. `update.sh` 로 커밋·푸시
-6. Artifact URL에도 동일 내용 재게시
-7. curl로 200·해시·인코딩 검증
-8. 메일 발송 (ceo@, supeda00@) + PushNotification
-
-### (B) 매일 08:04 — 블로그 원고 메일
-`hyetaekzone-morning-blog-mail`
-
-1. `git diff HEAD~1 HEAD -- index.html` 로 **어젯밤 실제로 추가된 카드만** 추출
-2. 신규 없으면 짧은 알림만 보내고 종료
-3. 블로그 게시글 HTML 원고 작성 (기존 사내 포맷 준수)
-4. 혜택별 `.docx` 생성 → `blog-drafts/{YYYYMMDD}/`
-5. supeda00@hubriz.io (허수빈, 마케팅) 수신 / ceo@hubriz.io 참조로 발송
+### (B) 매일 08:04 — 블로그 완성 원고 (새소식만)
+`hyetaekzone-morning-blog-mail` · 2026-09-11 재활성화
+1. `git pull` → NEW 섹션 카드 중 **`blog/ledger.json` 에 없는 글감만** (대장 규칙: 같은 key 금지, 상시 30일, 제목 14일, 전날 사진 금지)
+2. 없으면 한 줄 메일만
+3. 원문 사실 확인 → Pexels 사진(직접 보고 고름) → `blog/{YYYYMMDD}.html` (복사 버튼) + `blog/{YYYYMMDD}_word.docx`
+4. 수신 **허수빈(supeda00@) / 참조 ceo@** — 2026-09-11 대표 지시로 재개. 첨부 없이 **링크로만** (크롬 불필요)
+5. 발송 성공 후에만 `ledger.json` 에 추가
 
 > 스케줄 작업은 **Claude 앱이 켜져 있을 때만** 실행된다. 꺼져 있으면 다음 실행 시점으로 밀린다.
 
