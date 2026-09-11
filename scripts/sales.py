@@ -3,7 +3,7 @@
    실행: python3 scripts/sales.py            최근 30일
          python3 scripts/sales.py 7          최근 7일
    쿠팡 집계는 보통 하루 늦게 반영됩니다. 수수료는 구매 확정 후 정산 기준으로 바뀔 수 있습니다.
-   '혜택존' = 사이트 링크(subId hyetaekzone)로 들어온 것, '기타' = 파트너스 사이트에서 직접 만든 링크 등."""
+   '혜택존' = 사이트 링크(subId hyetaekzone), '회원 hzm…' = 로그인 회원 링크, '기타' = 파트너스 사이트에서 직접 만든 링크 등."""
 import sys, datetime, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import coupang as C
@@ -20,13 +20,15 @@ def get(name):
         raise SystemExit(f"❌ {name} 조회 실패 ({s}) {r.get('rMessage', '')}")
     return r.get("data") or []
 
-src = lambda row: "혜택존" if row.get("subId") == "hyetaekzone" else "기타"
+def src(row):
+    sid = row.get("subId") or ""
+    return "혜택존" if sid == "hyetaekzone" else f"회원 {sid}" if sid.startswith("hzm") else "기타"
 won = lambda n: f"{int(round(n)):,}원"
 d = lambda s: f"{int(s[4:6])}/{int(s[6:8])}"
 
 clicks, orders, cancels, comm = get("clicks"), get("orders"), get("cancels"), get("commission")
 print(f"📊 쿠팡파트너스 실적 {start:%-m/%-d} ~ {end:%-m/%-d} (최근 {days}일)\n")
-for who in ("혜택존", "기타"):
+for who in ["혜택존"] + sorted({src(r) for r in orders + clicks if src(r).startswith("회원")}) + ["기타"]:
     c = sum(r.get("click", 0) for r in clicks if src(r) == who)
     oids = {r["orderId"] for r in orders if src(r) == who}
     gmv = sum(r.get("gmv", 0) for r in orders if src(r) == who)

@@ -165,6 +165,49 @@
     border:2px solid var(--line);border-radius:11px;padding:7px 12px;cursor:pointer}
   .hd-smsg{font-size:18px;color:var(--sub);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 10px}
   #hd-sres[hidden]{display:none!important}
+  :root{--rw-pend:#b45309;--rw-pend-bg:#fef3c7;--rw-bar:#fffbea;--rw-bar-line:#f2d36b}
+  :root[data-theme="dark"]{--rw-pend:#fcd34d;--rw-pend-bg:#3a2a0a;--rw-bar:#2a2410;--rw-bar-line:#6b5a1a}
+  .hz-rw{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--rw-bar);border:2px solid var(--rw-bar-line);
+    border-radius:16px;padding:14px 16px;margin:0 0 14px}
+  .hz-rw[hidden]{display:none!important}
+  .hz-rw-t{flex:1 1 230px;font-size:18px;font-weight:700;color:var(--txt)}
+  .hz-rw-b{flex:none;background:#FEE500;color:#191600;font-weight:900;font-size:17px;text-decoration:none;padding:11px 16px;border-radius:12px}
+  .rw-kakao{display:flex;align-items:center;justify-content:center;gap:10px;background:#FEE500;color:rgba(0,0,0,.85);
+    font-size:21px;font-weight:900;padding:17px;border-radius:14px;text-decoration:none;margin-top:16px}
+  .rw-steps{margin:12px 0 0 22px;font-size:18px;color:var(--sub)}
+  .rw-steps li{margin:4px 0}
+  .rw-fine{font-size:15px;color:var(--mut);margin-top:12px}
+  .rw-fine a{color:inherit}
+  .rw-hello{font-size:24px;font-weight:900;margin:8px 0 0;text-wrap:balance}
+  .rw-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .rw-tile{border:2px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--card)}
+  .rw-tile small{display:block;font-size:16px;font-weight:900;color:var(--sub)}
+  .rw-tile b{display:block;font-size:30px;font-weight:900;line-height:1.3;font-variant-numeric:tabular-nums}
+  .rw-tile span{display:block;font-size:14px;color:var(--mut);line-height:1.4}
+  .rw-tile.done b{color:var(--badge-ok)}
+  .rw-tile.pend b{color:var(--rw-pend)}
+  .rw-h3{font-size:19px;font-weight:900;margin:22px 0 4px}
+  .rw-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:14px 0;border-top:2px solid var(--line)}
+  .rw-row .nm{font-size:18px;font-weight:800;line-height:1.45}
+  .rw-row .pt{font-size:20px;font-weight:900;text-align:right;font-variant-numeric:tabular-nums}
+  .rw-row .meta{font-size:15px;color:var(--sub)}
+  .rw-row .side{text-align:right}
+  .rw-row .side small{display:block;font-size:13px;color:var(--mut)}
+  .rw-row.done .pt{color:var(--badge-ok)}
+  .rw-row.pending .pt{color:var(--rw-pend)}
+  .rw-row.canceled .pt{color:var(--mut);text-decoration:line-through}
+  .rw-pill{display:inline-block;font-size:14px;font-weight:900;padding:3px 9px;border-radius:8px}
+  .rw-pill.done{background:var(--badge-ok-bg);color:var(--badge-ok)}
+  .rw-pill.pending{background:var(--rw-pend-bg);color:var(--rw-pend)}
+  .rw-pill.canceled{background:var(--badge-warn-bg);color:var(--badge-warn)}
+  .rw-empty{font-size:18px;color:var(--sub);padding:16px 0;border-top:2px solid var(--line)}
+  .rw-empty .hd-more{margin-top:12px}
+  .rw-sync{font-size:15px;color:var(--mut);margin-top:12px}
+  .rw-acts{display:flex;gap:10px;justify-content:center;margin-top:26px}
+  .rw-acts button{font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
+    border:2px solid var(--line);border-radius:11px;padding:9px 14px;cursor:pointer}
+  .rw-doc h3{font-size:19px;margin:18px 0 4px}
+  .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
   /* HZ-KIT-CSS:START */
   .hz-tools{display:flex;gap:10px;margin:14px 0 4px}
@@ -575,7 +618,7 @@
       <span class="cat-emoji">🔥</span>
       <div>
         <div class="cat-title">오늘의 핫딜</div>
-        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 11일 오후 6:56 기준</div>
+        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 11일 오후 11:49 기준</div>
       </div>
     </div>
     <div class="hd-notice">
@@ -584,17 +627,21 @@
       구매하셔도 여러분이 내시는 가격은 같습니다.<br>
       가격·할인율은 수시로 바뀌니 쿠팡에서 최종 가격을 확인해 주세요.
     </div>
+    <div class="hz-rw" id="hz-rw" hidden>
+      <div class="hz-rw-t" id="hz-rw-t">🪙 카카오로 로그인하고 사면 <b>구매금액의 1%</b>를 포인트로 모아 드려요</div>
+      <a class="hz-rw-b" id="hz-rw-b" href="my.html">카카오로 시작하기</a>
+    </div>
     <form class="hd-search" id="hd-mf" action="hotdeal.html" method="get" role="search">
       <label for="hd-mf-q">🔎 쿠팡 상품 검색</label>
       <div class="hd-sbox"><input id="hd-mf-q" name="q" type="search" maxlength="40" autocomplete="off" enterkeyhint="search"
         placeholder="예: 물티슈, 기저귀, 에어프라이어"><button type="submit">검색</button></div>
       <small>쿠팡 상품을 찾아 제휴 링크로 보여드려요 (광고)</small>
     </form>
-    <div class="card ad" data-g="food" data-p="38580" data-o="0" data-gb="1">
+    <div class="card ad" data-g="food" data-p="36480" data-o="0" data-gb="1">
       <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://image1.coupangcdn.com/image/retail/images/71399001727071-da1aa17e-b083-45de-a686-db31a5476502.jpg" alt="제주삼다수 그린 무라벨" loading="lazy">
+      <img class="hd-img" src="https://static.coupangcdn.com/image/vendor_inventory/0d47/1375fc69e6b1c4d69629a4090cab9a9c96658b163ca2833eec96553ba37d.jpg" alt="제주삼다수 그린 무라벨" loading="lazy">
       <div class="what">제주삼다수 그린 무라벨</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>38,580원</b> <small>(9월 11일 오후 6:56 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>36,480원</b> <small>(9월 11일 오후 11:49 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
@@ -602,36 +649,63 @@
     </div>
     <div class="card ad" data-g="beauty" data-p="15200" data-o="2" data-gb="1">
       <div class="tagrow"><span class="where">뷰티</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://image7.coupangcdn.com/image/retail/images/1392179407475549-2694d790-78a1-43b7-ba28-397c36720ebf.jpg" alt="지베르니 밀착 커버 쿠션 파운데이션 본품 12g + 리필 12g 세트" loading="lazy">
+      <img class="hd-img" src="https://image1.coupangcdn.com/image/retail/images/1392179407475549-2694d790-78a1-43b7-ba28-397c36720ebf.jpg" alt="지베르니 밀착 커버 쿠션 파운데이션 본품 12g + 리필 12g 세트" loading="lazy">
       <div class="what">지베르니 밀착 커버 쿠션 파운데이션 본품 12g + 리필 12g 세트</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>15,200원</b> <small>(9월 11일 오후 6:56 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>15,200원</b> <small>(9월 11일 오후 11:49 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
       <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8059631632&amp;itemId=22635383294&amp;vendorItemId=86389750075&amp;traceid=V0-143-1f81291aa6319110&amp;pt=0&amp;slot=3" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
     </div>
-    <div class="card ad" data-g="book" data-p="17360" data-o="3" data-gb="1">
-      <div class="tagrow"><span class="where">도서</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://img5a.coupangcdn.com/image/retail/images/2142832977419295-fce8fd0c-9788-483e-8325-d1482d27ffc4.jpg" alt="멍멍, 강아지와 친구들:감각 자극 사운드북" loading="lazy">
-      <div class="what">멍멍, 강아지와 친구들:감각 자극 사운드북</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>17,360원</b> <small>(9월 11일 오후 6:56 확인)</small></span></div>
+    <div class="card ad" data-g="life" data-p="7650" data-o="3" data-gb="1">
+      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
+      <img class="hd-img" src="https://img3c.coupangcdn.com/image/vendor_inventory/a956/096607f5af4939ef5bed43db248ef9fd1dd7948c926d13650e738c2c235f.jpg" alt="맘스럽 워싱소다 탄산소다 초강력 세탁보조제 100% 탈취인증" loading="lazy">
+      <div class="what">맘스럽 워싱소다 탄산소다 초강력 세탁보조제 100% 탈취인증</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>7,650원</b> <small>(9월 11일 오후 11:49 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
-      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <div class="how"><span class="ic">🚚</span><span>📦 일반배송 · 무료배송</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=1449384786&amp;itemId=2496342857&amp;vendorItemId=70489496803&amp;traceid=V0-143-f3c9065f6b915e91&amp;pt=0&amp;slot=4" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8668207817&amp;itemId=25160820861&amp;vendorItemId=92042577605&amp;traceid=V0-143-dbbc4f6f2f1600e2&amp;pt=0&amp;slot=4" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
     </div>
     <div class="hd-cats"><b>카테고리별로 보기</b>
-      <a href="hotdeal.html#g-gb">🔥 골드박스 특가 28</a>
-      <a href="hotdeal.html#g-life">🧻 생활용품 38</a>
-      <a href="hotdeal.html#g-food">🍚 먹거리 48</a>
-      <a href="hotdeal.html#g-kitchen">🍳 주방용품 13</a>
+      <a href="hotdeal.html#g-gb">🔥 골드박스 특가 26</a>
+      <a href="hotdeal.html#g-life">🧻 생활용품 35</a>
+      <a href="hotdeal.html#g-food">🍚 먹거리 55</a>
+      <a href="hotdeal.html#g-kitchen">🍳 주방용품 11</a>
       <a href="hotdeal.html#g-beauty">💄 뷰티 23</a>
-      <a href="hotdeal.html#g-fashion">👗 패션·잡화 39</a>
-      <a href="hotdeal.html#g-home">🛏️ 가구·인테리어 8</a>
-      <a href="hotdeal.html#g-travel">✈️ 여행·레저 4</a>
+      <a href="hotdeal.html#g-fashion">👗 패션·잡화 40</a>
+      <a href="hotdeal.html#g-home">🛏️ 가구·인테리어 6</a>
+      <a href="hotdeal.html#g-travel">✈️ 여행·레저 2</a>
     </div>
     <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 (346개) <span class="arr">→</span></a>
   </section>
+  <script>
+(function(){
+  var API='https://hyetaekzone-stats.baglebagle.workers.dev', KEY='hz_rw';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+  document.addEventListener('click',function(e){
+    var a=e.target&&e.target.closest&&e.target.closest('a[href*="link.coupang.com/"]'), s=load();
+    if(a&&s&&/^hzm[0-9]+$/.test(s.sid||'')) a.href=a.href.replace(/([?&]subid=)[^&#]*/i,'$1'+s.sid);
+  },true);
+  var bar=document.getElementById('hz-rw'); if(!bar||!window.fetch) return;
+  fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){
+    if(!st.on) return; bar.hidden=false;
+    var s=load(); if(!s||!s.token) return;
+    return fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
+      if(r.status===401){ try{ localStorage.removeItem(KEY); }catch(e){} return; }
+      return r.json().then(function(d){
+        s.sid=d.subId; s.nick=d.nick; try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){}
+        var t=document.getElementById('hz-rw-t'); t.textContent='';
+        t.appendChild(document.createTextNode('🪙 '+d.nick+' 님 · 적립 예정 '));
+        var b=document.createElement('b'); b.textContent=Number(d.sums.pending).toLocaleString('ko-KR')+'P'; t.appendChild(b);
+        t.appendChild(document.createTextNode(' · 적립 완료 '));
+        var c=document.createElement('b'); c.textContent=Number(d.sums.done).toLocaleString('ko-KR')+'P'; t.appendChild(c);
+        document.getElementById('hz-rw-b').textContent='내 적립 보기';
+      });
+    });
+  }).catch(function(){});
+})();
+</script>
   <!-- PARTNERS:END -->
 
   <div class="tips">

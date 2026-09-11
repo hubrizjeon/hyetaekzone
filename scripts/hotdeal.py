@@ -117,6 +117,49 @@ CSS = CSS_START + """
     border:2px solid var(--line);border-radius:11px;padding:7px 12px;cursor:pointer}
   .hd-smsg{font-size:18px;color:var(--sub);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 10px}
   #hd-sres[hidden]{display:none!important}
+  :root{--rw-pend:#b45309;--rw-pend-bg:#fef3c7;--rw-bar:#fffbea;--rw-bar-line:#f2d36b}
+  :root[data-theme="dark"]{--rw-pend:#fcd34d;--rw-pend-bg:#3a2a0a;--rw-bar:#2a2410;--rw-bar-line:#6b5a1a}
+  .hz-rw{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--rw-bar);border:2px solid var(--rw-bar-line);
+    border-radius:16px;padding:14px 16px;margin:0 0 14px}
+  .hz-rw[hidden]{display:none!important}
+  .hz-rw-t{flex:1 1 230px;font-size:18px;font-weight:700;color:var(--txt)}
+  .hz-rw-b{flex:none;background:#FEE500;color:#191600;font-weight:900;font-size:17px;text-decoration:none;padding:11px 16px;border-radius:12px}
+  .rw-kakao{display:flex;align-items:center;justify-content:center;gap:10px;background:#FEE500;color:rgba(0,0,0,.85);
+    font-size:21px;font-weight:900;padding:17px;border-radius:14px;text-decoration:none;margin-top:16px}
+  .rw-steps{margin:12px 0 0 22px;font-size:18px;color:var(--sub)}
+  .rw-steps li{margin:4px 0}
+  .rw-fine{font-size:15px;color:var(--mut);margin-top:12px}
+  .rw-fine a{color:inherit}
+  .rw-hello{font-size:24px;font-weight:900;margin:8px 0 0;text-wrap:balance}
+  .rw-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .rw-tile{border:2px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--card)}
+  .rw-tile small{display:block;font-size:16px;font-weight:900;color:var(--sub)}
+  .rw-tile b{display:block;font-size:30px;font-weight:900;line-height:1.3;font-variant-numeric:tabular-nums}
+  .rw-tile span{display:block;font-size:14px;color:var(--mut);line-height:1.4}
+  .rw-tile.done b{color:var(--badge-ok)}
+  .rw-tile.pend b{color:var(--rw-pend)}
+  .rw-h3{font-size:19px;font-weight:900;margin:22px 0 4px}
+  .rw-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:14px 0;border-top:2px solid var(--line)}
+  .rw-row .nm{font-size:18px;font-weight:800;line-height:1.45}
+  .rw-row .pt{font-size:20px;font-weight:900;text-align:right;font-variant-numeric:tabular-nums}
+  .rw-row .meta{font-size:15px;color:var(--sub)}
+  .rw-row .side{text-align:right}
+  .rw-row .side small{display:block;font-size:13px;color:var(--mut)}
+  .rw-row.done .pt{color:var(--badge-ok)}
+  .rw-row.pending .pt{color:var(--rw-pend)}
+  .rw-row.canceled .pt{color:var(--mut);text-decoration:line-through}
+  .rw-pill{display:inline-block;font-size:14px;font-weight:900;padding:3px 9px;border-radius:8px}
+  .rw-pill.done{background:var(--badge-ok-bg);color:var(--badge-ok)}
+  .rw-pill.pending{background:var(--rw-pend-bg);color:var(--rw-pend)}
+  .rw-pill.canceled{background:var(--badge-warn-bg);color:var(--badge-warn)}
+  .rw-empty{font-size:18px;color:var(--sub);padding:16px 0;border-top:2px solid var(--line)}
+  .rw-empty .hd-more{margin-top:12px}
+  .rw-sync{font-size:15px;color:var(--mut);margin-top:12px}
+  .rw-acts{display:flex;gap:10px;justify-content:center;margin-top:26px}
+  .rw-acts button{font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
+    border:2px solid var(--line);border-radius:11px;padding:9px 14px;cursor:pointer}
+  .rw-doc h3{font-size:19px;margin:18px 0 4px}
+  .rw-doc ul{margin-left:22px;color:var(--sub)}
   """ + CSS_END
 
 NOTICE = """
@@ -130,6 +173,45 @@ NOTICE = """
 DATE_SCRIPT = ("<script>(function(){var d=new Date(),D=['일','월','화','수','목','금','토'];"
                "var e=document.getElementById('today');if(e)e.textContent=d.getFullYear()+'년 '+"
                "(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+D[d.getDay()]+')';})();</script>")
+
+import reward_pages as R  # noqa: E402  내 적립·개인정보 처리방침 페이지
+
+# 포인트 적립 안내 줄. 적립 기능이 켜져 있을 때만 보인다 (Worker /rw/status).
+REWARD_BAR = """
+    <div class="hz-rw" id="hz-rw" hidden>
+      <div class="hz-rw-t" id="hz-rw-t">🪙 카카오로 로그인하고 사면 <b>구매금액의 1%</b>를 포인트로 모아 드려요</div>
+      <a class="hz-rw-b" id="hz-rw-b" href="my.html">카카오로 시작하기</a>
+    </div>"""
+
+# 로그인한 회원이면 쿠팡 링크를 누르는 순간 이름표(subid)를 회원 것으로 바꿔 끼운다 → 쿠팡 리포트에서 회원 구매로 잡힘
+REWARD_SCRIPT = """<script>
+(function(){
+  var API='__API__', KEY='hz_rw';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+  document.addEventListener('click',function(e){
+    var a=e.target&&e.target.closest&&e.target.closest('a[href*="link.coupang.com/"]'), s=load();
+    if(a&&s&&/^hzm[0-9]+$/.test(s.sid||'')) a.href=a.href.replace(/([?&]subid=)[^&#]*/i,'$1'+s.sid);
+  },true);
+  var bar=document.getElementById('hz-rw'); if(!bar||!window.fetch) return;
+  fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){
+    if(!st.on) return; bar.hidden=false;
+    var s=load(); if(!s||!s.token) return;
+    return fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
+      if(r.status===401){ try{ localStorage.removeItem(KEY); }catch(e){} return; }
+      return r.json().then(function(d){
+        s.sid=d.subId; s.nick=d.nick; try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){}
+        var t=document.getElementById('hz-rw-t'); t.textContent='';
+        t.appendChild(document.createTextNode('🪙 '+d.nick+' 님 · 적립 예정 '));
+        var b=document.createElement('b'); b.textContent=Number(d.sums.pending).toLocaleString('ko-KR')+'P'; t.appendChild(b);
+        t.appendChild(document.createTextNode(' · 적립 완료 '));
+        var c=document.createElement('b'); c.textContent=Number(d.sums.done).toLocaleString('ko-KR')+'P'; t.appendChild(c);
+        document.getElementById('hz-rw-b').textContent='내 적립 보기';
+      });
+    });
+  }).catch(function(){});
+})();
+</script>""".replace("__API__", R.API)
+
 
 SEARCH_API = K.STATS.rsplit("/", 1)[0] + "/search"   # 쿠팡 검색 (stats-worker 의 /search, 키는 Worker 비밀값)
 
@@ -391,8 +473,9 @@ def main_block(picks, st, fb):
         <div class="cat-title">오늘의 핫딜</div>
         <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · {E(st)} 기준</div>
       </div>
-    </div>{NOTICE}{search_form('hd-mf')}{cards}{more}
+    </div>{NOTICE}{REWARD_BAR}{search_form('hd-mf')}{cards}{more}
   </section>
+  {REWARD_SCRIPT}
   {P_END}
 """
 
@@ -463,7 +546,7 @@ def build_page(index_src, picks, st, fb, now):
 
   <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
 {NOTICE}
-  <p class="hd-stamp">쿠팡 가격 확인: {E(st)} · 가격은 수시로 바뀝니다</p>{search_form('hd-sf')}
+  <p class="hd-stamp">쿠팡 가격 확인: {E(st)} · 가격은 수시로 바뀝니다</p>{REWARD_BAR}{search_form('hd-sf')}
   <section id="hd-sres" aria-live="polite" hidden></section>{tools}
 {body}
 
@@ -479,6 +562,7 @@ def build_page(index_src, picks, st, fb, now):
 
 {LIST_SCRIPT if picks else ""}
 {SEARCH_SCRIPT}
+{REWARD_SCRIPT}
 {K.track_block("hotdeal")}{DATE_SCRIPT}
 </body>
 </html>
@@ -563,7 +647,10 @@ def main():
         return 0
     write(INDEX, new)
     write(PAGE, page)
-    print("저장: index.html (핫딜 칸) · hotdeal.html")
+    my, pv = R.build(new)
+    write(ROOT / "my.html", my)
+    write(ROOT / "privacy.html", pv)
+    print("저장: index.html (핫딜 칸) · hotdeal.html · my.html · privacy.html")
     return 0
 
 

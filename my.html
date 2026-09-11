@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- HZ-META:START — scripts/site_kit.py 가 관리 -->
+<meta name="description" content="핫딜을 사면 구매금액의 1%를 포인트로 모아 드려요">
+<meta name="theme-color" content="#e8622a">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="돌봄플러스 혜택존">
+<meta property="og:title" content="내 적립 · 돌봄플러스 혜택존">
+<meta property="og:description" content="핫딜을 사면 구매금액의 1%를 포인트로 모아 드려요">
+<meta property="og:url" content="https://hubrizjeon.github.io/hyetaekzone/my.html">
+<meta property="og:image" content="https://hubrizjeon.github.io/hyetaekzone/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="혜택존">
+<!-- HZ-META:END -->
+
+<title>내 적립 · 돌봄플러스 혜택존</title>
+<style>
+  :root{
+    color-scheme:light;
+    --bg:#ffffff; --bg2:#fff;
+    --card:#ffffff; --line:#d8ccbb;
+    --txt:#241c12; --sub:#5f5648; --mut:#8a7f6d;
+    --brand:#e8622a; --brand-d:#c94e1c;
+    --gov:#2563eb; --health:#16a34a; --family:#db2777;
+    --shop:#d97706; --beauty:#9333ea; --cafe:#0891b2;
+    --new:#dc2626; --new-d:#991b1b;
+    --badge-ok:#15803d; --badge-ok-bg:#dcfce7;
+    --badge-warn:#b91c1c; --badge-warn-bg:#fee2e2;
+    --badge-info:#1d4ed8; --badge-info-bg:#dbeafe;
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#1a140d; --bg2:#241b12;
+    --card:#241b12; --line:#3a2c1d;
+    --txt:#f5ede2; --sub:#c9bdac; --mut:#9a8b76;
+    --badge-ok:#4ade80; --badge-ok-bg:#14321f;
+    --badge-warn:#fca5a5; --badge-warn-bg:#3a1616;
+    --badge-info:#93c5fd; --badge-info-bg:#152a45;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--txt);
+    font-family:'Apple SD Gothic Neo','Malgun Gothic',system-ui,-apple-system,sans-serif;
+    font-size:18px;line-height:1.65;padding:0 0 60px;letter-spacing:-.2px}
+  .wrap{max-width:720px;margin:0 auto;padding:0 16px}
+  header{text-align:center;padding:30px 16px 26px;background:linear-gradient(180deg,#fff5ee,#ffffff)}
+  :root[data-theme="dark"] header{background:linear-gradient(180deg,#2c2013,#1a140d)}
+  .brand{display:inline-block;background:var(--brand);color:#fff;font-weight:800;
+    font-size:16px;padding:7px 18px;border-radius:999px;margin-bottom:14px}
+  h1{font-size:30px;font-weight:900;line-height:1.3}
+  h1 b{color:var(--brand)}
+  .date{margin-top:12px;font-size:18px;color:var(--sub);font-weight:700}
+  .hello{margin:16px auto 0;max-width:600px;font-size:18px;color:var(--sub)}
+  .toc{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:24px 0 6px}
+  .toc a{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--line);
+    color:var(--txt);text-decoration:none;font-weight:800;font-size:16px;padding:11px 16px;border-radius:14px}
+  .toc a:active{background:#fff0e4}
+  .toc a.hot{border-color:var(--new);color:var(--new)}
+  section{margin-top:34px;scroll-margin-top:14px}
+  .cat-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .cat-emoji{font-size:34px;line-height:1}
+  .cat-title{font-size:24px;font-weight:900}
+  .cat-note{font-size:15px;color:var(--mut);margin-top:2px;font-weight:600}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:20px;
+    padding:20px;margin-bottom:16px;box-shadow:0 2px 14px #00000016}
+  .tagrow{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .where{font-size:16px;font-weight:900;color:#fff;padding:5px 13px;border-radius:10px;background:var(--brand)}
+  .g .where{background:var(--gov)} .h .where{background:var(--health)}
+  .f .where{background:var(--family)} .s .where{background:var(--shop)}
+  .b .where{background:var(--beauty)} .c .where{background:var(--cafe)}
+  .nw .where{background:var(--new)}
+  .newtag{font-size:14px;font-weight:900;color:#fff;background:var(--new);padding:4px 10px;border-radius:8px}
+  .what{font-size:23px;font-weight:900;line-height:1.35;margin-bottom:12px;color:var(--txt)}
+  .what .hi{color:var(--brand-d);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:3px}
+  :root[data-theme="dark"] .what .hi{color:#ff8a5c}
+  .how{display:flex;gap:9px;font-size:17.5px;color:var(--sub);margin-bottom:8px;align-items:flex-start}
+  .how .ic{flex:0 0 auto;font-size:19px}
+  .how b{color:var(--txt)}
+  .badge{display:inline-block;font-size:15.5px;font-weight:800;padding:6px 13px;border-radius:10px;margin-top:6px}
+  .badge.ok{background:var(--badge-ok-bg);color:var(--badge-ok)}
+  .badge.warn{background:var(--badge-warn-bg);color:var(--badge-warn)}
+  .badge.info{background:var(--badge-info-bg);color:var(--badge-info)}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;
+    width:100%;background:var(--brand);color:#fff;text-decoration:none;
+    font-size:20px;font-weight:900;padding:16px;border-radius:15px;
+    box-shadow:0 4px 0 var(--brand-d);transition:.05s}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--brand-d)}
+  .btn:focus-visible{outline:3px solid #000;outline-offset:2px}
+  .g .btn{background:var(--gov);box-shadow:0 4px 0 #1e40af}
+  .h .btn{background:var(--health);box-shadow:0 4px 0 #15803d}
+  .f .btn{background:var(--family);box-shadow:0 4px 0 #9d174d}
+  .s .btn{background:var(--shop);box-shadow:0 4px 0 #b45309}
+  .b .btn{background:var(--beauty);box-shadow:0 4px 0 #6b21a8}
+  .c .btn{background:var(--cafe);box-shadow:0 4px 0 #0e7490}
+  .nw .btn{background:var(--new);box-shadow:0 4px 0 var(--new-d)}
+  .btn .arr{font-size:22px}
+  #new{background:#fff5f5;border:3px solid #fecaca;border-radius:22px;padding:20px 18px 8px;margin-top:26px}
+  :root[data-theme="dark"] #new{background:#2a1414;border-color:#5a2020}
+  .tips{margin-top:40px;background:#fff7ed;border:2px solid #fed7aa;border-radius:20px;padding:22px}
+  :root[data-theme="dark"] .tips{background:#2c2013;border-color:#5a3f22}
+  .tips h2{font-size:22px;font-weight:900;margin-bottom:14px;color:var(--brand-d)}
+  :root[data-theme="dark"] .tips h2{color:#ff8a5c}
+  .tip{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid #fde3c6;font-size:18px;color:var(--sub)}
+  :root[data-theme="dark"] .tip{border-color:#4a3620}
+  .tip:last-child{border:0}
+  .tip .n{flex:0 0 36px;height:36px;background:var(--brand);color:#fff;font-weight:900;
+    border-radius:11px;display:grid;place-items:center;font-size:19px}
+  .tip b{color:var(--txt)}
+  .sources{margin-top:26px;font-size:14px;color:var(--mut);line-height:1.9}
+  .sources h3{font-size:16px;color:var(--sub);margin-bottom:8px;font-weight:800}
+  .sources a{color:var(--mut)}
+  footer{margin-top:26px;text-align:center;font-size:14px;color:var(--mut);line-height:1.7}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+  /* HOTDEAL-CSS:START */
+  .hd-rule{border:0;border-top:6px solid var(--line);margin:52px 0 0}
+  .hd-rule-label{text-align:center;margin-top:-16px}
+  .hd-rule-label span{background:var(--bg);color:var(--mut);font-size:15px;font-weight:800;padding:0 12px}
+  #hotdeal{margin-top:24px}
+  .hd-notice{background:#f7f5f2;border:2px solid var(--line);border-radius:16px;
+    padding:16px 18px;font-size:18px;color:var(--sub);line-height:1.7;margin-bottom:16px}
+  .hd-notice b{color:var(--txt)}
+  :root[data-theme="dark"] .hd-notice{background:#241b12}
+  .card.ad{border:2px dashed #e5b9c4;box-shadow:none}
+  .ad .where{background:#57534e}
+  .adtag{font-size:14px;font-weight:900;color:#fff;background:#9ca3af;padding:4px 10px;border-radius:8px}
+  .gbtag{font-size:14px;font-weight:900;color:#fff;background:#e11d48;padding:4px 10px;border-radius:8px}
+  .hd-img{display:block;width:100%;max-height:240px;object-fit:contain;background:#fff;border-radius:12px;margin:2px 0 12px}
+  .ad .what{font-size:21px}
+  .ad .how small{font-size:15px;color:var(--mut)}
+  .ad .btn{background:#e11d48;box-shadow:0 4px 0 #9f1239}
+  .hd-more{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;width:100%;
+    border:3px solid #e11d48;color:#e11d48;background:var(--card);text-decoration:none;cursor:pointer;
+    font-family:inherit;font-size:20px;font-weight:900;padding:15px;border-radius:15px}
+  .hd-back{display:inline-block;margin:18px 0 8px;font-size:18px;font-weight:800;color:var(--sub);text-decoration:none}
+  .hd-stamp{font-size:15px;color:var(--mut);margin:0 0 4px}
+  .hd-cats{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 12px}
+  .hd-cats b,.hd-row b{width:100%;font-size:17px;color:var(--sub)}
+  .hd-cats a,.hd-filter a,.hd-sort a{display:inline-flex;align-items:center;background:var(--card);border:2px solid var(--line);
+    color:var(--txt);text-decoration:none;font-weight:800;font-size:16px;padding:9px 13px;border-radius:13px}
+  .hd-row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+  .hd-filter a.on,.hd-sort a.on{background:#e11d48;border-color:#e11d48;color:#fff}
+  .hd-count{font-size:17px;font-weight:800;color:var(--sub);margin:14px 0 10px;padding-top:12px;border-top:2px solid var(--line)}
+  #hd-list [hidden],.hd-more[hidden]{display:none!important}
+  .hd-search{background:var(--card);border:2px solid #e11d48;border-radius:16px;padding:14px 14px 12px;margin:14px 0 6px}
+  .hd-search label{display:block;font-size:18px;font-weight:900;color:var(--txt);margin:0 0 8px}
+  .hd-sbox{display:flex;gap:8px}
+  .hd-sbox input{flex:1;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);
+    border-radius:12px;background:var(--bg);color:var(--txt)}
+  .hd-sbox input:focus{outline:3px solid #fda4af;border-color:#e11d48}
+  .hd-sbox button{flex:none;font-family:inherit;font-size:19px;font-weight:900;color:#fff;background:#e11d48;border:0;
+    border-radius:12px;padding:0 20px;cursor:pointer;box-shadow:0 3px 0 #9f1239}
+  .hd-search small{display:block;font-size:14px;color:var(--mut);margin-top:8px}
+  #hd-sres{margin:14px 0 8px}
+  .hd-shead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:19px;font-weight:900;margin:0 0 10px}
+  .hd-shead button{margin-left:auto;font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
+    border:2px solid var(--line);border-radius:11px;padding:7px 12px;cursor:pointer}
+  .hd-smsg{font-size:18px;color:var(--sub);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 10px}
+  #hd-sres[hidden]{display:none!important}
+  :root{--rw-pend:#b45309;--rw-pend-bg:#fef3c7;--rw-bar:#fffbea;--rw-bar-line:#f2d36b}
+  :root[data-theme="dark"]{--rw-pend:#fcd34d;--rw-pend-bg:#3a2a0a;--rw-bar:#2a2410;--rw-bar-line:#6b5a1a}
+  .hz-rw{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--rw-bar);border:2px solid var(--rw-bar-line);
+    border-radius:16px;padding:14px 16px;margin:0 0 14px}
+  .hz-rw[hidden]{display:none!important}
+  .hz-rw-t{flex:1 1 230px;font-size:18px;font-weight:700;color:var(--txt)}
+  .hz-rw-b{flex:none;background:#FEE500;color:#191600;font-weight:900;font-size:17px;text-decoration:none;padding:11px 16px;border-radius:12px}
+  .rw-kakao{display:flex;align-items:center;justify-content:center;gap:10px;background:#FEE500;color:rgba(0,0,0,.85);
+    font-size:21px;font-weight:900;padding:17px;border-radius:14px;text-decoration:none;margin-top:16px}
+  .rw-steps{margin:12px 0 0 22px;font-size:18px;color:var(--sub)}
+  .rw-steps li{margin:4px 0}
+  .rw-fine{font-size:15px;color:var(--mut);margin-top:12px}
+  .rw-fine a{color:inherit}
+  .rw-hello{font-size:24px;font-weight:900;margin:8px 0 0;text-wrap:balance}
+  .rw-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .rw-tile{border:2px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--card)}
+  .rw-tile small{display:block;font-size:16px;font-weight:900;color:var(--sub)}
+  .rw-tile b{display:block;font-size:30px;font-weight:900;line-height:1.3;font-variant-numeric:tabular-nums}
+  .rw-tile span{display:block;font-size:14px;color:var(--mut);line-height:1.4}
+  .rw-tile.done b{color:var(--badge-ok)}
+  .rw-tile.pend b{color:var(--rw-pend)}
+  .rw-h3{font-size:19px;font-weight:900;margin:22px 0 4px}
+  .rw-row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:14px 0;border-top:2px solid var(--line)}
+  .rw-row .nm{font-size:18px;font-weight:800;line-height:1.45}
+  .rw-row .pt{font-size:20px;font-weight:900;text-align:right;font-variant-numeric:tabular-nums}
+  .rw-row .meta{font-size:15px;color:var(--sub)}
+  .rw-row .side{text-align:right}
+  .rw-row .side small{display:block;font-size:13px;color:var(--mut)}
+  .rw-row.done .pt{color:var(--badge-ok)}
+  .rw-row.pending .pt{color:var(--rw-pend)}
+  .rw-row.canceled .pt{color:var(--mut);text-decoration:line-through}
+  .rw-pill{display:inline-block;font-size:14px;font-weight:900;padding:3px 9px;border-radius:8px}
+  .rw-pill.done{background:var(--badge-ok-bg);color:var(--badge-ok)}
+  .rw-pill.pending{background:var(--rw-pend-bg);color:var(--rw-pend)}
+  .rw-pill.canceled{background:var(--badge-warn-bg);color:var(--badge-warn)}
+  .rw-empty{font-size:18px;color:var(--sub);padding:16px 0;border-top:2px solid var(--line)}
+  .rw-empty .hd-more{margin-top:12px}
+  .rw-sync{font-size:15px;color:var(--mut);margin-top:12px}
+  .rw-acts{display:flex;gap:10px;justify-content:center;margin-top:26px}
+  .rw-acts button{font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
+    border:2px solid var(--line);border-radius:11px;padding:9px 14px;cursor:pointer}
+  .rw-doc h3{font-size:19px;margin:18px 0 4px}
+  .rw-doc ul{margin-left:22px;color:var(--sub)}
+  /* HOTDEAL-CSS:END */
+  /* HZ-KIT-CSS:START */
+  .hz-tools{display:flex;gap:10px;margin:14px 0 4px}
+  .hz-tools button,.hz-share-end button,.hz-close{font-family:inherit;font-weight:900;cursor:pointer;border-radius:14px}
+  .hz-tools button{flex:1;font-size:17px;padding:14px 8px;border:2px solid var(--line);background:var(--card);color:var(--txt)}
+  .hz-tools .hz-share,.hz-share-end .hz-share{background:var(--brand);border:2px solid var(--brand);color:#fff}
+  .hz-guide{margin:12px 0 4px;border:2px solid #fed7aa;background:#fff7ed;border-radius:16px;padding:16px 18px;font-size:18px;color:var(--sub)}
+  .hz-guide b{color:var(--txt)}
+  .hz-guide ol{margin:10px 0 14px 24px}
+  .hz-guide li{margin:8px 0}
+  :root[data-theme="dark"] .hz-guide{background:#2c2013;border-color:#5a3f22}
+  .hz-close{font-size:16px;padding:10px 18px;border:2px solid var(--line);background:var(--card);color:var(--txt)}
+  .hz-share-end{margin-top:30px;text-align:center;font-size:18px;color:var(--sub)}
+  .hz-share-end button{width:100%;margin-top:10px;font-size:19px;padding:16px}
+  .hz-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#241c12;color:#fff;
+    padding:14px 18px;border-radius:14px;font-size:17px;font-weight:700;z-index:50;width:max-content;max-width:90%;text-align:center}
+  .hz-tools[hidden],.hz-guide[hidden],.hz-share-end[hidden],.hz-tools [hidden]{display:none!important}
+  /* HZ-KIT-CSS:END */
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">💙 HUBRIZ 돌봄플러스 혜택존</div>
+    <h1>🪙 내 <b>적립금</b></h1>
+    <p class="hello">카카오로 로그인하고 혜택존 핫딜로 사면 <b>구매금액의 1%</b>를 포인트로 모아 드려요.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
+
+  <div class="hd-notice" id="rw-msg" role="status" hidden></div>
+
+  <section id="rw-wait"><p class="rw-sync">불러오는 중…</p></section>
+
+  <section id="rw-off" hidden>
+    <div class="hd-notice" id="rw-off-t">포인트 적립 기능을 준비하고 있어요. 조금만 기다려 주세요.</div>
+  </section>
+
+  <section id="rw-login" hidden>
+    <div class="card">
+      <div class="what">핫딜을 사면 구매금액의 1%를 포인트로 모아 드려요</div>
+      <ol class="rw-steps">
+        <li>카카오로 로그인해요 (처음 한 번)</li>
+        <li>로그인한 휴대폰에서 혜택존 핫딜·검색의 「구매하러 가기」를 눌러요</li>
+        <li>24시간 안에 쿠팡에서 결제하면, 다음 날 오후쯤 여기에 <b>적립 예정</b>으로 나타나요</li>
+      </ol>
+      <a class="rw-kakao" href="https://hyetaekzone-stats.baglebagle.workers.dev/auth/kakao?back=my"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3z"/></svg>카카오로 시작하기</a>
+      <p class="rw-fine">카카오 회원번호와 닉네임만 받아 포인트 관리에만 씁니다 · <a href="privacy.html">개인정보 처리방침</a></p>
+    </div>
+  </section>
+
+  <section id="rw-me" hidden>
+    <h2 class="rw-hello" id="rw-nick"></h2>
+    <div class="rw-sum">
+      <div class="rw-tile done"><small>적립 완료</small><b id="rw-done">0P</b><span>쿠팡 정산이 끝나 확정된 포인트</span></div>
+      <div class="rw-tile pend"><small>적립 예정</small><b id="rw-pend">0P</b><span>구매한 달의 다음 달 25일에 확정</span></div>
+    </div>
+    <div class="hd-notice">
+      쿠팡은 <b>구매한 달의 다음 달 25일</b>에 취소·반품을 빼고 구매를 확정해요.
+      그 전까지는 <b>적립 예정</b>, 확정되면 <b>적립 완료</b>로 바뀝니다. 취소·반품한 구매는 적립되지 않아요.
+    </div>
+    <h3 class="rw-h3">적립 내역</h3>
+    <div id="rw-list"></div>
+    <div class="rw-empty" id="rw-empty" hidden>
+      아직 적립 내역이 없어요.<br>로그인한 이 휴대폰에서 핫딜의 「구매하러 가기」를 눌러 사면 다음 날 오후쯤 여기에 나타나요.
+      <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 보러 가기 →</a>
+    </div>
+    <p class="rw-sync" id="rw-sync"></p>
+    <p class="rw-fine">포인트 사용 방법은 따로 안내해 드립니다. 쿠팡은 산 사람이 아니라 어느 링크로 들어왔는지만 알려줘서,
+      로그인하지 않은 채로 사거나 다른 사이트 링크로 사면 적립되지 않아요.</p>
+    <div class="rw-acts"><button type="button" id="rw-logout">로그아웃</button><button type="button" id="rw-delete">탈퇴하기</button></div>
+  </section>
+<script>
+(function(){
+  var API='https://hyetaekzone-stats.baglebagle.workers.dev', KEY='hz_rw';
+  function $(id){ return document.getElementById(id); }
+  function el(tag,cls,text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+  function save(s){ try{ if(s) localStorage.setItem(KEY,JSON.stringify(s)); else localStorage.removeItem(KEY); }catch(e){} }
+  function show(id){ ['rw-wait','rw-off','rw-login','rw-me'].forEach(function(x){ $(x).hidden = x!==id; }); }
+  function won(n){ return Number(n||0).toLocaleString('ko-KR'); }
+  function md(d){ return (+d.slice(4,6))+'/'+(+d.slice(6,8)); }
+  function mdDash(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10)); }
+
+  var h=location.hash, tok=h.match(/login=([A-Za-z0-9_-]{20,})/), rw=h.match(/rw=([a-z-]+)/);
+  if(tok) save({token:tok[1]});
+  if(tok||rw) history.replaceState(null,'',location.pathname+location.search);
+  var MSG={'fail-cancel':'카카오 로그인을 취소하셨어요. 다시 누르면 시작할 수 있어요.',
+    'fail-state':'로그인 시간이 지났어요. 버튼을 다시 눌러 주세요.',
+    'fail-token':'카카오 로그인에 실패했어요. 잠시 뒤 다시 눌러 주세요.',
+    'fail-user':'카카오 정보를 받지 못했어요. 잠시 뒤 다시 눌러 주세요.'};
+  if(rw&&MSG[rw[1]]){ $('rw-msg').textContent=MSG[rw[1]]; $('rw-msg').hidden=false; }
+
+  var STATUS={done:['적립 완료','확정'], pending:['적립 예정',''], canceled:['적립 취소','구매 취소·반품']};
+  function render(d){
+    $('rw-nick').textContent=d.nick+' 님의 적립금';
+    $('rw-done').textContent=won(d.sums.done)+'P';
+    $('rw-pend').textContent=won(d.sums.pending)+'P';
+    var list=$('rw-list'); list.textContent='';
+    if(!d.rows.length){ $('rw-empty').hidden=false; }
+    d.rows.forEach(function(r){
+      var row=el('div','rw-row '+r.status), st=STATUS[r.status];
+      row.appendChild(el('div','nm',r.name));
+      row.appendChild(el('div','pt',(r.status==='canceled'?'':'+')+won(r.points)+'P'));
+      var meta=md(r.day)+' 구매 · '+won(r.gmv)+'원'+(r.qty>1?' ('+r.qty+'개)':'');
+      if(r.cancel>0 && r.status!=='canceled') meta+=' · 일부 취소 '+won(r.cancel)+'원';
+      row.appendChild(el('div','meta',meta));
+      var pill=el('span','rw-pill '+r.status,st[0]), side=el('div','side'); side.appendChild(pill);
+      side.appendChild(el('small',null, r.status==='pending' ? mdDash(r.confirmOn)+' 확정 예정' : st[1]));
+      row.appendChild(side);
+      list.appendChild(row);
+    });
+    if(d.syncedAt){ var t=new Date(d.syncedAt*1000);
+      $('rw-sync').textContent='쿠팡 구매 확인: '+(t.getMonth()+1)+'월 '+t.getDate()+'일 '+t.getHours()+'시 기준 · 하루 한 번 확인해요'; }
+  }
+  function me(){
+    var s=load(); if(!s||!s.token){ show('rw-login'); return; }
+    fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
+      if(r.status===401){ save(null); show('rw-login'); return; }
+      return r.json().then(function(d){ s.sid=d.subId; s.nick=d.nick; save(s); render(d); show('rw-me'); });
+    }).catch(fail);
+  }
+  function fail(){ $('rw-off-t').textContent='지금 적립 내역을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'; show('rw-off'); }
+  function post(path){ var s=load()||{}; return fetch(API+path,{method:'POST',headers:{Authorization:'Bearer '+(s.token||'')}}); }
+  $('rw-logout').addEventListener('click',function(){ post('/me/logout').then(null,function(){}).then(function(){ save(null); show('rw-login'); }); });
+  $('rw-delete').addEventListener('click',function(){
+    if(!confirm('탈퇴하면 적립 예정·적립 완료 포인트와 적립 내역이 모두 지워지고 되돌릴 수 없어요.\n정말 탈퇴할까요?')) return;
+    post('/me/delete').then(function(r){ if(!r.ok) throw 0; save(null); alert('탈퇴했어요. 그동안 이용해 주셔서 감사합니다.'); show('rw-login'); })
+      .catch(function(){ alert('탈퇴 처리가 안 됐어요. 잠시 뒤 다시 눌러 주세요.'); });
+  });
+  fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){ if(st.on) me(); else show('rw-off'); }).catch(fail);
+})();
+</script>
+
+  <footer>HUBRIZ 돌봄플러스 혜택존 · <a href="privacy.html">개인정보 처리방침</a></footer>
+</div>
+</body>
+</html>

@@ -4,11 +4,14 @@
 
    POST /e           {page, type, label}   페이지가 보내는 기록 (sendBeacon, text/plain)
    GET  /stats?days=7                      집계 조회 — Authorization: Bearer <STATS_KEY>
+   /rw/*, /auth/*, /me*, /admin/*          카카오 로그인·포인트 적립 (src/reward.js, D1 hyetaekzone-members)
    GET  /search?q=물티슈                    쿠팡 상품 검색 (제휴 링크) — 혜택존 페이지에서만 호출 가능
         쿠팡 키는 Worker 비밀값 COUPANG_ACCESS_KEY / COUPANG_SECRET_KEY (scripts/set-worker-secrets.sh)
         같은 검색어는 12시간 동안 저장해 둔 결과를 씁니다 (쿠팡 호출 횟수 제한 대비).
         쿠팡이 거절하면 10분 쉬고, 그동안은 쿠팡 검색 결과 페이지로 가는 제휴 링크만 줍니다.
 */
+import { handleReward, syncOrders } from './reward.js';
+
 const ORIGINS = ['https://hubrizjeon.github.io', 'https://benefits.hubriz.io'];
 const TYPES = new Set(['visit', 'card', 'toc', 'source', 'share', 'home', 'buy', 'filter', 'sort', 'more', 'cat', 'search']);
 const PAGES = new Set(['main', 'hotdeal']);
@@ -104,7 +107,8 @@ export default {
 
     if (req.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: { ...cors,
-        'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'Content-Type' } });
+        'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400' } });
     }
 
     if (url.pathname === '/e' && req.method === 'POST') {
@@ -148,6 +152,14 @@ export default {
       return Response.json({ since, rows: results });
     }
 
+    const rw = await handleReward(req, env, ctx, url, cors, allowed);
+    if (rw) return rw;
+
     return new Response('hyetaekzone stats', { status: 404 });
+  },
+
+  // 매일 17:00(한국) — 쿠팡 주문 리포트에서 회원 구매를 옮기고 확정일이 된 적립을 확정
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(syncOrders(env));
   }
 };

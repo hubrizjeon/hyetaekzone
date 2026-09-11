@@ -304,6 +304,16 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 - 쿠팡 집계는 하루쯤 늦음. 사이트 쪽 「구매하러 가기」 누른 횟수는 `scripts/stats.sh` (당일 반영).
 - 공식 확인·정산: partners.coupang.com → 리포트.
 
+### (a-1c) 🪙 카카오 로그인 포인트 적립 — **2026-09-12 구현 (카카오 키 넣으면 켜짐)**
+- 회원: 카카오 로그인 → 회원마다 쿠팡 링크 이름표(subId `hzm00001` …). 저장 정보는 카카오 회원번호·닉네임뿐 (D1 `hyetaekzone-members`, 방문 집계 DB와 분리).
+- 적립: 로그인한 브라우저에서 쿠팡 링크를 누르는 순간 `subid=hyetaekzone` → 회원 이름표로 바꿔 끼움 (`REWARD_SCRIPT`, 메인 핫딜 칸·핫딜 페이지). 24시간 안의 구매가 쿠팡 리포트에 회원 이름표로 잡힘.
+- 매일 17:00(한국) Worker 크론이 쿠팡 주문·취소 리포트(최근 30일)를 읽어 회원 주문만 저장.
+- 상태: 구매한 달의 **다음 달 25일**까지 `적립 예정` → 25일 17:00 크론에서 (구매금액 − 취소금액)의 1%로 고정해 `적립 완료`. 전액 취소면 `적립 취소`.
+- 화면: `my.html` (내 적립: 적립 완료/예정 합계, 내역, 로그아웃·탈퇴), `privacy.html` (처리방침). 둘 다 `scripts/hotdeal.py` 가 만들 때 `scripts/reward_pages.py` 로 같이 생성.
+- 서버: `stats-worker/src/reward.js`. 관리: `GET /admin/members`, `POST /admin/sync` (Bearer STATS_KEY).
+- **켜는 법 (대표)**: developers.kakao.com 앱 → REST API 키·Redirect URI 등록 → `bash scripts/set-kakao-secrets.sh`. 쿠팡 키도 Worker에 있어야 동기화됨: `bash scripts/set-worker-secrets.sh`.
+- 미정: 포인트 사용(지급) 방법. 쿠팡 운영정책상 구매 보상은 제한될 수 있어 대표가 판단해 진행(2026-09-11 논의).
+
 ### (a-2) 홍보·측정 장치 — **2026-09-10 구현**
 
 `scripts/site_kit.py` 가 관리하고, `scripts/hotdeal.py` 가 돌 때마다(23시·08시) 함께 적용·복구합니다.

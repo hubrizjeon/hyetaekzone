@@ -9,3 +9,16 @@ workers_dev = true
 binding = "DB"
 database_name = "hyetaekzone-stats"
 database_id = "88642c4a-b3c4-4a39-9deb-3f58e9fa0b04"
+
+# 회원·포인트 (카카오 로그인). 개인정보는 여기만 — 방문 집계 DB와 분리
+[[d1_databases]]
+binding = "MEM"
+database_name = "hyetaekzone-members"
+database_id = "b2a83c4e-f5e8-4041-8571-038cf60968b9"
+
+[vars]
+SITE_URL = "https://hubrizjeon.github.io/hyetaekzone/"
+
+# 매일 08:00 UTC = 17:00 한국 — 쿠팡 리포트는 다음 날 낮에 반영됨
+[triggers]
+crons = ["0 8 * * *"]
