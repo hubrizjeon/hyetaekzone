@@ -299,6 +299,11 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 - **쿠팡 키를 Worker 비밀값으로 넣어야 상품 목록이 나옴**: `bash scripts/set-worker-secrets.sh` (대표 실행, 값은 화면에 안 나옴). 키가 없으면 수수료 없는 일반 쿠팡 검색 링크만 보임.
 - 코드: 검색창·스크립트 `scripts/hotdeal.py` (`search_form`, `SEARCH_SCRIPT`), 서버 `stats-worker/src/index.js`. Worker 배포: `cd stats-worker && npx wrangler deploy`.
 
+### (a-1b) 💰 구매·수수료 확인 — **2026-09-11**
+- `python3 scripts/sales.py [일수]` — 쿠팡 리포트 API로 클릭·주문·취소·예상 수수료 (최대 30일). 사이트 링크(subId hyetaekzone)는 [혜택존], 그 외는 [기타]로 나눠 표시.
+- 쿠팡 집계는 하루쯤 늦음. 사이트 쪽 「구매하러 가기」 누른 횟수는 `scripts/stats.sh` (당일 반영).
+- 공식 확인·정산: partners.coupang.com → 리포트.
+
 ### (a-2) 홍보·측정 장치 — **2026-09-10 구현**
 
 `scripts/site_kit.py` 가 관리하고, `scripts/hotdeal.py` 가 돌 때마다(23시·08시) 함께 적용·복구합니다.
