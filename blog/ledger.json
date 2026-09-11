@@ -108,7 +108,11 @@
       "title": "추석 장바구니, 정부가 보태줍니다 — 국산 농축산물 최대 40% 할인 총정리",
       "source": "blog/20260911.html",
       "photos": [
-        "blog-assets/photos/20260911_produce.jpg"
+        "blog-assets/photos/20260911_produce.jpg",
+        "blog-assets/photos/20260911_apple_pear.jpg",
+        "blog-assets/photos/20260911_beef.jpg",
+        "blog-assets/photos/20260911_market.jpg",
+        "blog-assets/photos/20260911_jujube.jpg"
       ],
       "items": [
         {
@@ -124,7 +128,8 @@
         {
           "key": "산림조합|밤·대추 30~40% 할인|2026-09-03~2026-09-23"
         }
-      ]
+      ],
+      "note": "허수빈 요청(2,000자·사진 4~5장·중복 제외) 반영해 재작성"
     }
   ],
   "next": []
