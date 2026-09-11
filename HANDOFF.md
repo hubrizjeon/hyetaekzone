@@ -290,6 +290,15 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 - `핫딜섹션_시안.html` — 확정된 안1+안3 혼합안
 - `가격비교_시안.html` — 노출/제외 카드와 야간 검사 순서
 
+### (a-1) 🔎 쿠팡 상품 검색 — **2026-09-11 구현**
+- 메인 핫딜 칸(안내문 아래)과 `hotdeal.html` 위쪽에 검색창. 메인에서 검색하면 `hotdeal.html?q=검색어` 로 넘어가 결과를 보여줌.
+- 검색은 `stats-worker` 의 `GET /search?q=` 가 쿠팡 검색 API를 대신 호출 (키는 브라우저에 절대 안 나감). 혜택존 주소에서 온 요청만 받음.
+- 결과: 상품 최대 10개(제휴 링크 카드, 광고 표시) + 「쿠팡에서 ○○ 더 보기」 제휴 링크.
+- 같은 검색어는 D1 `search_cache` 에 12시간 저장해 재사용. 쿠팡이 거절하면 10분 쉬고 그동안은 검색 결과 페이지 제휴 링크(딥링크)만 줌.
+- 집계에는 **검색어를 남기지 않음** — `search` 종류로 result/cache/empty/link/fail/nokey 개수만.
+- **쿠팡 키를 Worker 비밀값으로 넣어야 상품 목록이 나옴**: `bash scripts/set-worker-secrets.sh` (대표 실행, 값은 화면에 안 나옴). 키가 없으면 수수료 없는 일반 쿠팡 검색 링크만 보임.
+- 코드: 검색창·스크립트 `scripts/hotdeal.py` (`search_form`, `SEARCH_SCRIPT`), 서버 `stats-worker/src/index.js`. Worker 배포: `cd stats-worker && npx wrangler deploy`.
+
 ### (a-2) 홍보·측정 장치 — **2026-09-10 구현**
 
 `scripts/site_kit.py` 가 관리하고, `scripts/hotdeal.py` 가 돌 때마다(23시·08시) 함께 적용·복구합니다.

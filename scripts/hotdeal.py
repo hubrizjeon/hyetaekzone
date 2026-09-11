@@ -102,6 +102,21 @@ CSS = CSS_START + """
   .hd-filter a.on,.hd-sort a.on{background:#e11d48;border-color:#e11d48;color:#fff}
   .hd-count{font-size:17px;font-weight:800;color:var(--sub);margin:14px 0 10px;padding-top:12px;border-top:2px solid var(--line)}
   #hd-list [hidden],.hd-more[hidden]{display:none!important}
+  .hd-search{background:var(--card);border:2px solid #e11d48;border-radius:16px;padding:14px 14px 12px;margin:14px 0 6px}
+  .hd-search label{display:block;font-size:18px;font-weight:900;color:var(--txt);margin:0 0 8px}
+  .hd-sbox{display:flex;gap:8px}
+  .hd-sbox input{flex:1;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);
+    border-radius:12px;background:var(--bg);color:var(--txt)}
+  .hd-sbox input:focus{outline:3px solid #fda4af;border-color:#e11d48}
+  .hd-sbox button{flex:none;font-family:inherit;font-size:19px;font-weight:900;color:#fff;background:#e11d48;border:0;
+    border-radius:12px;padding:0 20px;cursor:pointer;box-shadow:0 3px 0 #9f1239}
+  .hd-search small{display:block;font-size:14px;color:var(--mut);margin-top:8px}
+  #hd-sres{margin:14px 0 8px}
+  .hd-shead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:19px;font-weight:900;margin:0 0 10px}
+  .hd-shead button{margin-left:auto;font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
+    border:2px solid var(--line);border-radius:11px;padding:7px 12px;cursor:pointer}
+  .hd-smsg{font-size:18px;color:var(--sub);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 10px}
+  #hd-sres[hidden]{display:none!important}
   """ + CSS_END
 
 NOTICE = """
@@ -115,6 +130,72 @@ NOTICE = """
 DATE_SCRIPT = ("<script>(function(){var d=new Date(),D=['일','월','화','수','목','금','토'];"
                "var e=document.getElementById('today');if(e)e.textContent=d.getFullYear()+'년 '+"
                "(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+D[d.getDay()]+')';})();</script>")
+
+SEARCH_API = K.STATS.rsplit("/", 1)[0] + "/search"   # 쿠팡 검색 (stats-worker 의 /search, 키는 Worker 비밀값)
+
+
+def search_form(fid):
+    """쿠팡 상품 검색창. 메인에서는 hotdeal.html?q=… 로 넘어가 거기서 결과를 보여준다."""
+    return f"""
+    <form class="hd-search" id="{fid}" action="hotdeal.html" method="get" role="search">
+      <label for="{fid}-q">🔎 쿠팡 상품 검색</label>
+      <div class="hd-sbox"><input id="{fid}-q" name="q" type="search" maxlength="40" autocomplete="off" enterkeyhint="search"
+        placeholder="예: 물티슈, 기저귀, 에어프라이어"><button type="submit">검색</button></div>
+      <small>쿠팡 상품을 찾아 제휴 링크로 보여드려요 (광고)</small>
+    </form>"""
+
+
+# 검색 결과는 글자로만 넣는다 (innerHTML 없음). 쿠팡에 연결이 안 되면 쿠팡 검색 페이지로 가는 버튼만.
+SEARCH_SCRIPT = """<script>
+(function(){
+  var form=document.getElementById('hd-sf'), box=document.getElementById('hd-sres'); if(!form||!box) return;
+  var input=form.querySelector('input'), API='__API__', seq=0;
+  function el(tag,cls,text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+  function how(ic,html){ var d=el('div','how'); d.appendChild(el('span','ic',ic)); d.appendChild(html); return d; }
+  function t(type,label){ try{ window.hzTrack&&window.hzTrack(type,label); }catch(e){} }
+  function link(url,aff,text){ var a=el('a','hd-more',text); a.href=url; a.target='_blank';
+    a.rel=aff?'noopener nofollow sponsored':'noopener'; a.addEventListener('click',function(){ t(aff?'buy':'more','검색 더 보기@hotdeal'); }); return a; }
+  function card(p){
+    var c=el('div','card ad'), tr=el('div','tagrow');
+    tr.appendChild(el('span','where',p.cat||'쿠팡')); tr.appendChild(el('span','adtag','광고')); c.appendChild(tr);
+    if(p.img){ var im=el('img','hd-img'); im.src=p.img; im.alt=p.name; im.loading='lazy'; c.appendChild(im); }
+    c.appendChild(el('div','what',p.name));
+    var pr=el('span',null,'쿠팡 판매가 '); pr.appendChild(el('b',null,p.price.toLocaleString('ko-KR')+'원')); pr.appendChild(el('small',null,' (검색 시점)'));
+    c.appendChild(how('💰',pr));
+    c.appendChild(how('🚚',el('span',null,(p.rocket?'🚀 로켓배송':'📦 일반배송')+(p.free?' · 무료배송':' · 배송비는 쿠팡에서 확인'))));
+    c.appendChild(el('span','badge info','가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인'));
+    var b=el('a','btn','구매하러 가기 '); b.appendChild(el('span','arr','→')); b.href=p.url; b.target='_blank'; b.rel='noopener nofollow sponsored';
+    b.addEventListener('click',function(){ t('buy','검색@hotdeal'); }); c.appendChild(b);
+    return c;
+  }
+  function head(text){ var h=el('div','hd-shead'); h.appendChild(el('span',null,text));
+    var x=el('button',null,'✕ 검색 닫기'); x.type='button'; x.addEventListener('click',close); h.appendChild(x); return h; }
+  function close(){ box.hidden=true; box.textContent=''; input.value=''; history.replaceState(null,'',location.pathname+location.hash); }
+  function show(q){
+    var my=++seq; box.hidden=false; box.textContent='';
+    box.appendChild(head('🔎 “'+q+'” 찾는 중…'));
+    var ctl=window.AbortController?new AbortController():null, timer=setTimeout(function(){ ctl&&ctl.abort(); },9000);
+    fetch(API+'?q='+encodeURIComponent(q),ctl?{signal:ctl.signal}:{}).then(function(r){ return r.json(); }).then(function(d){
+      if(my!==seq) return; box.textContent='';
+      var items=(d.items||[]).filter(function(p){ return /^https:\/\//.test(p.url); });
+      box.appendChild(head('🔎 “'+q+'” 쿠팡 검색 결과'+(items.length?' '+items.length+'개':'')));
+      if(!items.length) box.appendChild(el('div','hd-smsg','여기서 바로 보여드리지 못했어요. 아래 버튼을 누르면 쿠팡 검색 결과가 열립니다.'));
+      items.forEach(function(p){ box.appendChild(card(p)); });
+      box.appendChild(link(d.more||'https://www.coupang.com/np/search?q='+encodeURIComponent(q),!!(d.more&&d.aff),'쿠팡에서 “'+q+'” 더 보기 →'));
+    }).catch(function(){
+      if(my!==seq) return; box.textContent=''; box.appendChild(head('🔎 “'+q+'”'));
+      box.appendChild(el('div','hd-smsg','검색이 잠시 안 돼요. 아래 버튼으로 쿠팡에서 바로 찾아보세요.'));
+      box.appendChild(link('https://www.coupang.com/np/search?q='+encodeURIComponent(q),false,'쿠팡에서 “'+q+'” 찾기 →'));
+    }).then(function(){ clearTimeout(timer); });
+    window.scrollTo(0, form.offsetTop-8);
+  }
+  form.addEventListener('submit',function(e){ e.preventDefault();
+    var q=input.value.replace(/\s+/g,' ').trim().slice(0,40); if(!q){ input.focus(); return; }
+    input.blur(); history.replaceState(null,'','?q='+encodeURIComponent(q)+location.hash); show(q); });
+  var m=location.search.match(/[?&]q=([^&]*)/);
+  if(m){ var q0=''; try{ q0=decodeURIComponent(m[1].replace(/\+/g,' ')).trim().slice(0,40); }catch(e){} if(q0){ input.value=q0; show(q0); } }
+})();
+</script>""".replace("__API__", SEARCH_API)
 
 # 필터·정렬·더 보기. 스크립트가 꺼져 있으면 모든 상품이 인기순으로 그대로 보인다.
 LIST_SCRIPT = """<script>
@@ -310,7 +391,7 @@ def main_block(picks, st, fb):
         <div class="cat-title">오늘의 핫딜</div>
         <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · {E(st)} 기준</div>
       </div>
-    </div>{NOTICE}{cards}{more}
+    </div>{NOTICE}{search_form('hd-mf')}{cards}{more}
   </section>
   {P_END}
 """
@@ -382,7 +463,8 @@ def build_page(index_src, picks, st, fb, now):
 
   <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
 {NOTICE}
-  <p class="hd-stamp">쿠팡 가격 확인: {E(st)} · 가격은 수시로 바뀝니다</p>{tools}
+  <p class="hd-stamp">쿠팡 가격 확인: {E(st)} · 가격은 수시로 바뀝니다</p>{search_form('hd-sf')}
+  <section id="hd-sres" aria-live="polite" hidden></section>{tools}
 {body}
 
   <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
@@ -396,6 +478,7 @@ def build_page(index_src, picks, st, fb, now):
 </div>
 
 {LIST_SCRIPT if picks else ""}
+{SEARCH_SCRIPT}
 {K.track_block("hotdeal")}{DATE_SCRIPT}
 </body>
 </html>

@@ -150,6 +150,21 @@
   .hd-filter a.on,.hd-sort a.on{background:#e11d48;border-color:#e11d48;color:#fff}
   .hd-count{font-size:17px;font-weight:800;color:var(--sub);margin:14px 0 10px;padding-top:12px;border-top:2px solid var(--line)}
   #hd-list [hidden],.hd-more[hidden]{display:none!important}
+  .hd-search{background:var(--card);border:2px solid #e11d48;border-radius:16px;padding:14px 14px 12px;margin:14px 0 6px}
+  .hd-search label{display:block;font-size:18px;font-weight:900;color:var(--txt);margin:0 0 8px}
+  .hd-sbox{display:flex;gap:8px}
+  .hd-sbox input{flex:1;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);
+    border-radius:12px;background:var(--bg);color:var(--txt)}
+  .hd-sbox input:focus{outline:3px solid #fda4af;border-color:#e11d48}
+  .hd-sbox button{flex:none;font-family:inherit;font-size:19px;font-weight:900;color:#fff;background:#e11d48;border:0;
+    border-radius:12px;padding:0 20px;cursor:pointer;box-shadow:0 3px 0 #9f1239}
+  .hd-search small{display:block;font-size:14px;color:var(--mut);margin-top:8px}
+  #hd-sres{margin:14px 0 8px}
+  .hd-shead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:19px;font-weight:900;margin:0 0 10px}
+  .hd-shead button{margin-left:auto;font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
+    border:2px solid var(--line);border-radius:11px;padding:7px 12px;cursor:pointer}
+  .hd-smsg{font-size:18px;color:var(--sub);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 10px}
+  #hd-sres[hidden]{display:none!important}
   /* HOTDEAL-CSS:END */
   /* HZ-KIT-CSS:START */
   .hz-tools{display:flex;gap:10px;margin:14px 0 4px}
@@ -530,7 +545,7 @@
       <span class="cat-emoji">🔥</span>
       <div>
         <div class="cat-title">오늘의 핫딜</div>
-        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 11일 오전 9:22 기준</div>
+        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 11일 오후 6:49 기준</div>
       </div>
     </div>
     <div class="hd-notice">
@@ -539,11 +554,17 @@
       구매하셔도 여러분이 내시는 가격은 같습니다.<br>
       가격·할인율은 수시로 바뀌니 쿠팡에서 최종 가격을 확인해 주세요.
     </div>
-    <div class="card ad" data-g="food" data-p="38700" data-o="0" data-gb="1">
+    <form class="hd-search" id="hd-mf" action="hotdeal.html" method="get" role="search">
+      <label for="hd-mf-q">🔎 쿠팡 상품 검색</label>
+      <div class="hd-sbox"><input id="hd-mf-q" name="q" type="search" maxlength="40" autocomplete="off" enterkeyhint="search"
+        placeholder="예: 물티슈, 기저귀, 에어프라이어"><button type="submit">검색</button></div>
+      <small>쿠팡 상품을 찾아 제휴 링크로 보여드려요 (광고)</small>
+    </form>
+    <div class="card ad" data-g="food" data-p="36480" data-o="0" data-gb="1">
       <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://img5c.coupangcdn.com/image/retail/images/71399001727071-da1aa17e-b083-45de-a686-db31a5476502.jpg" alt="제주삼다수 그린 무라벨" loading="lazy">
+      <img class="hd-img" src="https://img1c.coupangcdn.com/image/retail/images/71399001727071-da1aa17e-b083-45de-a686-db31a5476502.jpg" alt="제주삼다수 그린 무라벨" loading="lazy">
       <div class="what">제주삼다수 그린 무라벨</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>38,700원</b> <small>(9월 11일 오전 9:22 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>36,480원</b> <small>(9월 11일 오후 6:49 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
@@ -551,35 +572,35 @@
     </div>
     <div class="card ad" data-g="beauty" data-p="15200" data-o="2" data-gb="1">
       <div class="tagrow"><span class="where">뷰티</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://img2c.coupangcdn.com/image/retail/images/716183004765344-3803c05f-645a-42da-85e2-581f7fe5c58f.jpg" alt="지베르니 밀착 커버 쿠션 파운데이션 본품 12g + 리필 12g 세트" loading="lazy">
+      <img class="hd-img" src="https://image7.coupangcdn.com/image/retail/images/1392179407475549-2694d790-78a1-43b7-ba28-397c36720ebf.jpg" alt="지베르니 밀착 커버 쿠션 파운데이션 본품 12g + 리필 12g 세트" loading="lazy">
       <div class="what">지베르니 밀착 커버 쿠션 파운데이션 본품 12g + 리필 12g 세트</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>15,200원</b> <small>(9월 11일 오전 9:22 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>15,200원</b> <small>(9월 11일 오후 6:49 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8059631632&amp;itemId=22635383297&amp;vendorItemId=86389750069&amp;traceid=V0-143-1f81291aa6319110&amp;pt=0&amp;slot=3" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8059631632&amp;itemId=22635383294&amp;vendorItemId=86389750075&amp;traceid=V0-143-1f81291aa6319110&amp;pt=0&amp;slot=3" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
     </div>
-    <div class="card ad" data-g="digital" data-p="1619000" data-o="6" data-gb="1">
-      <div class="tagrow"><span class="where">가전·디지털</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://image10.coupangcdn.com/image/retail/images/53368504885844-a88f366c-220b-48d6-8b24-d30b814b2aac.jpg" alt="에이서 2025 니트로 V 16S 라이젠7 라이젠 200 시리즈 지포스 RTX 5050" loading="lazy">
-      <div class="what">에이서 2025 니트로 V 16S 라이젠7 라이젠 200 시리즈 지포스 RTX 5050</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>1,619,000원</b> <small>(9월 11일 오전 9:22 확인)</small></span></div>
+    <div class="card ad" data-g="book" data-p="17360" data-o="3" data-gb="1">
+      <div class="tagrow"><span class="where">도서</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
+      <img class="hd-img" src="https://img5c.coupangcdn.com/image/retail/images/2142832977419295-fce8fd0c-9788-483e-8325-d1482d27ffc4.jpg" alt="멍멍, 강아지와 친구들:감각 자극 사운드북" loading="lazy">
+      <div class="what">멍멍, 강아지와 친구들:감각 자극 사운드북</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>17,360원</b> <small>(9월 11일 오후 6:49 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=9165386001&amp;itemId=27003871941&amp;vendorItemId=93972569053&amp;traceid=V0-143-ecc17657b51c2b32&amp;pt=0&amp;slot=7" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=1449384786&amp;itemId=2496342857&amp;vendorItemId=70489496803&amp;traceid=V0-143-f3c9065f6b915e91&amp;pt=0&amp;slot=4" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
     </div>
     <div class="hd-cats"><b>카테고리별로 보기</b>
       <a href="hotdeal.html#g-gb">🔥 골드박스 특가 28</a>
-      <a href="hotdeal.html#g-life">🧻 생활용품 32</a>
-      <a href="hotdeal.html#g-food">🍚 먹거리 49</a>
-      <a href="hotdeal.html#g-kitchen">🍳 주방용품 9</a>
+      <a href="hotdeal.html#g-life">🧻 생활용품 38</a>
+      <a href="hotdeal.html#g-food">🍚 먹거리 48</a>
+      <a href="hotdeal.html#g-kitchen">🍳 주방용품 13</a>
       <a href="hotdeal.html#g-beauty">💄 뷰티 23</a>
-      <a href="hotdeal.html#g-fashion">👗 패션·잡화 42</a>
-      <a href="hotdeal.html#g-home">🛏️ 가구·인테리어 6</a>
-      <a href="hotdeal.html#g-travel">✈️ 여행·레저 5</a>
+      <a href="hotdeal.html#g-fashion">👗 패션·잡화 39</a>
+      <a href="hotdeal.html#g-home">🛏️ 가구·인테리어 8</a>
+      <a href="hotdeal.html#g-travel">✈️ 여행·레저 4</a>
     </div>
-    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 (341개) <span class="arr">→</span></a>
+    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 (347개) <span class="arr">→</span></a>
   </section>
   <!-- PARTNERS:END -->
 

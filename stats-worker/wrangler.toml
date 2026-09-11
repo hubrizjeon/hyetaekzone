@@ -1,4 +1,4 @@
-# 혜택존 방문·클릭 집계 (개인정보 없이 날짜별 개수만)
+# 혜택존 방문·클릭 집계 (개인정보 없이 날짜별 개수만) + 쿠팡 상품 검색 (/search)
 # 배포: cd stats-worker && <wrangler> deploy        조회: scripts/stats.sh
 name = "hyetaekzone-stats"
 main = "src/index.js"
