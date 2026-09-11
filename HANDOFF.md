@@ -122,7 +122,7 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 `~/.claude/scheduled-tasks/` 에 저장된 두 개의 스케줄 작업이 돌아간다.
 
 ### (A) 매일 23:04 — 야간 갱신 (새 혜택 조사)
-`hyetaekzone-nightly-update` · 2026-09-11 지시문 교체
+`hyetaekzone-nightly-update` · ⚠️ 아래는 **교체할 지시문** — 2026-09-11 교체 시도가 권한 정책에 막혀 대표 승인 대기 중. 승인 전까지 실제로는 9/9 옛 지시문으로 돈다
 1. `git pull` → 대상 날짜 결정 (18시 이후 실행이면 **내일자**) · 요일 2중 검증
 2. 오늘자 `야간 갱신 — M/D(요일)자` 커밋이 이미 있으면 **건너뜀** (다른 세션과 중복 방지)
 3. WebSearch로 조사 → NEW 섹션·혜택 카드·꿀팁·출처·푸터 날짜만 수정
