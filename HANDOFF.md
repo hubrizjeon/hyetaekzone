@@ -122,7 +122,7 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 `~/.claude/scheduled-tasks/` 에 저장된 두 개의 스케줄 작업이 돌아간다.
 
 ### (A) 매일 23:04 — 야간 갱신 (새 혜택 조사)
-`hyetaekzone-nightly-update` · ⚠️ 아래는 **교체할 지시문** — 2026-09-11 교체 시도가 권한 정책에 막혀 대표 승인 대기 중. 승인 전까지 실제로는 9/9 옛 지시문으로 돈다
+`hyetaekzone-nightly-update` · 2026-09-11 지시문 교체 완료 (대표 승인)
 1. `git pull` → 대상 날짜 결정 (18시 이후 실행이면 **내일자**) · 요일 2중 검증
 2. 오늘자 `야간 갱신 — M/D(요일)자` 커밋이 이미 있으면 **건너뜀** (다른 세션과 중복 방지)
 3. WebSearch로 조사 → NEW 섹션·혜택 카드·꿀팁·출처·푸터 날짜만 수정
@@ -132,7 +132,7 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 7. 요약 메일은 **ceo@hubriz.io 만** (2026-09-10 대표 지시). 막히면 초안 + 알림
 
 ### (B) 매일 08:04 — 블로그 완성 원고 (새소식만)
-`hyetaekzone-morning-blog-mail` · 2026-09-11 재활성화
+`hyetaekzone-morning-blog-mail` · 2026-09-11 재활성화 · 허수빈 요청 기준: 공백 제외 2,000자↑ · 사진 4~5장 · 이전 원고와 겹치는 문장 0 (`scripts/blog_check.py` 통과해야 발송)
 1. `git pull` → NEW 섹션 카드 중 **`blog/ledger.json` 에 없는 글감만** (대장 규칙: 같은 key 금지, 상시 30일, 제목 14일, 전날 사진 금지)
 2. 없으면 한 줄 메일만
 3. 원문 사실 확인 → Pexels 사진(직접 보고 고름) → `blog/{YYYYMMDD}.html` (복사 버튼) + `blog/{YYYYMMDD}_word.docx`
