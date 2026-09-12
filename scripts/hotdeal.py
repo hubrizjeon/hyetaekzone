@@ -158,7 +158,21 @@ CSS = CSS_START + """
   .rw-acts{display:flex;gap:10px;justify-content:center;margin-top:26px}
   .rw-acts button{font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
     border:2px solid var(--line);border-radius:11px;padding:9px 14px;cursor:pointer}
-  .rw-doc h3{font-size:19px;margin:18px 0 4px}
+  .rw-form{display:grid;gap:12px;border:2px solid var(--line);border-radius:16px;padding:16px;background:var(--card)}
+  .rw-form label{display:grid;gap:6px;font-size:17px;font-weight:800;color:var(--sub)}
+  .rw-form input,.rw-form select{font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
+    background:var(--bg);color:var(--txt)}
+  .rw-form .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:600;line-height:1.5}
+  .rw-form .rw-check input{width:22px;height:22px;flex:none;margin-top:2px}
+  .rw-go{font-family:inherit;font-size:20px;font-weight:900;color:#fff;background:#15803d;border:0;border-radius:14px;padding:16px;cursor:pointer}
+  .rw-go:disabled{opacity:.6}
+  .rw-cash-msg{font-size:18px;font-weight:700;color:var(--txt);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px}
+  .rw-prog{height:12px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:10px}
+  .rw-prog i{display:block;height:100%;background:var(--badge-ok)}
+  .rw-rules{margin-left:22px;font-size:16px;color:var(--sub)}
+  .rw-rules li{margin:5px 0}
+  .rw-adm{font-size:16px;font-weight:800;color:var(--sub);padding:9px 14px;border:2px solid var(--line);border-radius:11px;text-decoration:none}
+    .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   """ + CSS_END
 
@@ -179,7 +193,7 @@ import reward_pages as R  # noqa: E402  내 적립·개인정보 처리방침 �
 # 포인트 적립 안내 줄. 적립 기능이 켜져 있을 때만 보인다 (Worker /rw/status).
 REWARD_BAR = """
     <div class="hz-rw" id="hz-rw" hidden>
-      <div class="hz-rw-t" id="hz-rw-t">🪙 카카오로 로그인하고 사면 <b>구매금액의 1%</b>를 포인트로 모아 드려요</div>
+      <div class="hz-rw-t" id="hz-rw-t">🪙 카카오로 로그인하고 사면 포인트가 쌓여요 · <b>1만 P부터 현금</b>으로 받아요</div>
       <a class="hz-rw-b" id="hz-rw-b" href="my.html">카카오로 시작하기</a>
     </div>"""
 
@@ -201,10 +215,10 @@ REWARD_SCRIPT = """<script>
       return r.json().then(function(d){
         s.sid=d.subId; s.nick=d.nick; try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){}
         var t=document.getElementById('hz-rw-t'); t.textContent='';
-        t.appendChild(document.createTextNode('🪙 '+d.nick+' 님 · 적립 예정 '));
-        var b=document.createElement('b'); b.textContent=Number(d.sums.pending).toLocaleString('ko-KR')+'P'; t.appendChild(b);
-        t.appendChild(document.createTextNode(' · 적립 완료 '));
-        var c=document.createElement('b'); c.textContent=Number(d.sums.done).toLocaleString('ko-KR')+'P'; t.appendChild(c);
+        t.appendChild(document.createTextNode('🪙 '+d.nick+' 님 · 쓸 수 있는 포인트 '));
+        var b=document.createElement('b'); b.textContent=Number(d.sums.balance).toLocaleString('ko-KR')+'P'; t.appendChild(b);
+        t.appendChild(document.createTextNode(' · 적립 예정 '));
+        var c=document.createElement('b'); c.textContent=Number(d.sums.pending).toLocaleString('ko-KR')+'P'; t.appendChild(c);
         document.getElementById('hz-rw-b').textContent='내 적립 보기';
       });
     });
@@ -647,10 +661,11 @@ def main():
         return 0
     write(INDEX, new)
     write(PAGE, page)
-    my, pv = R.build(new)
+    my, pv, ad = R.build(new)
     write(ROOT / "my.html", my)
     write(ROOT / "privacy.html", pv)
-    print("저장: index.html (핫딜 칸) · hotdeal.html · my.html · privacy.html")
+    write(ROOT / "admin.html", ad)
+    print("저장: index.html (핫딜 칸) · hotdeal.html · my.html · privacy.html · admin.html")
     return 0
 
 

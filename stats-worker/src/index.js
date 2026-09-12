@@ -10,7 +10,7 @@
         같은 검색어는 12시간 동안 저장해 둔 결과를 씁니다 (쿠팡 호출 횟수 제한 대비).
         쿠팡이 거절하면 10분 쉬고, 그동안은 쿠팡 검색 결과 페이지로 가는 제휴 링크만 줍니다.
 */
-import { handleReward, syncOrders } from './reward.js';
+import { handleReward, syncOrders, expirePoints } from './reward.js';
 
 const ORIGINS = ['https://hubrizjeon.github.io', 'https://benefits.hubriz.io'];
 const TYPES = new Set(['visit', 'card', 'toc', 'source', 'share', 'home', 'buy', 'filter', 'sort', 'more', 'cat', 'search']);
@@ -158,8 +158,8 @@ export default {
     return new Response('hyetaekzone stats', { status: 404 });
   },
 
-  // 매일 17:00(한국) — 쿠팡 주문 리포트에서 회원 구매를 옮기고 확정일이 된 적립을 확정
+  // 매일 17:00(한국) — 쿠팡 주문 리포트에서 회원 구매를 옮기고 확정일이 된 적립을 확정, 유효기간 지난 포인트 소멸
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(syncOrders(env));
+    ctx.waitUntil(syncOrders(env).then(() => expirePoints(env)));
   }
 };
