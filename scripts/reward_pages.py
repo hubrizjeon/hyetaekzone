@@ -212,6 +212,7 @@ MY_BODY = f"""
 
 # ───────────────────────── 관리자 ─────────────────────────
 ADMIN_CSS = """<style>
+  .wrap{max-width:1120px}
   .ad-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
   .ad-tabs button{font-family:inherit;font-size:16px;font-weight:800;padding:9px 14px;border-radius:12px;cursor:pointer;
     border:2px solid var(--line);background:var(--card);color:var(--txt)}
