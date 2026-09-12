@@ -6,6 +6,7 @@
    - 매일 17:00(한국) 쿠팡 리포트를 읽어 회원 주문을 옮기고, 구매한 달의 다음 달 25일에 '적립 완료'로 확정.
      그 전에는 '적립 예정', 전액 취소·반품이면 '적립 취소'. 적립 완료 후 1년(설정)이 지나면 소멸.
    - 잔액이 1만 P(설정) 이상이면 현금 교환 신청 → 관리자가 계좌로 보내고 '지급 완료' (반려하면 포인트 복구).
+     세금 신고(원천징수·지급명세서)용으로 주민등록번호를 함께 받습니다(설정으로 끄기 가능). 계좌·주민번호는 AES-GCM 암호화.
 
    회원:  GET /rw/status · GET /auth/kakao?back=my · GET /auth/kakao/callback
           GET /me · POST /me/cashout · POST /me/logout · POST /me/delete        (Authorization: Bearer <로그인 토큰>)
@@ -17,7 +18,7 @@
 const SESSION_DAYS = 90;
 const SUB_PREFIX = 'hzm';
 const BACK = { my: 'my.html', hotdeal: 'hotdeal.html', main: '', admin: 'admin.html' };
-const DEFAULTS = { share: 0.10, min_cashout: 10000, expire_days: 365 };
+const DEFAULTS = { share: 0.10, min_cashout: 10000, expire_days: 365, collect_rrn: 1 };   // collect_rrn: 현금 교환 때 주민등록번호 받기 (원천징수용)
 const PII_KEEP_DAYS = 5 * 365;     // 지급 기록의 계좌 정보 보관 (세무 증빙)
 const CP_HOST = 'https://api-gateway.coupang.com';
 const CP_BASE = '/v2/providers/affiliate_open_api/apis/openapi/v1';
@@ -199,6 +200,14 @@ async function ledger(env, m) {
 }
 
 const BANK_RE = /^[가-힣A-Za-z0-9() ]{2,20}$/;
+/* 주민등록번호 형식: 앞 6자리 생년월일이 실제 날짜이고 뒤 첫 자리가 1~8 (2020년 이후 번호는 검증숫자 규칙이 없어 형식만 봄) */
+function validRrn(front, back) {
+  if (!/^\d{6}$/.test(front) || !/^[1-8]\d{6}$/.test(back)) return false;
+  const century = '1256'.includes(back[0]) ? 1900 : 2000;
+  const y = century + +front.slice(0, 2), m = +front.slice(2, 4), dd = +front.slice(4, 6);
+  const dt = new Date(Date.UTC(y, m - 1, dd));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === dd && dt.getTime() <= Date.now();
+}
 
 /* ── 요청 처리. 이 모듈 경로가 아니면 null ── */
 export async function handleReward(req, env, ctx, url, cors, allowed) {
@@ -208,7 +217,7 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
 
   if (p === '/rw/status' && req.method === 'GET') {
     const s = await settings(env);
-    return json({ on: !!env.KAKAO_REST_KEY, share: s.share, min: s.min_cashout, expireDays: s.expire_days }, 200, cors);
+    return json({ on: !!env.KAKAO_REST_KEY, share: s.share, min: s.min_cashout, expireDays: s.expire_days, collectRrn: !!s.collect_rrn }, 200, cors);
   }
 
   if (p === '/auth/kakao' && req.method === 'GET') {
@@ -266,7 +275,7 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
       const [led, s, last] = await Promise.all([ledger(env, me), settings(env),
         env.MEM.prepare('SELECT at FROM sync_log WHERE ok = 1 ORDER BY at DESC LIMIT 1').first()]);
       return json({ nick: me.nick, subId: me.sub_id, status: me.status, admin: !!me.is_admin,
-        share: s.share, min: s.min_cashout, expireDays: s.expire_days, ...led, syncedAt: last ? last.at : null }, 200, cors);
+        share: s.share, min: s.min_cashout, expireDays: s.expire_days, collectRrn: !!s.collect_rrn, ...led, syncedAt: last ? last.at : null }, 200, cors);
     }
 
     if (p === '/me/cashout' && req.method === 'POST') {
@@ -278,6 +287,13 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
       if (!BANK_RE.test(bank)) return json({ error: '은행을 골라 주세요.' }, 400, cors);
       if (!/^\d{8,16}$/.test(account)) return json({ error: '계좌번호는 숫자 8~16자리로 넣어 주세요.' }, 400, cors);
       const [s, led] = await Promise.all([settings(env), ledger(env, me)]);
+      let rrn;
+      if (s.collect_rrn) {
+        const front = String(d.rrn1 || '').trim(), back = String(d.rrn2 || '').trim();
+        if (!d.agreeRrn) return json({ error: '세금 신고를 위한 주민등록번호 수집에 동의해 주세요.' }, 400, cors);
+        if (!validRrn(front, back)) return json({ error: '주민등록번호를 확인해 주세요 (앞 6자리 · 뒤 7자리).' }, 400, cors);
+        rrn = `${front}-${back}`;
+      }
       if (led.cashouts.some(c => c.status === 'requested')) return json({ error: '이미 신청한 교환이 처리 중이에요.' }, 409, cors);
       const amount = led.sums.balance;
       if (amount < s.min_cashout) return json({ error: `${s.min_cashout.toLocaleString('ko-KR')}P부터 바꿀 수 있어요.` }, 400, cors);
@@ -286,7 +302,7 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
         await env.MEM.batch([
           env.MEM.prepare(`INSERT INTO cashouts (member_id, nick, amount, bank, acct_mask, pii, status, requested_at)
             VALUES (?, ?, ?, ?, ?, ?, 'requested', ?)`).bind(me.id, me.nick, amount, bank, '****' + account.slice(-4),
-            await seal(env, { holder, bank, account }), t),
+            await seal(env, rrn ? { holder, bank, account, rrn } : { holder, bank, account }), t),
           env.MEM.prepare(`INSERT INTO points_log (member_id, kind, amount, memo, at)
             SELECT ?, 'cashout', ?, '현금 교환 신청 #' || id, ? FROM cashouts WHERE member_id = ? AND status = 'requested'`)
             .bind(me.id, -amount, t, me.id),
@@ -429,7 +445,7 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
 
     if (p === '/admin/settings') {
       if (req.method === 'POST') {
-        const v = { share: num(d.share), min_cashout: Math.trunc(num(d.min_cashout)), expire_days: Math.trunc(num(d.expire_days)) };
+        const v = { share: num(d.share), min_cashout: Math.trunc(num(d.min_cashout)), expire_days: Math.trunc(num(d.expire_days)), collect_rrn: d.collect_rrn ? 1 : 0 };
         if (!(v.share > 0 && v.share <= 1) || v.min_cashout < 1000 || v.min_cashout > 1000000 || v.expire_days < 30 || v.expire_days > 1825)
           return json({ error: '비율 1~100%, 최소 교환 1,000~1,000,000P, 유효기간 30~1,825일' }, 400, cors);
         const before = await settings(env);

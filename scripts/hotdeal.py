@@ -172,6 +172,14 @@ CSS = CSS_START + """
   .rw-rules{margin-left:22px;font-size:16px;color:var(--sub)}
   .rw-rules li{margin:5px 0}
   .rw-adm{font-size:16px;font-weight:800;color:var(--sub);padding:9px 14px;border:2px solid var(--line);border-radius:11px;text-decoration:none}
+    .rw-rrn{border:2px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:10px;margin:0}
+  .rw-rrn[hidden]{display:none!important}
+  .rw-rrn legend{font-size:17px;font-weight:800;color:var(--sub);padding:0 6px}
+  .rw-rrn legend small{font-size:13px;color:var(--mut);font-weight:700}
+  .rw-rrn-row{display:flex;align-items:center;gap:8px}
+  .rw-rrn-row input{flex:1;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
+    background:var(--bg);color:var(--txt);letter-spacing:.08em}
+  .rw-rrn p{margin:0;font-size:14px;color:var(--mut);line-height:1.55}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   """ + CSS_END

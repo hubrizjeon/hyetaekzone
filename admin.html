@@ -220,6 +220,14 @@
   .rw-rules{margin-left:22px;font-size:16px;color:var(--sub)}
   .rw-rules li{margin:5px 0}
   .rw-adm{font-size:16px;font-weight:800;color:var(--sub);padding:9px 14px;border:2px solid var(--line);border-radius:11px;text-decoration:none}
+    .rw-rrn{border:2px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:10px;margin:0}
+  .rw-rrn[hidden]{display:none!important}
+  .rw-rrn legend{font-size:17px;font-weight:800;color:var(--sub);padding:0 6px}
+  .rw-rrn legend small{font-size:13px;color:var(--mut);font-weight:700}
+  .rw-rrn-row{display:flex;align-items:center;gap:8px}
+  .rw-rrn-row input{flex:1;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
+    background:var(--bg);color:var(--txt);letter-spacing:.08em}
+  .rw-rrn p{margin:0;font-size:14px;color:var(--mut);line-height:1.55}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
@@ -358,6 +366,8 @@
     g.appendChild(kpi('회원 포인트 잔액', `${won(d.liability)}P`, '지급해야 할 수 있는 금액'));
     g.appendChild(kpi('이번 달 지급', `${won(d.paidThisMonth.amt)}원`, `${d.paidThisMonth.n}건`));
     g.appendChild(kpi('소멸된 포인트', `${won(d.expired)}P`, `유효기간 ${d.settings.expire_days}일`));
+    const rate = kpi('적립 비율', `수수료의 ${Math.round(d.settings.share * 1000) / 10}%`, `구매금액의 약 ${Math.round(d.settings.share * 30) / 10}%`);
+    rate.appendChild(btn('바꾸기', '', () => go('settings'))); g.appendChild(rate);
     box.appendChild(g);
     box.appendChild(el('h3', 'ad-h', '이번 달 회원 구매 (쿠팡 기준)'));
     const g2 = el('div', 'ad-grid');
@@ -384,7 +394,7 @@
     [['requested', '입금 대기'], ['paid', '지급 완료'], ['rejected', '반려'], ['all', '전체']].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; sel.appendChild(o); });
     sel.value = cash.st || 'requested'; sel.addEventListener('change', () => { cash.st = sel.value; go('cash'); });
     row.appendChild(el('b', null, '현금 교환 신청')); row.appendChild(sel); box.appendChild(row);
-    box.appendChild(el('p', 'ad-muted', '계좌로 직접 보낸 뒤 「지급 완료」를 눌러 주세요. 반려하면 포인트가 회원에게 돌아갑니다. 계좌 보기는 기록에 남습니다.'));
+    box.appendChild(el('p', 'ad-muted', '계좌로 직접 보낸 뒤 「지급 완료」를 눌러 주세요. 반려하면 포인트가 회원에게 돌아갑니다. 계좌·주민번호 보기는 기록에 남고, 주민번호는 세금 신고에만 쓰세요.'));
     const d = await api('/admin/cashouts?status=' + sel.value);
     box.appendChild(table([
       { h: '#', v: c => c.id }, { h: '신청', v: c => ts(c.requested_at) }, { h: '회원', v: c => `${c.nick || '(탈퇴)'} #${c.member_id}` },
@@ -393,13 +403,13 @@
       { h: '처리', v: c => { const w = el('div');
         if (c.status === 'requested') {
           w.appendChild(btn('계좌 보기', '', async () => { try { const i = await api('/admin/cashout/reveal', { id: c.id });
-            const r = el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}`); w.appendChild(r); } catch (e) { alert(e.message); } }));
+            const r = el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}` + (i.rrn ? ` · 주민번호 ${i.rrn}` : '')); w.appendChild(r); } catch (e) { alert(e.message); } }));
           w.appendChild(btn('지급 완료', 'pri', async () => { if (!confirm(`${c.nick}님에게 ${won(c.amount)}원을 보내셨나요?`)) return;
             try { await api('/admin/cashout/done', { id: c.id }); go('cash'); } catch (e) { alert(e.message); } }));
           w.appendChild(btn('반려', 'bad', async () => { const reason = prompt('반려 사유 (회원에게 보입니다)'); if (!reason) return;
             try { await api('/admin/cashout/reject', { id: c.id, reason }); go('cash'); } catch (e) { alert(e.message); } }));
         } else if (c.status === 'paid') { w.appendChild(btn('계좌 보기', '', async () => { try { const i = await api('/admin/cashout/reveal', { id: c.id });
-            w.appendChild(el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}`)); } catch (e) { alert(e.message); } })); }
+            w.appendChild(el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}` + (i.rrn ? ` · 주민번호 ${i.rrn}` : ''))); } catch (e) { alert(e.message); } })); }
         return w; } },
     ], d.cashouts));
   }
@@ -458,8 +468,19 @@
     const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days]];
     const inputs = {};
     f.forEach(([k, label, v]) => { const r = el('label', 'ad-row'); r.appendChild(el('span', null, label)); const i = el('input'); i.type = 'number'; i.value = v; i.step = 'any'; inputs[k] = i; r.appendChild(i); c.appendChild(r); });
+    const quick = el('div', 'ad-row'); quick.appendChild(el('span', 'ad-muted', '빠른 선택'));
+    [10, 20, 30, 50].forEach(n => quick.appendChild(btn(`${n}%`, '', () => { inputs.share.value = n; preview(); })));
+    c.insertBefore(quick, c.children[3]);
+    const pv = el('div', 'ad-reveal'); c.appendChild(pv);
+    function preview() {
+      const r = Number(inputs.share.value) / 100, min = Number(inputs.min_cashout.value) || 0;
+      pv.textContent = r > 0 ? `수수료 3% 상품을 10만원 사면 회원 적립 약 ${won(Math.floor(100000 * 0.03 * r))}P · ${won(min)}P를 모으려면 약 ${won(Math.ceil(min / (0.03 * r)))}원 구매` : '비율을 넣어 주세요';
+    }
+    inputs.share.addEventListener('input', preview); inputs.min_cashout.addEventListener('input', preview); preview();
+    const rr = el('label', 'ad-row'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!s.collect_rrn;
+    rr.appendChild(cb); rr.appendChild(el('span', null, '현금 교환 때 주민등록번호 받기 (세금 신고·원천징수용)')); c.appendChild(rr);
     c.appendChild(btn('저장', 'pri', async () => { try { await api('/admin/settings', { share: Number(inputs.share.value) / 100,
-      min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
+      min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
     box.appendChild(c);
     box.appendChild(el('h3', 'ad-h', '관리자 작업 기록'));
     const a = await api('/admin/audit');

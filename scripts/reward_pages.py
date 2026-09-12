@@ -84,7 +84,8 @@ MY_SCRIPT = """<script>
     var pend=d.cashouts.filter(function(c){ return c.status==='requested'; })[0];
     if(pend){ box.appendChild(el('div','rw-cash-msg','💸 '+won(pend.amount)+'원 입금을 준비하고 있어요 ('+mdTs(pend.requested_at)+' 신청 · '+pend.bank+' '+pend.acct_mask+')')); return; }
     if(d.status!=='ok'){ box.appendChild(el('div','rw-cash-msg','이용이 멈춘 계정이라 지금은 현금 교환을 할 수 없어요.')); return; }
-    if(d.sums.balance>=d.min){ form.hidden=false; $('rw-cash-go').textContent=won(d.sums.balance)+'원 현금으로 받기'; return; }
+    if(d.sums.balance>=d.min){ form.hidden=false; $('rw-cash-go').textContent=won(d.sums.balance)+'원 현금으로 받기';
+      var rr=$('rw-rrn'); rr.hidden=!d.collectRrn; form.rrn1.required=form.rrn2.required=form.agreeRrn.required=!!d.collectRrn; return; }
     var left=d.min-d.sums.balance, bar=el('div','rw-prog'), fill=el('i');
     fill.style.width=Math.max(2,Math.min(100,d.sums.balance/d.min*100))+'%'; bar.appendChild(fill);
     box.appendChild(el('div','rw-cash-msg',won(left)+'P 더 모이면 현금으로 받을 수 있어요 ('+won(d.min)+'P부터)'));
@@ -134,7 +135,8 @@ MY_SCRIPT = """<script>
   $('rw-cash').addEventListener('submit',function(e){ e.preventDefault(); var f=e.target, b=$('rw-cash-go');
     if(!confirm('모인 포인트 전부를 '+f.bank.value+' 계좌('+f.holder.value+')로 받을게요. 신청할까요?')) return;
     b.disabled=true;
-    post('/me/cashout',{holder:f.holder.value, bank:f.bank.value, account:f.account.value, agree:f.agree.checked}).then(function(r){
+    post('/me/cashout',{holder:f.holder.value, bank:f.bank.value, account:f.account.value, agree:f.agree.checked,
+      rrn1:f.rrn1.value, rrn2:f.rrn2.value, agreeRrn:f.agreeRrn.checked}).then(function(r){
       return r.json().then(function(d){ if(!r.ok) throw new Error(d.error||'신청하지 못했어요.');
         f.reset(); note('💸 '+won(d.amount)+'원 현금 교환을 신청했어요. 확인 후 계좌로 보내 드릴게요.'); window.scrollTo(0,0); me(); });
     }).catch(function(err){ alert(err.message||'신청하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); }).then(function(){ b.disabled=false; });
@@ -189,6 +191,14 @@ MY_BODY = f"""
       <label>계좌번호<input name="account" required inputmode="numeric" maxlength="20" placeholder="숫자만 (- 없이)"></label>
       <label class="rw-check"><input type="checkbox" name="agree" required> 현금 입금을 위해 예금주·은행·계좌번호를 받는 데 동의해요.
         암호화해 보관하고, 입금 기록은 세법에 따라 5년 뒤 지워요.</label>
+      <fieldset class="rw-rrn" id="rw-rrn" hidden>
+        <legend>주민등록번호 <small>세금 신고용</small></legend>
+        <div class="rw-rrn-row"><input name="rrn1" inputmode="numeric" maxlength="6" placeholder="앞 6자리" autocomplete="off" aria-label="주민등록번호 앞 6자리">
+          <span aria-hidden="true">−</span><input name="rrn2" type="password" inputmode="numeric" maxlength="7" placeholder="뒤 7자리" autocomplete="off" aria-label="주민등록번호 뒤 7자리"></div>
+        <p>포인트를 현금으로 드리면 회사가 세금 신고(원천징수·지급명세서 제출)를 해야 해서 소득세법에 따라 받아요.
+          암호화해 보관하고 관리자만 세금 신고에 씁니다. 신고 서류 보관 기간(5년)이 지나면 지워요.</p>
+        <label class="rw-check"><input type="checkbox" name="agreeRrn"> 세금 신고를 위한 주민등록번호 수집·이용에 동의해요.</label>
+      </fieldset>
       <button type="submit" class="rw-go" id="rw-cash-go">현금으로 받기</button>
     </form>
 
@@ -296,6 +306,8 @@ ADMIN_SCRIPT = """<script>
     g.appendChild(kpi('회원 포인트 잔액', `${won(d.liability)}P`, '지급해야 할 수 있는 금액'));
     g.appendChild(kpi('이번 달 지급', `${won(d.paidThisMonth.amt)}원`, `${d.paidThisMonth.n}건`));
     g.appendChild(kpi('소멸된 포인트', `${won(d.expired)}P`, `유효기간 ${d.settings.expire_days}일`));
+    const rate = kpi('적립 비율', `수수료의 ${Math.round(d.settings.share * 1000) / 10}%`, `구매금액의 약 ${Math.round(d.settings.share * 30) / 10}%`);
+    rate.appendChild(btn('바꾸기', '', () => go('settings'))); g.appendChild(rate);
     box.appendChild(g);
     box.appendChild(el('h3', 'ad-h', '이번 달 회원 구매 (쿠팡 기준)'));
     const g2 = el('div', 'ad-grid');
@@ -322,7 +334,7 @@ ADMIN_SCRIPT = """<script>
     [['requested', '입금 대기'], ['paid', '지급 완료'], ['rejected', '반려'], ['all', '전체']].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; sel.appendChild(o); });
     sel.value = cash.st || 'requested'; sel.addEventListener('change', () => { cash.st = sel.value; go('cash'); });
     row.appendChild(el('b', null, '현금 교환 신청')); row.appendChild(sel); box.appendChild(row);
-    box.appendChild(el('p', 'ad-muted', '계좌로 직접 보낸 뒤 「지급 완료」를 눌러 주세요. 반려하면 포인트가 회원에게 돌아갑니다. 계좌 보기는 기록에 남습니다.'));
+    box.appendChild(el('p', 'ad-muted', '계좌로 직접 보낸 뒤 「지급 완료」를 눌러 주세요. 반려하면 포인트가 회원에게 돌아갑니다. 계좌·주민번호 보기는 기록에 남고, 주민번호는 세금 신고에만 쓰세요.'));
     const d = await api('/admin/cashouts?status=' + sel.value);
     box.appendChild(table([
       { h: '#', v: c => c.id }, { h: '신청', v: c => ts(c.requested_at) }, { h: '회원', v: c => `${c.nick || '(탈퇴)'} #${c.member_id}` },
@@ -331,13 +343,13 @@ ADMIN_SCRIPT = """<script>
       { h: '처리', v: c => { const w = el('div');
         if (c.status === 'requested') {
           w.appendChild(btn('계좌 보기', '', async () => { try { const i = await api('/admin/cashout/reveal', { id: c.id });
-            const r = el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}`); w.appendChild(r); } catch (e) { alert(e.message); } }));
+            const r = el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}` + (i.rrn ? ` · 주민번호 ${i.rrn}` : '')); w.appendChild(r); } catch (e) { alert(e.message); } }));
           w.appendChild(btn('지급 완료', 'pri', async () => { if (!confirm(`${c.nick}님에게 ${won(c.amount)}원을 보내셨나요?`)) return;
             try { await api('/admin/cashout/done', { id: c.id }); go('cash'); } catch (e) { alert(e.message); } }));
           w.appendChild(btn('반려', 'bad', async () => { const reason = prompt('반려 사유 (회원에게 보입니다)'); if (!reason) return;
             try { await api('/admin/cashout/reject', { id: c.id, reason }); go('cash'); } catch (e) { alert(e.message); } }));
         } else if (c.status === 'paid') { w.appendChild(btn('계좌 보기', '', async () => { try { const i = await api('/admin/cashout/reveal', { id: c.id });
-            w.appendChild(el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}`)); } catch (e) { alert(e.message); } })); }
+            w.appendChild(el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}` + (i.rrn ? ` · 주민번호 ${i.rrn}` : ''))); } catch (e) { alert(e.message); } })); }
         return w; } },
     ], d.cashouts));
   }
@@ -396,8 +408,19 @@ ADMIN_SCRIPT = """<script>
     const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days]];
     const inputs = {};
     f.forEach(([k, label, v]) => { const r = el('label', 'ad-row'); r.appendChild(el('span', null, label)); const i = el('input'); i.type = 'number'; i.value = v; i.step = 'any'; inputs[k] = i; r.appendChild(i); c.appendChild(r); });
+    const quick = el('div', 'ad-row'); quick.appendChild(el('span', 'ad-muted', '빠른 선택'));
+    [10, 20, 30, 50].forEach(n => quick.appendChild(btn(`${n}%`, '', () => { inputs.share.value = n; preview(); })));
+    c.insertBefore(quick, c.children[3]);
+    const pv = el('div', 'ad-reveal'); c.appendChild(pv);
+    function preview() {
+      const r = Number(inputs.share.value) / 100, min = Number(inputs.min_cashout.value) || 0;
+      pv.textContent = r > 0 ? `수수료 3% 상품을 10만원 사면 회원 적립 약 ${won(Math.floor(100000 * 0.03 * r))}P · ${won(min)}P를 모으려면 약 ${won(Math.ceil(min / (0.03 * r)))}원 구매` : '비율을 넣어 주세요';
+    }
+    inputs.share.addEventListener('input', preview); inputs.min_cashout.addEventListener('input', preview); preview();
+    const rr = el('label', 'ad-row'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!s.collect_rrn;
+    rr.appendChild(cb); rr.appendChild(el('span', null, '현금 교환 때 주민등록번호 받기 (세금 신고·원천징수용)')); c.appendChild(rr);
     c.appendChild(btn('저장', 'pri', async () => { try { await api('/admin/settings', { share: Number(inputs.share.value) / 100,
-      min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
+      min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
     box.appendChild(c);
     box.appendChild(el('h3', 'ad-h', '관리자 작업 기록'));
     const a = await api('/admin/audit');
@@ -442,13 +465,14 @@ PRIVACY_BODY = f"""
       <li>카카오 로그인 시: 카카오 회원번호, 닉네임</li>
       <li>적립을 위해 쿠팡 파트너스에서 받는 정보: 회원 전용 링크로 산 상품의 구매일·상품명·수량·금액, 취소·반품 여부
         (쿠팡은 이름·연락처·주소 등 구매자 정보를 주지 않습니다)</li>
-      <li>현금 교환 신청 시: 예금주, 은행, 계좌번호</li>
+      <li>현금 교환 신청 시: 예금주, 은행, 계좌번호, 주민등록번호(세금 신고용)</li>
     </ul>
     <h3>2. 쓰는 곳</h3>
-    <ul><li>회원 확인, 포인트 적립 예정·완료 내역 표시와 관리</li><li>현금 교환 신청 확인과 계좌 입금</li></ul>
+    <ul><li>회원 확인, 포인트 적립 예정·완료 내역 표시와 관리</li><li>현금 교환 신청 확인과 계좌 입금</li>
+        <li>현금 지급에 따른 세금 신고(원천징수, 지급명세서 제출) — 주민등록번호는 소득세법 제145조·제164조 등 법령에 근거해 이 목적으로만 처리합니다.</li></ul>
     <h3>3. 보관 기간</h3>
     <ul><li>회원 정보·적립 내역: 탈퇴할 때까지. 「내 적립」에서 탈퇴하면 바로 지웁니다.</li>
-        <li>현금 교환 계좌 정보: 암호화해 보관하며, 반려되면 바로 지우고, 입금한 기록은 세법상 증빙 보관을 위해 입금 후 5년 동안 보관한 뒤 지웁니다.</li>
+        <li>현금 교환 계좌 정보·주민등록번호: 암호화해 보관하며, 반려되면 바로 지우고, 입금한 기록은 국세기본법상 증빙 보관을 위해 입금 후 5년 동안 보관한 뒤 지웁니다.</li>
         <li>로그인 유지 정보는 90일이 지나면 자동으로 지워집니다.</li></ul>
     <h3>4. 다른 곳에 주는지</h3>
     <ul><li>제3자에게 제공하지 않습니다. 법령에 따라 요구되는 경우는 예외로 합니다.</li></ul>

@@ -11,7 +11,8 @@ if [ $# -eq 0 ]; then
 import sys, json, datetime
 for m in json.load(sys.stdin).get("members", []):
     t = datetime.datetime.fromtimestamp(m["created"]).strftime("%m/%d %H:%M")
-    print(f"  #{m[\"id\"]}  {m[\"nick\"]}  (가입 {t}){\"  ← 관리자\" if m[\"is_admin\"] else \"\"}")' || echo "조회 실패"
+    mid, nick, star = m["id"], m["nick"], "  ← 관리자" if m["is_admin"] else ""
+    print(f"  #{mid}  {nick}  (가입 {t}){star}")' || echo "조회 실패"
   echo "관리자로 지정: bash scripts/make-admin.sh <번호>"
 else
   curl -s -X POST "$W/admin/make-admin" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d "{\"id\": $1}"
