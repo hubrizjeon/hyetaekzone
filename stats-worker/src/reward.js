@@ -3,7 +3,7 @@
    - 사이트의 쿠팡 링크를 누를 때 이름표를 바꿔 끼워, 쿠팡 주문 리포트에서 누구 링크로 산 건지 알 수 있습니다.
      (쿠팡은 산 사람이 아니라 "어느 링크로 들어왔는지"만 알려줍니다. 링크를 누르고 24시간 안의 구매가 잡힙니다)
    - 포인트 = 그 주문으로 우리가 받는 쿠팡 수수료 × 적립 비율(설정, 기본 10%). 1P = 1원.
-   - 매일 17:00(한국) 쿠팡 리포트를 읽어 회원 주문을 옮기고, 구매한 달의 다음 달 25일에 '적립 완료'로 확정.
+   - 매시 5분 쿠팡 리포트를 읽어 회원 주문을 옮기고, 구매한 달의 다음 달 25일에 '적립 완료'로 확정.
      그 전에는 '적립 예정', 전액 취소·반품이면 '적립 취소'. 적립 완료 후 1년(설정)이 지나면 소멸.
    - 잔액이 1만 P(설정) 이상이면 현금 교환 신청 → 관리자가 계좌로 보내고 '지급 완료' (반려하면 포인트 복구).
      세금 신고(원천징수·지급명세서)용으로 주민등록번호를 함께 받습니다(설정으로 끄기 가능). 계좌·주민번호는 AES-GCM 암호화.
@@ -117,7 +117,7 @@ async function cpReport(env, name, query) {
 
 export async function syncOrders(env) {
   if (!env.COUPANG_ACCESS_KEY || !env.COUPANG_SECRET_KEY) return { ok: false, note: '쿠팡 키 없음' };
-  const q = `startDate=${ymd(kst(29))}&endDate=${ymd(kst())}`;      // 쿠팡은 한 번에 최대 30일
+  const q = `startDate=${ymd(kst(29))}&endDate=${ymd(kst())}`;      // 쿠팡은 한 번에 최대 30일 (매시간 같은 범위를 다시 읽어도 결과는 같음)
   const mine = r => String(r.subId || '').startsWith(SUB_PREFIX);
   try {
     const [orders, cancels, s] = await Promise.all([cpReport(env, 'orders', q), cpReport(env, 'cancels', q), settings(env)]);

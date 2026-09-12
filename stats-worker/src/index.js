@@ -158,7 +158,7 @@ export default {
     return new Response('hyetaekzone stats', { status: 404 });
   },
 
-  // 매일 17:00(한국) — 쿠팡 주문 리포트에서 회원 구매를 옮기고 확정일이 된 적립을 확정, 유효기간 지난 포인트 소멸
+  // 매시 5분 — 쿠팡 주문 리포트에서 회원 구매를 옮기고 확정일이 된 적립을 확정, 유효기간 지난 포인트 소멸 (여러 번 돌려도 결과 같음)
   async scheduled(event, env, ctx) {
     ctx.waitUntil(syncOrders(env).then(() => expirePoints(env)));
   }

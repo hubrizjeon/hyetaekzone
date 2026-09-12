@@ -391,7 +391,7 @@
       const g3 = el('div', 'ad-grid');
       g3.appendChild(kpi('방문', won(d.site.visit || 0))); g3.appendChild(kpi('구매 버튼', won(d.site.buy || 0))); g3.appendChild(kpi('검색', won(d.site.search || 0)));
       box.appendChild(g3); }
-    box.appendChild(el('h3', 'ad-h', '연결 상태 · 쿠팡 동기화 (매일 17시)'));
+    box.appendChild(el('h3', 'ad-h', '연결 상태 · 쿠팡 동기화 (매시 5분)'));
     const st = el('div', 'ad-row');
     [['카카오 로그인', d.kakaoOn], ['쿠팡 키', d.coupangOn], ['계좌 암호화 키', d.piiOn]].forEach(([n, on]) => st.appendChild(el('span', on ? 'ad-ok' : 'ad-no', `${on ? '✅' : '❌'} ${n}`)));
     st.appendChild(btn('지금 쿠팡 읽기', '', async e => { e.target.disabled = true; try { const r = await api('/admin/sync', {}); alert((r.ok ? '완료: ' : '실패: ') + r.note); go('dash'); } catch (err) { alert(err.message); } }));

@@ -77,7 +77,8 @@ MY_SCRIPT = """<script>
      '구매한 달의 다음 달 25일에 쿠팡이 취소·반품을 빼고 확정하면 「적립 완료」가 돼요. 그 전에는 「적립 예정」이에요.',
      '1P = 1원. '+won(d.min)+'P부터 모인 포인트 전부를 현금으로 계좌에 받을 수 있어요.',
      '적립 완료 후 '+(d.expireDays>=365&&d.expireDays%365===0?(d.expireDays/365)+'년':d.expireDays+'일')+'이 지나도록 쓰지 않은 포인트는 사라져요.',
-     '로그인한 이 기기에서 누른 링크로 24시간 안에 사야 적립돼요. 쿠팡은 산 사람이 아니라 어느 링크로 들어왔는지만 알려줘요.']
+     '로그인한 이 기기에서 누른 링크로 24시간 안에 사야 적립돼요. 쿠팡은 산 사람이 아니라 어느 링크로 들어왔는지만 알려줘요.',
+     '구매한 뒤 「적립 예정」으로 보이기까지 보통 하루, 길면 이틀(48시간)까지 걸려요. 쿠팡이 구매 기록을 다음 날 알려주기 때문이에요.']
       .forEach(function(t){ ul.appendChild(el('li',null,t)); });
   }
   function cash(d){
@@ -128,7 +129,7 @@ MY_SCRIPT = """<script>
       row.appendChild(el('div','meta',mdTs(u.at))); var side=el('div','side'); side.appendChild(el('span','rw-pill '+u.pill[1],u.pill[0]));
       if(u.sub) side.appendChild(el('small',null,u.sub)); row.appendChild(side); ul.appendChild(row); });
     if(d.syncedAt){ var t=new Date(d.syncedAt*1000);
-      $('rw-sync').textContent='쿠팡 구매 확인: '+(t.getMonth()+1)+'월 '+t.getDate()+'일 '+t.getHours()+'시 기준 · 하루 한 번 확인해요'; }
+      $('rw-sync').textContent='쿠팡 구매 확인: '+(t.getMonth()+1)+'월 '+t.getDate()+'일 '+t.getHours()+'시 '+t.getMinutes()+'분 · 매시간 확인해요. 쿠팡이 구매를 알려주는 데 보통 하루, 길면 이틀까지 걸려요'; }
     $('rw-admin').hidden=!d.admin;
   }
   /* 지난번에 본 뒤로 바뀐 것 (이 기기 기준) */
@@ -209,7 +210,7 @@ MY_BODY = f"""
       <ol class="rw-steps">
         <li>카카오로 로그인해요 (처음 한 번)</li>
         <li>로그인한 휴대폰에서 혜택존 핫딜·검색의 「구매하러 가기」를 눌러요</li>
-        <li>24시간 안에 쿠팡에서 결제하면, 다음 날 오후쯤 여기에 <b>적립 예정</b>으로 나타나요</li>
+        <li>24시간 안에 쿠팡에서 결제하면 여기에 <b>적립 예정</b>으로 나타나요. 쿠팡이 구매를 알려주는 데 시간이 걸려 <b>보통 하루, 길면 이틀(48시간)</b>까지 걸려요</li>
       </ol>
       <a class="rw-kakao" href="{API}/auth/kakao?back=my">{KAKAO_ICON}카카오로 시작하기</a>
       <p class="rw-fine">카카오 회원번호와 닉네임만 받아 포인트 관리에만 씁니다 · <a href="privacy.html">개인정보 처리방침</a></p>
@@ -260,7 +261,7 @@ MY_BODY = f"""
     <h3 class="rw-h3">적립 내역</h3>
     <div id="rw-list"></div>
     <div class="rw-empty" id="rw-empty" hidden>
-      아직 적립 내역이 없어요.<br>로그인한 이 휴대폰에서 핫딜의 「구매하러 가기」를 눌러 사면 다음 날 오후쯤 여기에 나타나요.
+      아직 적립 내역이 없어요.<br>로그인한 이 휴대폰에서 핫딜의 「구매하러 가기」를 눌러 사면 보통 하루, 길면 이틀(48시간) 안에 여기에 나타나요. 조금 늦어도 걱정하지 마세요.
       <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 보러 가기 →</a>
     </div>
     <h3 class="rw-h3" id="rw-use-h" hidden>포인트 사용·변동</h3>
@@ -376,7 +377,7 @@ ADMIN_SCRIPT = """<script>
       const g3 = el('div', 'ad-grid');
       g3.appendChild(kpi('방문', won(d.site.visit || 0))); g3.appendChild(kpi('구매 버튼', won(d.site.buy || 0))); g3.appendChild(kpi('검색', won(d.site.search || 0)));
       box.appendChild(g3); }
-    box.appendChild(el('h3', 'ad-h', '연결 상태 · 쿠팡 동기화 (매일 17시)'));
+    box.appendChild(el('h3', 'ad-h', '연결 상태 · 쿠팡 동기화 (매시 5분)'));
     const st = el('div', 'ad-row');
     [['카카오 로그인', d.kakaoOn], ['쿠팡 키', d.coupangOn], ['계좌 암호화 키', d.piiOn]].forEach(([n, on]) => st.appendChild(el('span', on ? 'ad-ok' : 'ad-no', `${on ? '✅' : '❌'} ${n}`)));
     st.appendChild(btn('지금 쿠팡 읽기', '', async e => { e.target.disabled = true; try { const r = await api('/admin/sync', {}); alert((r.ok ? '완료: ' : '실패: ') + r.note); go('dash'); } catch (err) { alert(err.message); } }));

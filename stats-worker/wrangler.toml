@@ -19,6 +19,6 @@ database_id = "b2a83c4e-f5e8-4041-8571-038cf60968b9"
 [vars]
 SITE_URL = "https://hubrizjeon.github.io/hyetaekzone/"
 
-# 매일 08:00 UTC = 17:00 한국 — 쿠팡 리포트는 다음 날 낮에 반영됨
+# 매시 5분 — 쿠팡 리포트는 하루 한 번(보통 다음 날 12~16시) 올라오므로, 올라오면 1시간 안에 회원 화면에 반영
 [triggers]
-crons = ["0 8 * * *"]
+crons = ["5 * * * *"]
