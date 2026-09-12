@@ -206,9 +206,9 @@
   .rw-acts{display:flex;gap:10px;justify-content:center;margin-top:26px}
   .rw-acts button{font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
     border:2px solid var(--line);border-radius:11px;padding:9px 14px;cursor:pointer}
-  .rw-form{display:grid;gap:12px;border:2px solid var(--line);border-radius:16px;padding:16px;background:var(--card)}
+  .rw-form{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;border:2px solid var(--line);border-radius:16px;padding:16px;background:var(--card)}
   .rw-form label{display:grid;gap:6px;font-size:17px;font-weight:800;color:var(--sub)}
-  .rw-form input,.rw-form select{font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
+  .rw-form input:not([type=checkbox]),.rw-form select{width:100%;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
     background:var(--bg);color:var(--txt)}
   .rw-form .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:600;line-height:1.5}
   .rw-form .rw-check input{width:22px;height:22px;flex:none;margin-top:2px}
@@ -220,12 +220,12 @@
   .rw-rules{margin-left:22px;font-size:16px;color:var(--sub)}
   .rw-rules li{margin:5px 0}
   .rw-adm{font-size:16px;font-weight:800;color:var(--sub);padding:9px 14px;border:2px solid var(--line);border-radius:11px;text-decoration:none}
-    .rw-rrn{border:2px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:10px;margin:0}
+    .rw-rrn{min-inline-size:0;min-width:0;border:2px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:10px;margin:0}
   .rw-rrn[hidden]{display:none!important}
   .rw-rrn legend{font-size:17px;font-weight:800;color:var(--sub);padding:0 6px}
   .rw-rrn legend small{font-size:13px;color:var(--mut);font-weight:700}
   .rw-rrn-row{display:flex;align-items:center;gap:8px}
-  .rw-rrn-row input{flex:1;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
+  .rw-rrn-row input{flex:1;width:0;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
     background:var(--bg);color:var(--txt);letter-spacing:.08em}
   .rw-rrn p{margin:0;font-size:14px;color:var(--mut);line-height:1.55}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
@@ -687,7 +687,7 @@
       <span class="cat-emoji">🔥</span>
       <div>
         <div class="cat-title">오늘의 핫딜</div>
-        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 12일 오후 4:15 기준</div>
+        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 12일 오후 4:19 기준</div>
       </div>
     </div>
     <div class="hd-notice">
@@ -708,9 +708,9 @@
     </form>
     <div class="card ad" data-g="life" data-p="21000" data-o="0" data-gb="1">
       <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://image13.coupangcdn.com/image/retail/images/415626065407355-d0563bdf-b7fe-4df5-a5ba-0669ac0d5378.png" alt="유니레버 썬 식기세척기용 타블렛 세제 베이킹소다 앤 소금 50개입" loading="lazy">
+      <img class="hd-img" src="https://img5a.coupangcdn.com/image/retail/images/415626065407355-d0563bdf-b7fe-4df5-a5ba-0669ac0d5378.png" alt="유니레버 썬 식기세척기용 타블렛 세제 베이킹소다 앤 소금 50개입" loading="lazy">
       <div class="what">유니레버 썬 식기세척기용 타블렛 세제 베이킹소다 앤 소금 50개입</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>21,000원</b> <small>(9월 12일 오후 4:15 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>21,000원</b> <small>(9월 12일 오후 4:19 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
@@ -720,7 +720,7 @@
       <div class="tagrow"><span class="where">가구·인테리어</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
       <img class="hd-img" src="https://img5c.coupangcdn.com/image/vendor_inventory/0619/4fcf8740ceb41014a9274fe781a8cd3748f087a907c88dfb89710b32e5bb.jpg" alt="Kipnos 폴딩 대용량 리빙박스 수납장 대용량 수납 정리함 접이식 보관함 다용도 수납함 플라스틱 수납함 사물함 정리함 리빙박 스수납박스 대형가정용 장난감 수납장 옷정리함" loading="lazy">
       <div class="what">Kipnos 폴딩 대용량 리빙박스 수납장 대용량 수납 정리함 접이식 보관함 다용도 수납함 플라스틱 수납함 사물함 정리함 리빙박 스수납박스 대형가정용 장난감 수납장 옷정리함</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>39,900원</b> <small>(9월 12일 오후 4:15 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>39,900원</b> <small>(9월 12일 오후 4:19 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
@@ -728,9 +728,9 @@
     </div>
     <div class="card ad" data-g="food" data-p="26090" data-o="3" data-gb="1">
       <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://image9.coupangcdn.com/image/vendor_inventory/image_audit/stage/manual/fd5245cbb4710fe44bf56ae7446e8623320614ded2644dc3be0978cac547_1776647972386.jpg" alt="행복미트 프리미엄 소 스지 수육 탕 전골용" loading="lazy">
+      <img class="hd-img" src="https://img1a.coupangcdn.com/image/vendor_inventory/image_audit/stage/manual/fd5245cbb4710fe44bf56ae7446e8623320614ded2644dc3be0978cac547_1776647972386.jpg" alt="행복미트 프리미엄 소 스지 수육 탕 전골용" loading="lazy">
       <div class="what">행복미트 프리미엄 소 스지 수육 탕 전골용</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>26,090원</b> <small>(9월 12일 오후 4:15 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>26,090원</b> <small>(9월 12일 오후 4:19 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>📦 일반배송 · 무료배송</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>

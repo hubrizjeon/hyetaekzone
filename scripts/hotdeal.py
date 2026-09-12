@@ -158,9 +158,9 @@ CSS = CSS_START + """
   .rw-acts{display:flex;gap:10px;justify-content:center;margin-top:26px}
   .rw-acts button{font-family:inherit;font-size:16px;font-weight:800;color:var(--sub);background:var(--card);
     border:2px solid var(--line);border-radius:11px;padding:9px 14px;cursor:pointer}
-  .rw-form{display:grid;gap:12px;border:2px solid var(--line);border-radius:16px;padding:16px;background:var(--card)}
+  .rw-form{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;border:2px solid var(--line);border-radius:16px;padding:16px;background:var(--card)}
   .rw-form label{display:grid;gap:6px;font-size:17px;font-weight:800;color:var(--sub)}
-  .rw-form input,.rw-form select{font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
+  .rw-form input:not([type=checkbox]),.rw-form select{width:100%;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
     background:var(--bg);color:var(--txt)}
   .rw-form .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:600;line-height:1.5}
   .rw-form .rw-check input{width:22px;height:22px;flex:none;margin-top:2px}
@@ -172,12 +172,12 @@ CSS = CSS_START + """
   .rw-rules{margin-left:22px;font-size:16px;color:var(--sub)}
   .rw-rules li{margin:5px 0}
   .rw-adm{font-size:16px;font-weight:800;color:var(--sub);padding:9px 14px;border:2px solid var(--line);border-radius:11px;text-decoration:none}
-    .rw-rrn{border:2px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:10px;margin:0}
+    .rw-rrn{min-inline-size:0;min-width:0;border:2px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:10px;margin:0}
   .rw-rrn[hidden]{display:none!important}
   .rw-rrn legend{font-size:17px;font-weight:800;color:var(--sub);padding:0 6px}
   .rw-rrn legend small{font-size:13px;color:var(--mut);font-weight:700}
   .rw-rrn-row{display:flex;align-items:center;gap:8px}
-  .rw-rrn-row input{flex:1;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
+  .rw-rrn-row input{flex:1;width:0;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
     background:var(--bg);color:var(--txt);letter-spacing:.08em}
   .rw-rrn p{margin:0;font-size:14px;color:var(--mut);line-height:1.55}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
