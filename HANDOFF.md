@@ -328,6 +328,7 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
   - 백업: 매주 일요일 03:30 `scripts/backup-members.sh` (launchd `~/Library/LaunchAgents/io.hubriz.hyetaekzone-backup.plist`) → `~/keys/hyetaekzone/backups/` 최근 12개, 로그 backup.log. 이 컴퓨터가 켜져 있어야 함(잠자기면 깨어날 때 실행). D1 Time Travel 로도 되돌릴 수 있음.
   - 블로그 글감 `next` 에 "혜택존|포인트 적립 시작" 추가 — 대표가 적립 비율·보호책임자 확정 후 발행.
   - 점검: `node --no-warnings stats-worker/test/kakao-e2e.mjs` 38개 항목 전부 통과.
+- **2026-09-12 21:29 카카오 로그인 개통**: 처음엔 KOE010(클라이언트 시크릿 미등록)으로 실패 → 대표가 시크릿 처리 후 성공. 대표 = 회원 #9903 전창민(이름표 hzm09903), 관리자 지정. 로그인 실패 시 화면에 카카오 오류 번호가 나오고 작업 기록에 '카카오 · 로그인 실패'로 남음.
 - 남은 일: 기프티콘, 카카오 알림톡, 이상 감지, 대표 확정(보호책임자 실명·연락처, 적립 비율), 세무사 확인(원천징수 기준·주민번호 수집 근거). 현금 지급의 세무·전자금융 처리는 세무사 확인 권장. 쿠팡 운영정책상 구매 보상 제한 가능성은 대표가 알고 진행.
 
 ### (a-2) 홍보·측정 장치 — **2026-09-10 구현**
