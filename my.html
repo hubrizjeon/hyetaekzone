@@ -364,7 +364,7 @@
   function mdTs(t){ var d=new Date(t*1000); return (d.getMonth()+1)+'/'+d.getDate(); }
   function pct(x){ return Math.round(x*1000)/10+'%'; }
 
-  var h=location.hash, tok=h.match(/login=([A-Za-z0-9_-]{20,})/), rw=h.match(/rw=([a-z-]+)/);
+  var h=location.hash, tok=h.match(/login=([A-Za-z0-9_-]{20,})/), rw=h.match(/rw=([a-z0-9-]+)/);
   if(tok) save({token:tok[1]});
   if(tok||rw) history.replaceState(null,'',location.pathname+location.search);
   var MSG={'fail-cancel':'카카오 로그인을 취소하셨어요. 다시 누르면 시작할 수 있어요.',
@@ -372,7 +372,8 @@
     'fail-token':'카카오 로그인에 실패했어요. 잠시 뒤 다시 눌러 주세요.',
     'fail-user':'카카오 정보를 받지 못했어요. 잠시 뒤 다시 눌러 주세요.'};
   function note(t){ $('rw-msg').textContent=t; $('rw-msg').hidden=!t; }
-  if(rw&&MSG[rw[1]]) note(MSG[rw[1]]);
+  if(rw){ var kc=rw[1].match(/-(koe\d+)$/), base=kc?rw[1].slice(0,-kc[0].length):rw[1];
+    if(MSG[base]) note(MSG[base]+(kc?' (카카오 오류 '+kc[1].toUpperCase()+')':'')); }
 
   var STATUS={done:['적립 완료','확정'], pending:['적립 예정',''], canceled:['적립 취소','구매 취소·반품']};
   var CASH={requested:['입금 준비 중','pending'], paid:['입금 완료','done'], rejected:['반려 · 포인트 돌려드림','canceled']};

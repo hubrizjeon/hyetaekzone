@@ -259,7 +259,8 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
     const [state, b] = cookie(req, 'hz_state').split('.');
     const dest = siteUrl(env) + (BACK[b] ?? BACK.my);
     const clear = 'hz_state=; Path=/auth; Max-Age=0; HttpOnly; Secure; SameSite=Lax';
-    const fail = why => new Response(null, { status: 302, headers: { Location: dest + '#rw=fail-' + why, 'Set-Cookie': clear } });
+    const fail = (why, code) => new Response(null, { status: 302, headers: {
+      Location: dest + '#rw=fail-' + why + (code ? '-' + String(code).toLowerCase().replace(/[^a-z0-9]/g, '') : ''), 'Set-Cookie': clear } });
     if (url.searchParams.get('error')) return fail('cancel');           // 동의 화면에서 취소
     if (!state || state !== url.searchParams.get('state') || !url.searchParams.get('code')) return fail('state');
 
@@ -269,7 +270,11 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
     const tr = await fetch('https://kauth.kakao.com/oauth/token', { method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' }, body: form });
     const tok = await tr.json().catch(() => ({}));
-    if (!tok.access_token) return fail('token');
+    if (!tok.access_token) {
+      // 원인을 남겨 둠 (키 값은 넣지 않음). KOE010 = 클라이언트 시크릿 불일치·미등록
+      await audit(env, '카카오', '로그인 실패', null, `${tok.error_code || ''} ${tok.error || ''} ${tok.error_description || ''}`.trim()).run().catch(() => {});
+      return fail('token', tok.error_code);
+    }
     const ur = await fetch('https://kapi.kakao.com/v2/user/me', { headers: { Authorization: 'Bearer ' + tok.access_token } });
     const u = await ur.json().catch(() => ({}));
     if (!u.id) return fail('user');
