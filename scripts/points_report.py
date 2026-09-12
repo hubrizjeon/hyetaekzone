@@ -12,7 +12,7 @@ md = lambda t: datetime.datetime.fromtimestamp(t).strftime("%-m/%-d %H:%M")
 def main():
     try:
         key = next(l.split("=", 1)[1].strip() for l in open(KEYFILE, encoding="utf-8") if l.startswith("STATS_KEY="))
-        req = urllib.request.Request(f"{W}/admin/report?since={int(time.time()) - 86400}", headers={"Authorization": f"Bearer {key}"})
+        req = urllib.request.Request(f"{W}/admin/report?since={int(time.time()) - 86400}", headers={"Authorization": f"Bearer {key}", "User-Agent": "hyetaekzone-report/1.0"})  # 파이썬 기본 UA 는 Cloudflare 가 막음
         d = json.load(urllib.request.urlopen(req, timeout=20))
     except Exception as e:  # noqa: BLE001
         print(f"🪙 포인트 현황: 조회 실패 ({type(e).__name__}) — admin.html 에서 직접 확인해 주세요")
