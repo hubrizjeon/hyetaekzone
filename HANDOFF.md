@@ -315,6 +315,7 @@ if(e)e.textContent=d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'�
 - 화면: `my.html`(내 포인트·현금으로 받기·적립/사용 내역·적립 규정·로그아웃·탈퇴), `admin.html`(대시보드·현금 교환 처리·회원 목록/상세·정지·메모·포인트 조정·설정·작업 기록, noindex), `privacy.html`. 모두 `scripts/hotdeal.py` → `scripts/reward_pages.py` 로 생성.
 - 서버: `stats-worker/src/reward.js`, D1 `hyetaekzone-members` (스키마 `stats-worker/members.sql`). 관리자 API는 관리자 회원 로그인 토큰 또는 Bearer STATS_KEY.
 - **켜는 법 (대표)**: developers.kakao.com 앱 → Web 플랫폼 `https://hubrizjeon.github.io` → 카카오 로그인 ON, Redirect URI `https://hyetaekzone-stats.baglebagle.workers.dev/auth/kakao/callback` → 닉네임 필수 동의 → (Client Secret) → `bash scripts/set-kakao-secrets.sh`. 그다음 대표가 my.html 에서 로그인 → `bash scripts/make-admin.sh`(번호 확인) → `bash scripts/make-admin.sh <번호>` → admin.html.
+- 키 없이 점검: `node --no-warnings stats-worker/test/kakao-e2e.mjs` — 카카오 로그인 시작·돌아오기(취소·state 위조·토큰 실패), 회원 생성·재로그인, 관리자 지정·권한, 쿠팡 동기화(큰 주문번호·부분 취소·확정), 소멸, 로그아웃 24개 항목. 코드 고친 뒤 배포 전에 돌릴 것 (2026-09-12 전부 통과).
 - 점검(2026-09-12): 시험 회원으로 적립·교환 신청·중복 방지·계좌 보기·반려(복구·계좌 삭제)·지급 완료·조정·탈퇴·관리자 권한 전부 통과, 시험 데이터 삭제.
 - 남은 일: 기프티콘, 알림, 엑셀 내보내기, 이상 감지. 현금 지급의 세무·전자금융 처리는 세무사 확인 권장. 쿠팡 운영정책상 구매 보상 제한 가능성은 대표가 알고 진행.
 
