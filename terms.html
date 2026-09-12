@@ -238,6 +238,36 @@
   .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
   .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
   .rw-agree a{color:inherit}
+    .hz-top{display:grid;gap:12px;background:var(--rw-bar);border:2px solid var(--rw-bar-line);border-radius:18px;padding:16px 16px 14px;margin:18px 0 6px;box-shadow:0 3px 14px #00000012}
+  .hz-top[hidden],.hz-top [hidden],.hz-dim[hidden],.hz-sheet[hidden]{display:none!important}
+  .hz-top #hz-top-out,.hz-top #hz-top-in{display:grid;gap:12px}
+  .hz-top .t{font-size:21px;font-weight:900;line-height:1.35;color:var(--txt)}
+  .hz-top .s{font-size:17px;color:var(--sub);line-height:1.5}
+  .hz-top .s b{color:var(--rw-pend)}
+  .hz-top .bonus{font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:9px 12px}
+  :root[data-theme="dark"] .hz-top .bonus{background:#3a1520;color:#fda4af}
+  .hz-k{display:flex;align-items:center;justify-content:center;gap:9px;background:#FEE500;color:rgba(0,0,0,.85);font-size:20px;font-weight:900;padding:15px;border-radius:14px;text-decoration:none}
+  .hz-k:focus-visible,.hz-o:focus-visible,.hz-sheet .later:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+  .hz-top .row{display:flex;gap:10px}
+  .hz-top .tile{flex:1;background:var(--card);border:2px solid var(--rw-bar-line);border-radius:14px;padding:10px 12px}
+  .hz-top .tile small{display:block;font-size:14px;font-weight:800;color:var(--sub)}
+  .hz-top .tile b{font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}
+  .hz-top .tile.g b{color:var(--badge-ok)}.hz-top .tile.o b{color:var(--rw-pend)}
+  .hz-o{display:flex;align-items:center;justify-content:center;background:var(--card);border:2px solid var(--line);color:var(--txt);font-size:18px;font-weight:900;padding:12px;border-radius:14px;text-decoration:none}
+  .hz-dim{position:fixed;inset:0;background:#1a140dcc;z-index:60}
+  .hz-sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:720px;margin:0 auto;background:var(--card);color:var(--txt);border-radius:24px 24px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom));display:grid;gap:14px;box-shadow:0 -8px 30px #0005;max-height:90vh;overflow:auto}
+  .hz-sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:-8px auto 2px}
+  .hz-sheet h2{margin:0;font-size:25px;line-height:1.3;text-align:center}
+  .hz-sheet p{margin:0;text-align:center;font-size:17px;color:var(--sub)}
+  .hz-sheet ol{list-style:none;margin:4px 0;padding:0;display:grid;gap:10px}
+  .hz-sheet li{display:flex;align-items:center;gap:12px;background:var(--rw-bar);border-radius:14px;padding:12px 14px;font-size:18px;font-weight:800}
+  .hz-sheet li span{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:22px;border:2px solid var(--rw-bar-line)}
+  .hz-sheet li em{font-style:normal;color:#be123c}
+  .hz-sheet .later{font-family:inherit;background:none;border:0;text-align:center;font-size:17px;color:var(--mut);font-weight:700;padding:6px;cursor:pointer}
+  .rw-bonus{margin:10px 0 0;font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:10px 12px}
+  :root[data-theme="dark"] .rw-bonus{background:#3a1520;color:#fda4af}
+  .rw-bonus[hidden]{display:none!important}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
@@ -278,6 +308,7 @@
     <h3>제1조 (포인트가 쌓이는 방법)</h3>
     <ul><li>카카오로 로그인한 기기에서 혜택존의 쿠팡 링크(핫딜·검색의 「구매하러 가기」)를 누르고 24시간 안에 쿠팡에서 결제한 구매에 포인트가 쌓입니다.</li>
         <li>포인트는 그 구매로 혜택존이 쿠팡에서 받는 수수료에 적립 비율을 곱한 만큼입니다. 적립 비율은 「내 포인트 → 적립 규정」에 표시되며, 바뀌면 그 뒤 새로 확인되는 구매부터 적용하고 이미 확인된 구매에는 소급하지 않습니다.</li>
+        <li>처음 가입(이 약관에 동의)하면 가입 축하 포인트(현재 1,000P)를 한 번 드립니다. 같은 카카오 계정으로는 탈퇴 후 다시 가입해도 다시 드리지 않으며, 가입 축하 포인트도 제4조 유효기간을 따릅니다.</li>
         <li>적립은 쿠팡 파트너스가 알려주는 구매 기록만을 기준으로 합니다. 쿠팡이 집계하지 않은 구매(로그인하지 않은 상태, 다른 사이트 링크, 쿠팡 정책상 제외되는 구매 등)는 적립되지 않습니다.</li></ul>
     <h3>제2조 (적립 예정과 적립 완료)</h3>
     <ul><li>구매가 확인되면 「적립 예정」으로 표시되고, 쿠팡이 취소·반품을 반영해 확정하는 구매한 달의 다음 달 25일에 「적립 완료」가 됩니다.</li>

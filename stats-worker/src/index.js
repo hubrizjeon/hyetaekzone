@@ -13,7 +13,7 @@
 import { handleReward, syncOrders, expirePoints } from './reward.js';
 
 const ORIGINS = ['https://hubrizjeon.github.io', 'https://benefits.hubriz.io'];
-const TYPES = new Set(['visit', 'card', 'toc', 'source', 'share', 'home', 'buy', 'filter', 'sort', 'more', 'cat', 'search']);
+const TYPES = new Set(['visit', 'card', 'toc', 'source', 'share', 'home', 'buy', 'filter', 'sort', 'more', 'cat', 'search', 'rw']);
 const PAGES = new Set(['main', 'hotdeal']);
 
 const CP_HOST = 'https://api-gateway.coupang.com';

@@ -238,6 +238,36 @@
   .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
   .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
   .rw-agree a{color:inherit}
+    .hz-top{display:grid;gap:12px;background:var(--rw-bar);border:2px solid var(--rw-bar-line);border-radius:18px;padding:16px 16px 14px;margin:18px 0 6px;box-shadow:0 3px 14px #00000012}
+  .hz-top[hidden],.hz-top [hidden],.hz-dim[hidden],.hz-sheet[hidden]{display:none!important}
+  .hz-top #hz-top-out,.hz-top #hz-top-in{display:grid;gap:12px}
+  .hz-top .t{font-size:21px;font-weight:900;line-height:1.35;color:var(--txt)}
+  .hz-top .s{font-size:17px;color:var(--sub);line-height:1.5}
+  .hz-top .s b{color:var(--rw-pend)}
+  .hz-top .bonus{font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:9px 12px}
+  :root[data-theme="dark"] .hz-top .bonus{background:#3a1520;color:#fda4af}
+  .hz-k{display:flex;align-items:center;justify-content:center;gap:9px;background:#FEE500;color:rgba(0,0,0,.85);font-size:20px;font-weight:900;padding:15px;border-radius:14px;text-decoration:none}
+  .hz-k:focus-visible,.hz-o:focus-visible,.hz-sheet .later:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+  .hz-top .row{display:flex;gap:10px}
+  .hz-top .tile{flex:1;background:var(--card);border:2px solid var(--rw-bar-line);border-radius:14px;padding:10px 12px}
+  .hz-top .tile small{display:block;font-size:14px;font-weight:800;color:var(--sub)}
+  .hz-top .tile b{font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}
+  .hz-top .tile.g b{color:var(--badge-ok)}.hz-top .tile.o b{color:var(--rw-pend)}
+  .hz-o{display:flex;align-items:center;justify-content:center;background:var(--card);border:2px solid var(--line);color:var(--txt);font-size:18px;font-weight:900;padding:12px;border-radius:14px;text-decoration:none}
+  .hz-dim{position:fixed;inset:0;background:#1a140dcc;z-index:60}
+  .hz-sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:720px;margin:0 auto;background:var(--card);color:var(--txt);border-radius:24px 24px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom));display:grid;gap:14px;box-shadow:0 -8px 30px #0005;max-height:90vh;overflow:auto}
+  .hz-sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:-8px auto 2px}
+  .hz-sheet h2{margin:0;font-size:25px;line-height:1.3;text-align:center}
+  .hz-sheet p{margin:0;text-align:center;font-size:17px;color:var(--sub)}
+  .hz-sheet ol{list-style:none;margin:4px 0;padding:0;display:grid;gap:10px}
+  .hz-sheet li{display:flex;align-items:center;gap:12px;background:var(--rw-bar);border-radius:14px;padding:12px 14px;font-size:18px;font-weight:800}
+  .hz-sheet li span{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:22px;border:2px solid var(--rw-bar-line)}
+  .hz-sheet li em{font-style:normal;color:#be123c}
+  .hz-sheet .later{font-family:inherit;background:none;border:0;text-align:center;font-size:17px;color:var(--mut);font-weight:700;padding:6px;cursor:pointer}
+  .rw-bonus{margin:10px 0 0;font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:10px 12px}
+  :root[data-theme="dark"] .rw-bonus{background:#3a1520;color:#fda4af}
+  .rw-bonus[hidden]{display:none!important}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
@@ -284,12 +314,13 @@
   <section id="rw-login" hidden>
     <div class="card">
       <div class="what">혜택존 핫딜로 사면 포인트가 쌓이고, 1만 포인트부터 현금으로 받아요</div>
+      <p class="rw-bonus" id="rw-bonus-login" hidden></p>
       <ol class="rw-steps">
         <li>카카오로 로그인해요 (처음 한 번)</li>
         <li>로그인한 휴대폰에서 혜택존 핫딜·검색의 「구매하러 가기」를 눌러요</li>
         <li>24시간 안에 쿠팡에서 결제하면 여기에 <b>적립 예정</b>으로 나타나요. 쿠팡이 구매를 알려주는 데 시간이 걸려 <b>보통 하루, 길면 이틀(48시간)</b>까지 걸려요</li>
       </ol>
-      <a class="rw-kakao" href="https://hyetaekzone-stats.baglebagle.workers.dev/auth/kakao?back=my"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3z"/></svg>카카오로 시작하기</a>
+      <a class="rw-kakao" href="https://hyetaekzone-stats.baglebagle.workers.dev/auth/kakao?back=my"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3z"/></svg>카카오로 간편하게 시작</a>
       <p class="rw-fine">카카오 회원번호와 닉네임만 받아 포인트 관리에만 씁니다 · <a href="privacy.html">개인정보 처리방침</a></p>
     </div>
   </section>
@@ -298,9 +329,10 @@
     <form class="card rw-agree" id="rw-agree">
       <div class="what" id="rw-terms-nick"></div>
       <p>포인트 적립을 시작하기 전에 처음 한 번만 동의해 주세요.</p>
+      <p class="rw-bonus" id="rw-terms-bonus" hidden></p>
       <label class="rw-check"><input type="checkbox" name="terms" required> <span>[필수] <a href="terms.html" target="_blank">포인트 이용약관</a>에 동의해요</span></label>
       <label class="rw-check"><input type="checkbox" name="privacy" required> <span>[필수] <a href="privacy.html" target="_blank">개인정보 수집·이용</a>(카카오 회원번호·닉네임, 적립 구매 기록)에 동의해요</span></label>
-      <button type="submit" class="rw-go">동의하고 시작하기</button>
+      <button type="submit" class="rw-go" id="rw-agree-go">동의하고 시작하기</button>
       <p class="rw-fine">동의하지 않으면 적립되지 않아요. 언제든 「탈퇴하기」로 모든 정보를 지울 수 있어요.</p>
     </form>
   </section>
@@ -384,8 +416,9 @@
      '1P = 1원. '+won(d.min)+'P부터 모인 포인트 전부를 현금으로 계좌에 받을 수 있어요.',
      '적립 완료 후 '+(d.expireDays>=365&&d.expireDays%365===0?(d.expireDays/365)+'년':d.expireDays+'일')+'이 지나도록 쓰지 않은 포인트는 사라져요.',
      '로그인한 이 기기에서 누른 링크로 24시간 안에 사야 적립돼요. 쿠팡은 산 사람이 아니라 어느 링크로 들어왔는지만 알려줘요.',
+     (d.signupBonus>0?'처음 가입하면 가입 축하 포인트 '+won(d.signupBonus)+'P를 한 번 드려요 (탈퇴 후 다시 가입해도 한 번만). 다른 포인트와 같이 1년이 지나면 사라져요.':''),
      '구매한 뒤 「적립 예정」으로 보이기까지 보통 하루, 길면 이틀(48시간)까지 걸려요. 쿠팡이 구매 기록을 다음 날 알려주기 때문이에요.']
-      .forEach(function(t){ ul.appendChild(el('li',null,t)); });
+      .forEach(function(t){ if(t) ul.appendChild(el('li',null,t)); });
   }
   function cash(d){
     var box=$('rw-cash-box'), form=$('rw-cash'); box.textContent=''; form.hidden=true;
@@ -426,7 +459,8 @@
       row.appendChild(side); list.appendChild(row);
     });
     var use=[]; d.cashouts.forEach(function(c){ use.push({at:c.requested_at, name:'현금 교환 · '+c.bank+' '+c.acct_mask+(c.tax?' · 세금 '+won(c.tax)+'원 제외 '+won(c.net)+'원 입금':''), pt:-c.amount, pill:CASH[c.status], sub:c.status==='rejected'?(c.reason||''):(c.done_at?mdTs(c.done_at)+' 입금':'')}); });
-    d.log.forEach(function(l){ if(l.kind==='adjust') use.push({at:l.at, name:'관리자 조정 · '+(l.memo||''), pt:l.amount, pill:['조정','done'], sub:''});
+    d.log.forEach(function(l){ if(l.kind==='bonus') use.push({at:l.at, name:'🎁 가입 축하 포인트', pt:l.amount, pill:['적립 완료','done'], sub:''});
+      if(l.kind==='adjust') use.push({at:l.at, name:'관리자 조정 · '+(l.memo||''), pt:l.amount, pill:['조정','done'], sub:''});
       if(l.kind==='expire') use.push({at:l.at, name:l.memo||'유효기간 지나 소멸', pt:l.amount, pill:['소멸','canceled'], sub:''}); });
     use.sort(function(a,b){ return b.at-a.at; });
     var ul=$('rw-use'); ul.textContent=''; $('rw-use-h').hidden=!use.length;
@@ -464,8 +498,8 @@
   $('rw-agree').addEventListener('submit',function(e){ e.preventDefault(); var f=e.target, s=load()||{};
     fetch(API+'/me/agree',{method:'POST',headers:{Authorization:'Bearer '+(s.token||''),'Content-Type':'application/json'},
       body:JSON.stringify({ver:f.dataset.ver, terms:f.terms.checked, privacy:f.privacy.checked})})
-      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||''); }); })
-      .then(function(){ note('✅ 동의했어요. 이제 핫딜로 사면 포인트가 쌓여요.'); me(); })
+      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||''); return j; }); })
+      .then(function(j){ note(j.bonus?'🎁 가입 축하 '+won(j.bonus)+'P를 드렸어요! 이제 핫딜로 사면 포인트가 더 쌓여요.':'✅ 동의했어요. 이제 핫딜로 사면 포인트가 쌓여요.'); me(); })
       .catch(function(err){ alert(err.message||'잠시 뒤 다시 눌러 주세요.'); });
   });
   function me(){
@@ -473,7 +507,9 @@
     fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
       if(r.status===401){ save(null); show('rw-login'); return; }
       return r.json().then(function(d){
-        if(d.needTerms){ delete s.sid; s.nick=d.nick; save(s); $('rw-agree').dataset.ver=d.termsVer; $('rw-terms-nick').textContent=d.nick+' 님, 반가워요!'; show('rw-terms'); return; }
+        if(d.needTerms){ delete s.sid; s.nick=d.nick; save(s); $('rw-agree').dataset.ver=d.termsVer; $('rw-terms-nick').textContent=d.nick+' 님, 반가워요!';
+          var tb=$('rw-terms-bonus'); tb.hidden=!(d.signupBonus>0); if(d.signupBonus>0){ tb.textContent='🎁 동의하면 가입 축하 '+won(d.signupBonus)+'P를 바로 드려요'; $('rw-agree-go').textContent='동의하고 '+won(d.signupBonus)+'P 받기'; }
+          show('rw-terms'); return; }
         s.sid=d.subId; s.nick=d.nick; save(s); render(d); show('rw-me'); });
     }).catch(fail);
   }
@@ -496,7 +532,9 @@
       .then(function(){ save(null); alert('탈퇴했어요. 그동안 이용해 주셔서 감사합니다.'); show('rw-login'); })
       .catch(function(err){ alert(err.message||'탈퇴 처리가 안 됐어요. 잠시 뒤 다시 눌러 주세요.'); });
   });
-  fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){ if(st.on) me(); else show('rw-off'); }).catch(fail);
+  fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){
+    if(st.signupBonus>0){ var b=$('rw-bonus-login'); b.textContent='🎁 지금 가입하면 '+won(st.signupBonus)+'P를 바로 드려요'; b.hidden=false; }
+    if(st.on) me(); else show('rw-off'); }).catch(fail);
 })();
 </script>
 

@@ -18,7 +18,8 @@
 const SESSION_DAYS = 90;
 const SUB_PREFIX = 'hzm';
 const BACK = { my: 'my.html', hotdeal: 'hotdeal.html', main: '', admin: 'admin.html' };
-const DEFAULTS = { share: 0.10, min_cashout: 10000, expire_days: 365, collect_rrn: 1, withholding_rate: 0, withholding_free_upto: 50000 };
+const DEFAULTS = { share: 0.10, min_cashout: 10000, expire_days: 365, collect_rrn: 1, withholding_rate: 0, withholding_free_upto: 50000, signup_bonus: 1000 };
+// signup_bonus: 처음 가입(약관 동의)할 때 한 번 주는 포인트. 같은 카카오 계정은 탈퇴 후 다시 가입해도 다시 안 줌 (bonus_claims)
 // withholding_rate: 원천징수율 합계 (0 = 안 뗌. 사업소득 0.033 = 소득세 3% + 지방소득세 0.3%) · withholding_free_upto: 이 금액 이하 교환은 떼지 않음 (사업소득은 0)
 const TERMS_VER = '2026-09-12';   // 포인트 이용약관 버전 — 약관을 바꾸면 올려서 다시 동의받음
 const SOON_DAYS = 30;             // '곧 사라질 포인트' 안내 기간   // collect_rrn: 현금 교환 때 주민등록번호 받기 (원천징수용)
@@ -157,7 +158,7 @@ export async function expirePoints(env) {
   const cutoff = now() - s.expire_days * 86400;
   const { results } = await env.MEM.prepare(`SELECT m.id,
       COALESCE((SELECT SUM(points) FROM orders WHERE sub_id = m.sub_id AND confirmed_at <= ?), 0)
-    + COALESCE((SELECT SUM(amount) FROM points_log WHERE member_id = m.id AND kind = 'adjust' AND amount > 0 AND at <= ?), 0) AS old,
+    + COALESCE((SELECT SUM(amount) FROM points_log WHERE member_id = m.id AND kind IN ('adjust', 'bonus') AND amount > 0 AND at <= ?), 0) AS old,
       COALESCE((SELECT -SUM(amount) FROM points_log WHERE member_id = m.id AND amount < 0), 0)
     - COALESCE((SELECT SUM(amount) FROM points_log WHERE member_id = m.id AND kind = 'refund'), 0) AS used
     FROM members m`).bind(cutoff, cutoff).all();
@@ -203,7 +204,7 @@ async function ledger(env, m) {
   const s = await settings(env), soon = now() - (s.expire_days - SOON_DAYS) * 86400;
   const e = await env.MEM.prepare(`SELECT
       COALESCE((SELECT SUM(points) FROM orders WHERE sub_id = ? AND confirmed_at IS NOT NULL AND confirmed_at <= ?), 0)
-    + COALESCE((SELECT SUM(amount) FROM points_log WHERE member_id = ? AND kind = 'adjust' AND amount > 0 AND at <= ?), 0) AS old,
+    + COALESCE((SELECT SUM(amount) FROM points_log WHERE member_id = ? AND kind IN ('adjust', 'bonus') AND amount > 0 AND at <= ?), 0) AS old,
       COALESCE((SELECT -SUM(amount) FROM points_log WHERE member_id = ? AND amount < 0), 0)
     - COALESCE((SELECT SUM(amount) FROM points_log WHERE member_id = ? AND kind = 'refund'), 0) AS used`)
     .bind(m.sub_id, soon, m.id, soon, m.id, m.id).first();
@@ -241,7 +242,7 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
   if (p === '/rw/status' && req.method === 'GET') {
     const s = await settings(env);
     return json({ on: !!env.KAKAO_REST_KEY, share: s.share, min: s.min_cashout, expireDays: s.expire_days, collectRrn: !!s.collect_rrn,
-      withholdingRate: s.withholding_rate, withholdingFreeUpto: s.withholding_free_upto, termsVer: TERMS_VER }, 200, cors);
+      withholdingRate: s.withholding_rate, withholdingFreeUpto: s.withholding_free_upto, termsVer: TERMS_VER, signupBonus: s.signup_bonus }, 200, cors);
   }
 
   if (p === '/auth/kakao' && req.method === 'GET') {
@@ -305,15 +306,28 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
         env.MEM.prepare('SELECT at FROM sync_log WHERE ok = 1 ORDER BY at DESC LIMIT 1').first()]);
       return json({ nick: me.nick, subId: me.sub_id, status: me.status, admin: !!me.is_admin,
         share: s.share, min: s.min_cashout, expireDays: s.expire_days, collectRrn: !!s.collect_rrn,
-        withholdingRate: s.withholding_rate, withholdingFreeUpto: s.withholding_free_upto,
+        withholdingRate: s.withholding_rate, withholdingFreeUpto: s.withholding_free_upto, signupBonus: s.signup_bonus,
         needTerms: me.terms_ver !== TERMS_VER, termsVer: TERMS_VER, ...led, syncedAt: last ? last.at : null }, 200, cors);
     }
 
     if (p === '/me/agree' && req.method === 'POST') {
       const d = await body();
       if (d.ver !== TERMS_VER || !d.terms || !d.privacy) return json({ error: '이용약관과 개인정보 수집·이용에 모두 동의해 주세요.' }, 400, cors);
+      const row = await env.MEM.prepare('SELECT kakao_id, terms_at FROM members WHERE id = ?').bind(me.id).first();
       await env.MEM.prepare('UPDATE members SET terms_ver = ?, terms_at = ? WHERE id = ?').bind(TERMS_VER, now(), me.id).run();
-      return json({ ok: true }, 200, cors);
+      // 가입 축하 포인트: 처음 동의할 때 한 번. 같은 카카오 계정이면(탈퇴 후 재가입 포함) 다시 주지 않음
+      let bonus = 0;
+      const s = await settings(env);
+      if (!row.terms_at && s.signup_bonus > 0) {
+        const claim = await env.MEM.prepare('INSERT OR IGNORE INTO bonus_claims (kakao_hash, at) VALUES (?, ?)')
+          .bind(await sha256('kakao:' + row.kakao_id), now()).run();
+        if (claim.meta.changes === 1) {
+          await env.MEM.prepare(`INSERT INTO points_log (member_id, kind, amount, memo, admin, at) VALUES (?, 'bonus', ?, '가입 축하 포인트', '자동', ?)`)
+            .bind(me.id, s.signup_bonus, now()).run();
+          bonus = s.signup_bonus;
+        }
+      }
+      return json({ ok: true, bonus }, 200, cors);
     }
 
     if (p === '/me/cashout' && req.method === 'POST') {
@@ -484,12 +498,15 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
 
     if (p === '/admin/settings') {
       if (req.method === 'POST') {
+        const prev = await settings(env);
         const v = { share: num(d.share), min_cashout: Math.trunc(num(d.min_cashout)), expire_days: Math.trunc(num(d.expire_days)), collect_rrn: d.collect_rrn ? 1 : 0,
-          withholding_rate: num(d.withholding_rate), withholding_free_upto: Math.trunc(num(d.withholding_free_upto)) };
+          withholding_rate: num(d.withholding_rate), withholding_free_upto: Math.trunc(num(d.withholding_free_upto)),
+          signup_bonus: d.signup_bonus === undefined ? prev.signup_bonus : Math.trunc(num(d.signup_bonus)) };
         if (!(v.share > 0 && v.share <= 1) || v.min_cashout < 1000 || v.min_cashout > 1000000 || v.expire_days < 30 || v.expire_days > 1825
-            || !(v.withholding_rate >= 0 && v.withholding_rate <= 0.5) || !(v.withholding_free_upto >= 0 && v.withholding_free_upto <= 10000000))
-          return json({ error: '비율 1~100%, 최소 교환 1,000~1,000,000P, 유효기간 30~1,825일, 원천징수율 0~50%' }, 400, cors);
-        const before = await settings(env);
+            || !(v.withholding_rate >= 0 && v.withholding_rate <= 0.5) || !(v.withholding_free_upto >= 0 && v.withholding_free_upto <= 10000000)
+            || !(v.signup_bonus >= 0 && v.signup_bonus <= 100000))
+          return json({ error: '비율 1~100%, 최소 교환 1,000~1,000,000P, 유효기간 30~1,825일, 원천징수율 0~50%, 가입 축하 0~100,000P' }, 400, cors);
+        const before = prev;
         await env.MEM.batch([
           ...Object.entries(v).map(([k, val]) => env.MEM.prepare('INSERT INTO settings (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').bind(k, String(val))),
           audit(env, A.name, '설정 변경', null, JSON.stringify({ before, after: v }))]);

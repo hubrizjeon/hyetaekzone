@@ -78,8 +78,9 @@ MY_SCRIPT = """<script>
      '1P = 1원. '+won(d.min)+'P부터 모인 포인트 전부를 현금으로 계좌에 받을 수 있어요.',
      '적립 완료 후 '+(d.expireDays>=365&&d.expireDays%365===0?(d.expireDays/365)+'년':d.expireDays+'일')+'이 지나도록 쓰지 않은 포인트는 사라져요.',
      '로그인한 이 기기에서 누른 링크로 24시간 안에 사야 적립돼요. 쿠팡은 산 사람이 아니라 어느 링크로 들어왔는지만 알려줘요.',
+     (d.signupBonus>0?'처음 가입하면 가입 축하 포인트 '+won(d.signupBonus)+'P를 한 번 드려요 (탈퇴 후 다시 가입해도 한 번만). 다른 포인트와 같이 1년이 지나면 사라져요.':''),
      '구매한 뒤 「적립 예정」으로 보이기까지 보통 하루, 길면 이틀(48시간)까지 걸려요. 쿠팡이 구매 기록을 다음 날 알려주기 때문이에요.']
-      .forEach(function(t){ ul.appendChild(el('li',null,t)); });
+      .forEach(function(t){ if(t) ul.appendChild(el('li',null,t)); });
   }
   function cash(d){
     var box=$('rw-cash-box'), form=$('rw-cash'); box.textContent=''; form.hidden=true;
@@ -120,7 +121,8 @@ MY_SCRIPT = """<script>
       row.appendChild(side); list.appendChild(row);
     });
     var use=[]; d.cashouts.forEach(function(c){ use.push({at:c.requested_at, name:'현금 교환 · '+c.bank+' '+c.acct_mask+(c.tax?' · 세금 '+won(c.tax)+'원 제외 '+won(c.net)+'원 입금':''), pt:-c.amount, pill:CASH[c.status], sub:c.status==='rejected'?(c.reason||''):(c.done_at?mdTs(c.done_at)+' 입금':'')}); });
-    d.log.forEach(function(l){ if(l.kind==='adjust') use.push({at:l.at, name:'관리자 조정 · '+(l.memo||''), pt:l.amount, pill:['조정','done'], sub:''});
+    d.log.forEach(function(l){ if(l.kind==='bonus') use.push({at:l.at, name:'🎁 가입 축하 포인트', pt:l.amount, pill:['적립 완료','done'], sub:''});
+      if(l.kind==='adjust') use.push({at:l.at, name:'관리자 조정 · '+(l.memo||''), pt:l.amount, pill:['조정','done'], sub:''});
       if(l.kind==='expire') use.push({at:l.at, name:l.memo||'유효기간 지나 소멸', pt:l.amount, pill:['소멸','canceled'], sub:''}); });
     use.sort(function(a,b){ return b.at-a.at; });
     var ul=$('rw-use'); ul.textContent=''; $('rw-use-h').hidden=!use.length;
@@ -158,8 +160,8 @@ MY_SCRIPT = """<script>
   $('rw-agree').addEventListener('submit',function(e){ e.preventDefault(); var f=e.target, s=load()||{};
     fetch(API+'/me/agree',{method:'POST',headers:{Authorization:'Bearer '+(s.token||''),'Content-Type':'application/json'},
       body:JSON.stringify({ver:f.dataset.ver, terms:f.terms.checked, privacy:f.privacy.checked})})
-      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||''); }); })
-      .then(function(){ note('✅ 동의했어요. 이제 핫딜로 사면 포인트가 쌓여요.'); me(); })
+      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||''); return j; }); })
+      .then(function(j){ note(j.bonus?'🎁 가입 축하 '+won(j.bonus)+'P를 드렸어요! 이제 핫딜로 사면 포인트가 더 쌓여요.':'✅ 동의했어요. 이제 핫딜로 사면 포인트가 쌓여요.'); me(); })
       .catch(function(err){ alert(err.message||'잠시 뒤 다시 눌러 주세요.'); });
   });
   function me(){
@@ -167,7 +169,9 @@ MY_SCRIPT = """<script>
     fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
       if(r.status===401){ save(null); show('rw-login'); return; }
       return r.json().then(function(d){
-        if(d.needTerms){ delete s.sid; s.nick=d.nick; save(s); $('rw-agree').dataset.ver=d.termsVer; $('rw-terms-nick').textContent=d.nick+' 님, 반가워요!'; show('rw-terms'); return; }
+        if(d.needTerms){ delete s.sid; s.nick=d.nick; save(s); $('rw-agree').dataset.ver=d.termsVer; $('rw-terms-nick').textContent=d.nick+' 님, 반가워요!';
+          var tb=$('rw-terms-bonus'); tb.hidden=!(d.signupBonus>0); if(d.signupBonus>0){ tb.textContent='🎁 동의하면 가입 축하 '+won(d.signupBonus)+'P를 바로 드려요'; $('rw-agree-go').textContent='동의하고 '+won(d.signupBonus)+'P 받기'; }
+          show('rw-terms'); return; }
         s.sid=d.subId; s.nick=d.nick; save(s); render(d); show('rw-me'); });
     }).catch(fail);
   }
@@ -190,7 +194,9 @@ MY_SCRIPT = """<script>
       .then(function(){ save(null); alert('탈퇴했어요. 그동안 이용해 주셔서 감사합니다.'); show('rw-login'); })
       .catch(function(err){ alert(err.message||'탈퇴 처리가 안 됐어요. 잠시 뒤 다시 눌러 주세요.'); });
   });
-  fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){ if(st.on) me(); else show('rw-off'); }).catch(fail);
+  fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){
+    if(st.signupBonus>0){ var b=$('rw-bonus-login'); b.textContent='🎁 지금 가입하면 '+won(st.signupBonus)+'P를 바로 드려요'; b.hidden=false; }
+    if(st.on) me(); else show('rw-off'); }).catch(fail);
 })();
 </script>""".replace("__API__", API)
 
@@ -207,12 +213,13 @@ MY_BODY = f"""
   <section id="rw-login" hidden>
     <div class="card">
       <div class="what">혜택존 핫딜로 사면 포인트가 쌓이고, 1만 포인트부터 현금으로 받아요</div>
+      <p class="rw-bonus" id="rw-bonus-login" hidden></p>
       <ol class="rw-steps">
         <li>카카오로 로그인해요 (처음 한 번)</li>
         <li>로그인한 휴대폰에서 혜택존 핫딜·검색의 「구매하러 가기」를 눌러요</li>
         <li>24시간 안에 쿠팡에서 결제하면 여기에 <b>적립 예정</b>으로 나타나요. 쿠팡이 구매를 알려주는 데 시간이 걸려 <b>보통 하루, 길면 이틀(48시간)</b>까지 걸려요</li>
       </ol>
-      <a class="rw-kakao" href="{API}/auth/kakao?back=my">{KAKAO_ICON}카카오로 시작하기</a>
+      <a class="rw-kakao" href="{API}/auth/kakao?back=my">{KAKAO_ICON}카카오로 간편하게 시작</a>
       <p class="rw-fine">카카오 회원번호와 닉네임만 받아 포인트 관리에만 씁니다 · <a href="privacy.html">개인정보 처리방침</a></p>
     </div>
   </section>
@@ -221,9 +228,10 @@ MY_BODY = f"""
     <form class="card rw-agree" id="rw-agree">
       <div class="what" id="rw-terms-nick"></div>
       <p>포인트 적립을 시작하기 전에 처음 한 번만 동의해 주세요.</p>
+      <p class="rw-bonus" id="rw-terms-bonus" hidden></p>
       <label class="rw-check"><input type="checkbox" name="terms" required> <span>[필수] <a href="terms.html" target="_blank">포인트 이용약관</a>에 동의해요</span></label>
       <label class="rw-check"><input type="checkbox" name="privacy" required> <span>[필수] <a href="privacy.html" target="_blank">개인정보 수집·이용</a>(카카오 회원번호·닉네임, 적립 구매 기록)에 동의해요</span></label>
-      <button type="submit" class="rw-go">동의하고 시작하기</button>
+      <button type="submit" class="rw-go" id="rw-agree-go">동의하고 시작하기</button>
       <p class="rw-fine">동의하지 않으면 적립되지 않아요. 언제든 「탈퇴하기」로 모든 정보를 지울 수 있어요.</p>
     </form>
   </section>
@@ -463,7 +471,7 @@ ADMIN_SCRIPT = """<script>
       { h: '취소', r: 1, v: o => o.cancel ? won(o.cancel) : '' }, { h: '수수료', r: 1, v: o => won(o.commission) },
       { h: '포인트', r: 1, v: o => won(o.points) }, { h: '상태', v: o => ST[o.status] + (o.status === 'pending' ? ` (${o.confirmOn.slice(5)} 확정)` : '') }], d.rows));
     box.appendChild(el('h3', 'ad-h', '포인트 변동'));
-    box.appendChild(table([{ h: '시각', v: l => ts(l.at) }, { h: '종류', v: l => ({ cashout: '현금 교환', refund: '반려 복구', adjust: '조정', expire: '소멸' })[l.kind] || l.kind },
+    box.appendChild(table([{ h: '시각', v: l => ts(l.at) }, { h: '종류', v: l => ({ cashout: '현금 교환', refund: '반려 복구', adjust: '조정', expire: '소멸', bonus: '가입 축하' })[l.kind] || l.kind },
       { h: '포인트', r: 1, v: l => (l.amount > 0 ? '+' : '') + won(l.amount) }, { h: '내용', v: l => l.memo || '' }], d.log));
   }
 
@@ -472,7 +480,8 @@ ADMIN_SCRIPT = """<script>
     c.appendChild(el('div', 'ad-h', '적립 설정'));
     c.appendChild(el('p', 'ad-muted', '적립 비율은 바꾼 뒤 새로 잡히는 주문부터 적용돼요. 이미 잡힌 주문은 그때 비율 그대로입니다.'));
     const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days],
-      ['withholding_rate', '원천징수율 합계 (%) — 사업소득 3.3, 0이면 안 뗌', Math.round(s.withholding_rate * 1000) / 10], ['withholding_free_upto', '이 금액(원) 이하 교환은 안 뗌 (사업소득은 0)', s.withholding_free_upto]];
+      ['withholding_rate', '원천징수율 합계 (%) — 사업소득 3.3, 0이면 안 뗌', Math.round(s.withholding_rate * 1000) / 10], ['withholding_free_upto', '이 금액(원) 이하 교환은 안 뗌 (사업소득은 0)', s.withholding_free_upto],
+      ['signup_bonus', '가입 축하 포인트 (P) — 0이면 안 줌', s.signup_bonus]];
     const inputs = {};
     f.forEach(([k, label, v]) => { const r = el('label', 'ad-row'); r.appendChild(el('span', null, label)); const i = el('input'); i.type = 'number'; i.value = v; i.step = 'any'; inputs[k] = i; r.appendChild(i); c.appendChild(r); });
     const quick = el('div', 'ad-row'); quick.appendChild(el('span', 'ad-muted', '빠른 선택'));
@@ -489,7 +498,8 @@ ADMIN_SCRIPT = """<script>
     c.appendChild(el('p', 'ad-muted', '지금은 사업소득 3.3%(소득세 3% + 지방소득세 0.3%)로 떼요. 소득세가 1,000원 미만(교환 33,333원 이하)이면 떼지 않아요(소액부징수). 바꾸면 그 뒤 신청부터 적용되고, 지급 내역 엑셀에 소득세·지방소득세가 나뉘어 나와요.'));
     c.appendChild(btn('저장', 'pri', async () => { try { await api('/admin/settings', { share: Number(inputs.share.value) / 100,
       min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked,
-      withholding_rate: Number(inputs.withholding_rate.value) / 100, withholding_free_upto: Number(inputs.withholding_free_upto.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
+      withholding_rate: Number(inputs.withholding_rate.value) / 100, withholding_free_upto: Number(inputs.withholding_free_upto.value),
+      signup_bonus: Number(inputs.signup_bonus.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
     box.appendChild(c);
     box.appendChild(el('h3', 'ad-h', '관리자 작업 기록'));
     const a = await api('/admin/audit');
@@ -535,6 +545,7 @@ PRIVACY_BODY = f"""
       <li>적립을 위해 쿠팡 파트너스에서 받는 정보: 회원 전용 링크로 산 상품의 구매일·상품명·수량·금액, 취소·반품 여부
         (쿠팡은 이름·연락처·주소 등 구매자 정보를 주지 않습니다)</li>
       <li>현금 교환 신청 시: 예금주, 은행, 계좌번호, 주민등록번호(세금 신고용)</li>
+      <li>가입 축하 포인트 중복 지급 방지: 카카오 회원번호를 원래 번호로 되돌릴 수 없는 형태(해시)로 바꾼 값</li>
     </ul>
     <h3>2. 쓰는 곳</h3>
     <ul><li>회원 확인, 포인트 적립 예정·완료 내역 표시와 관리</li><li>현금 교환 신청 확인과 계좌 입금</li>
@@ -542,7 +553,8 @@ PRIVACY_BODY = f"""
     <h3>3. 보관 기간</h3>
     <ul><li>회원 정보·적립 내역: 탈퇴할 때까지. 「내 적립」에서 탈퇴하면 바로 지웁니다.</li>
         <li>현금 교환 계좌 정보·주민등록번호: 암호화해 보관하며, 반려되면 바로 지우고, 입금한 기록은 국세기본법상 증빙 보관을 위해 입금 후 5년 동안 보관한 뒤 지웁니다.</li>
-        <li>로그인 유지 정보는 90일이 지나면 자동으로 지워집니다.</li></ul>
+        <li>로그인 유지 정보는 90일이 지나면 자동으로 지워집니다.</li>
+        <li>가입 축하 포인트 중복 방지 값(해시)은 탈퇴 후에도 서비스 종료 때까지 보관합니다. 이 값만으로는 누구인지 알 수 없습니다.</li></ul>
     <h3>4. 다른 곳에 주는지</h3>
     <ul><li>제3자에게 제공하지 않습니다. 법령에 따라 요구되는 경우는 예외로 합니다.</li></ul>
     <h3>5. 맡기는 곳 (처리 위탁)</h3>
@@ -562,6 +574,7 @@ TERMS_BODY = """
     <h3>제1조 (포인트가 쌓이는 방법)</h3>
     <ul><li>카카오로 로그인한 기기에서 혜택존의 쿠팡 링크(핫딜·검색의 「구매하러 가기」)를 누르고 24시간 안에 쿠팡에서 결제한 구매에 포인트가 쌓입니다.</li>
         <li>포인트는 그 구매로 혜택존이 쿠팡에서 받는 수수료에 적립 비율을 곱한 만큼입니다. 적립 비율은 「내 포인트 → 적립 규정」에 표시되며, 바뀌면 그 뒤 새로 확인되는 구매부터 적용하고 이미 확인된 구매에는 소급하지 않습니다.</li>
+        <li>처음 가입(이 약관에 동의)하면 가입 축하 포인트(현재 1,000P)를 한 번 드립니다. 같은 카카오 계정으로는 탈퇴 후 다시 가입해도 다시 드리지 않으며, 가입 축하 포인트도 제4조 유효기간을 따릅니다.</li>
         <li>적립은 쿠팡 파트너스가 알려주는 구매 기록만을 기준으로 합니다. 쿠팡이 집계하지 않은 구매(로그인하지 않은 상태, 다른 사이트 링크, 쿠팡 정책상 제외되는 구매 등)는 적립되지 않습니다.</li></ul>
     <h3>제2조 (적립 예정과 적립 완료)</h3>
     <ul><li>구매가 확인되면 「적립 예정」으로 표시되고, 쿠팡이 취소·반품을 반영해 확정하는 구매한 달의 다음 달 25일에 「적립 완료」가 됩니다.</li>

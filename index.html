@@ -238,6 +238,36 @@
   .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
   .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
   .rw-agree a{color:inherit}
+    .hz-top{display:grid;gap:12px;background:var(--rw-bar);border:2px solid var(--rw-bar-line);border-radius:18px;padding:16px 16px 14px;margin:18px 0 6px;box-shadow:0 3px 14px #00000012}
+  .hz-top[hidden],.hz-top [hidden],.hz-dim[hidden],.hz-sheet[hidden]{display:none!important}
+  .hz-top #hz-top-out,.hz-top #hz-top-in{display:grid;gap:12px}
+  .hz-top .t{font-size:21px;font-weight:900;line-height:1.35;color:var(--txt)}
+  .hz-top .s{font-size:17px;color:var(--sub);line-height:1.5}
+  .hz-top .s b{color:var(--rw-pend)}
+  .hz-top .bonus{font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:9px 12px}
+  :root[data-theme="dark"] .hz-top .bonus{background:#3a1520;color:#fda4af}
+  .hz-k{display:flex;align-items:center;justify-content:center;gap:9px;background:#FEE500;color:rgba(0,0,0,.85);font-size:20px;font-weight:900;padding:15px;border-radius:14px;text-decoration:none}
+  .hz-k:focus-visible,.hz-o:focus-visible,.hz-sheet .later:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+  .hz-top .row{display:flex;gap:10px}
+  .hz-top .tile{flex:1;background:var(--card);border:2px solid var(--rw-bar-line);border-radius:14px;padding:10px 12px}
+  .hz-top .tile small{display:block;font-size:14px;font-weight:800;color:var(--sub)}
+  .hz-top .tile b{font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}
+  .hz-top .tile.g b{color:var(--badge-ok)}.hz-top .tile.o b{color:var(--rw-pend)}
+  .hz-o{display:flex;align-items:center;justify-content:center;background:var(--card);border:2px solid var(--line);color:var(--txt);font-size:18px;font-weight:900;padding:12px;border-radius:14px;text-decoration:none}
+  .hz-dim{position:fixed;inset:0;background:#1a140dcc;z-index:60}
+  .hz-sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:720px;margin:0 auto;background:var(--card);color:var(--txt);border-radius:24px 24px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom));display:grid;gap:14px;box-shadow:0 -8px 30px #0005;max-height:90vh;overflow:auto}
+  .hz-sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:-8px auto 2px}
+  .hz-sheet h2{margin:0;font-size:25px;line-height:1.3;text-align:center}
+  .hz-sheet p{margin:0;text-align:center;font-size:17px;color:var(--sub)}
+  .hz-sheet ol{list-style:none;margin:4px 0;padding:0;display:grid;gap:10px}
+  .hz-sheet li{display:flex;align-items:center;gap:12px;background:var(--rw-bar);border-radius:14px;padding:12px 14px;font-size:18px;font-weight:800}
+  .hz-sheet li span{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:22px;border:2px solid var(--rw-bar-line)}
+  .hz-sheet li em{font-style:normal;color:#be123c}
+  .hz-sheet .later{font-family:inherit;background:none;border:0;text-align:center;font-size:17px;color:var(--mut);font-weight:700;padding:6px;cursor:pointer}
+  .rw-bonus{margin:10px 0 0;font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:10px 12px}
+  :root[data-theme="dark"] .rw-bonus{background:#3a1520;color:#fda4af}
+  .rw-bonus[hidden]{display:none!important}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
@@ -273,6 +303,78 @@
 
 <div class="wrap">
 
+  <!-- REWARD-TOP:START — scripts/hotdeal.py 가 만듭니다 (포인트 안내 카드·첫 방문 안내 창). 손으로 고치지 마세요 (야간 갱신도 건드리지 않음) -->
+  <section class="hz-top" id="hz-top" hidden aria-label="포인트 적립">
+    <div id="hz-top-out">
+      <div class="t">🪙 로그인하고 포인트 받으세요</div>
+      <div class="s">혜택존 핫딜로 사면 포인트가 쌓이고, <b>1만 P부터 현금</b>으로 받아요</div>
+      <div class="bonus" id="hz-top-bonus" hidden></div>
+      <a class="hz-k" href="https://hyetaekzone-stats.baglebagle.workers.dev/auth/kakao?back=my"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3z"/></svg>카카오로 간편하게 시작</a>
+    </div>
+    <div id="hz-top-in" hidden>
+      <div class="t" id="hz-top-hi"></div>
+      <div class="row" id="hz-top-row"><div class="tile g"><small>쓸 수 있는 포인트</small><b id="hz-top-bal"></b></div><div class="tile o"><small>적립 예정</small><b id="hz-top-pend"></b></div></div>
+      <a class="hz-o" id="hz-top-go" href="my.html">내 포인트 보기 →</a>
+    </div>
+  </section>
+  <div class="hz-dim" id="hz-dim" hidden></div>
+  <div class="hz-sheet" id="hz-sheet" role="dialog" aria-modal="true" aria-labelledby="hz-sheet-h" hidden>
+    <div class="grab" aria-hidden="true"></div>
+    <h2 id="hz-sheet-h">혜택존이 새로워졌어요 🎉</h2>
+    <p>이제 혜택존 핫딜로 사면 포인트가 쌓여요</p>
+    <ol><li><span aria-hidden="true">💬</span><div>카카오로 로그인<em id="hz-sheet-bonus"></em></div></li><li><span aria-hidden="true">🛒</span><div>핫딜에서 「구매하러 가기」로 구매</div></li><li><span aria-hidden="true">💸</span><div>1만 P부터 현금으로 받기</div></li></ol>
+    <a class="hz-k" href="https://hyetaekzone-stats.baglebagle.workers.dev/auth/kakao?back=my"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3z"/></svg>카카오로 간편하게 시작</a>
+    <button type="button" class="later" id="hz-sheet-x">나중에 할게요</button>
+  </div>
+  <script>
+  (function(){
+    var API='https://hyetaekzone-stats.baglebagle.workers.dev', KEY='hz_rw', top=document.getElementById('hz-top'); if(!top||!window.fetch) return;
+    function $(i){ return document.getElementById(i); }
+    function won(n){ return Number(n||0).toLocaleString('ko-KR'); }
+    function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+    function kday(){ return new Date(Date.now()+9*3600e3).toISOString().slice(0,10); }
+    function t(label){ try{ window.hzTrack&&window.hzTrack('rw',label); }catch(e){} }
+    function out(st){
+      if(st.signupBonus>0){ var b=$('hz-top-bonus'); b.textContent='🎁 지금 가입하면 '+won(st.signupBonus)+'P를 바로 드려요'; b.hidden=false; }
+      $('hz-top-out').hidden=false; $('hz-top-in').hidden=true;
+    }
+    /* 로그인 안 한 기기에 하루 한 번만 (한국 날짜 기준) */
+    function sheet(st){
+      var seen=''; try{ seen=localStorage.getItem('hz_sheet_day')||''; }catch(e){}
+      if(seen===kday()) return;
+      try{ localStorage.setItem('hz_sheet_day',kday()); }catch(e){}
+      if(st.signupBonus>0) $('hz-sheet-bonus').textContent=' · 가입하면 '+won(st.signupBonus)+'P';
+      var dim=$('hz-dim'), sh=$('hz-sheet'), prev=document.activeElement;
+      function close(){ dim.hidden=true; sh.hidden=true; document.removeEventListener('keydown',esc); if(prev&&prev.focus) prev.focus(); }
+      function esc(e){ if(e.key==='Escape') close(); }
+      dim.hidden=false; sh.hidden=false; t('안내창 보임');
+      $('hz-sheet-x').onclick=function(){ t('안내창 나중에'); close(); };
+      dim.onclick=close; document.addEventListener('keydown',esc);
+      setTimeout(function(){ var k=sh.querySelector('.hz-k'); if(k) k.focus(); },60);
+    }
+    top.addEventListener('click',function(e){ if(e.target.closest&&e.target.closest('.hz-k')) t('카드 로그인'); });
+    $('hz-sheet').addEventListener('click',function(e){ if(e.target.closest&&e.target.closest('.hz-k')) t('안내창 로그인'); });
+    fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){
+      if(!st.on) return; top.hidden=false;
+      var s=load();
+      if(!s||!s.token){ out(st); sheet(st); return; }
+      return fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
+        if(r.status===401){ try{ localStorage.removeItem(KEY); }catch(e){} out(st); sheet(st); return; }
+        return r.json().then(function(d){
+          $('hz-top-out').hidden=true; $('hz-top-in').hidden=false;
+          if(d.needTerms){
+            $('hz-top-hi').textContent='🪙 '+d.nick+' 님, 약관 동의만 하면 적립이 시작돼요'+(d.signupBonus>0?' · 가입 축하 '+won(d.signupBonus)+'P':'');
+            $('hz-top-row').hidden=true; $('hz-top-go').textContent=d.signupBonus>0?'동의하고 '+won(d.signupBonus)+'P 받기 →':'동의하러 가기 →'; return;
+          }
+          $('hz-top-hi').textContent='🪙 '+d.nick+' 님, 포인트가 쌓이고 있어요';
+          $('hz-top-bal').textContent=won(d.sums.balance)+'P'; $('hz-top-pend').textContent=won(d.sums.pending)+'P';
+          $('hz-top-go').textContent=d.sums.balance>=d.min?'💸 현금으로 받을 수 있어요 · 내 포인트 →':'내 포인트 보기 →';
+        });
+      });
+    }).catch(function(){});
+  })();
+  </script>
+  <!-- REWARD-TOP:END -->
   <div class="toc">
     <a class="hot" href="#new">🆕 새소식</a>
     <a class="hot" href="hotdeal.html">🔥 핫딜 상품</a>
@@ -698,7 +800,7 @@
       <span class="cat-emoji">🔥</span>
       <div>
         <div class="cat-title">오늘의 핫딜</div>
-        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 12일 오후 10:16 기준</div>
+        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 12일 오후 10:26 기준</div>
       </div>
     </div>
     <div class="hd-notice">
@@ -717,39 +819,39 @@
         placeholder="예: 물티슈, 기저귀, 에어프라이어"><button type="submit">검색</button></div>
       <small>쿠팡 상품을 찾아 제휴 링크로 보여드려요 (광고)</small>
     </form>
-    <div class="card ad" data-g="pet" data-p="23200" data-o="0" data-gb="1">
-      <div class="tagrow"><span class="where">반려동물</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://img3a.coupangcdn.com/image/retail/images/5207559310657067-8eecc729-80aa-4371-8164-76fd9a32bbf0.jpg" alt="탐사 실속형 배변패드" loading="lazy">
-      <div class="what">탐사 실속형 배변패드</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>23,200원</b> <small>(9월 12일 오후 10:16 확인)</small></span></div>
-      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
-      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
-      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7299719601&amp;itemId=18677046093&amp;vendorItemId=85811303977&amp;traceid=V0-143-a654f2eb1a75f0f5&amp;pt=0&amp;slot=1" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
-    </div>
-    <div class="card ad" data-g="home" data-p="28780" data-o="1" data-gb="1">
+    <div class="card ad" data-g="home" data-p="28780" data-o="0" data-gb="1">
       <div class="tagrow"><span class="where">가구·인테리어</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://image4.coupangcdn.com/image/vendor_inventory/8e28/10b3fbcd5eb469388b7f2448ddb4ac2f053c1966ecda1185c56388f93ba2.png" alt="Kipnos 폴딩 대용량 리빙박스 수납장 대용량 수납 정리함 접이식 보관함 다용도 수납함 플라스틱 수납함 사물함 정리함 리빙박 스수납박스 대형가정용 장난감 수납장 옷정리함" loading="lazy">
+      <img class="hd-img" src="https://image7.coupangcdn.com/image/vendor_inventory/8e28/10b3fbcd5eb469388b7f2448ddb4ac2f053c1966ecda1185c56388f93ba2.png" alt="Kipnos 폴딩 대용량 리빙박스 수납장 대용량 수납 정리함 접이식 보관함 다용도 수납함 플라스틱 수납함 사물함 정리함 리빙박 스수납박스 대형가정용 장난감 수납장 옷정리함" loading="lazy">
       <div class="what">Kipnos 폴딩 대용량 리빙박스 수납장 대용량 수납 정리함 접이식 보관함 다용도 수납함 플라스틱 수납함 사물함 정리함 리빙박 스수납박스 대형가정용 장난감 수납장 옷정리함</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>28,780원</b> <small>(9월 12일 오후 10:16 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>28,780원</b> <small>(9월 12일 오후 10:26 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8837247802&amp;itemId=24983983526&amp;vendorItemId=95821723193&amp;traceid=V0-143-1b2493c00f511edd&amp;pt=0&amp;slot=2" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8837247802&amp;itemId=24983983526&amp;vendorItemId=95821723193&amp;traceid=V0-143-1b2493c00f511edd&amp;pt=0&amp;slot=1" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
     </div>
-    <div class="card ad" data-g="food" data-p="26090" data-o="2" data-gb="1">
+    <div class="card ad" data-g="food" data-p="26090" data-o="1" data-gb="1">
       <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://image7.coupangcdn.com/image/vendor_inventory/image_audit/stage/manual/fd5245cbb4710fe44bf56ae7446e8623320614ded2644dc3be0978cac547_1776647972386.jpg" alt="행복미트 프리미엄 소 스지 수육 탕 전골용" loading="lazy">
+      <img class="hd-img" src="https://image3.coupangcdn.com/image/vendor_inventory/image_audit/stage/manual/fd5245cbb4710fe44bf56ae7446e8623320614ded2644dc3be0978cac547_1776647972386.jpg" alt="행복미트 프리미엄 소 스지 수육 탕 전골용" loading="lazy">
       <div class="what">행복미트 프리미엄 소 스지 수육 탕 전골용</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>26,090원</b> <small>(9월 12일 오후 10:16 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>26,090원</b> <small>(9월 12일 오후 10:26 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>📦 일반배송 · 무료배송</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7484261404&amp;itemId=19543928276&amp;vendorItemId=86422174034&amp;traceid=V0-143-7ecbbf88a8a1abaa&amp;pt=0&amp;slot=3" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7484261404&amp;itemId=19543928276&amp;vendorItemId=86422174034&amp;traceid=V0-143-7ecbbf88a8a1abaa&amp;pt=0&amp;slot=2" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad" data-g="kitchen" data-p="161270" data-o="2" data-gb="1">
+      <div class="tagrow"><span class="where">주방용품</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
+      <img class="hd-img" src="https://image4.coupangcdn.com/image/retail/images/2019/08/06/14/6/bbee604d-20ec-452c-afd7-bb1747442c4f.jpg" alt="코렐 저스트화이트 4인 코리안 홈 식기세트 22p" loading="lazy">
+      <div class="what">코렐 저스트화이트 4인 코리안 홈 식기세트 22p</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>161,270원</b> <small>(9월 12일 오후 10:26 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=6306144676&amp;itemId=7962763832&amp;vendorItemId=5197869217&amp;traceid=V0-143-d4851f704293d730&amp;pt=0&amp;slot=3" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
     </div>
     <div class="hd-cats"><b>카테고리별로 보기</b>
       <a href="hotdeal.html#g-gb">🔥 골드박스 특가 28</a>
-      <a href="hotdeal.html#g-life">🧻 생활용품 28</a>
+      <a href="hotdeal.html#g-life">🧻 생활용품 29</a>
       <a href="hotdeal.html#g-food">🍚 먹거리 52</a>
       <a href="hotdeal.html#g-kitchen">🍳 주방용품 17</a>
       <a href="hotdeal.html#g-beauty">💄 뷰티 20</a>
@@ -757,7 +859,7 @@
       <a href="hotdeal.html#g-home">🛏️ 가구·인테리어 8</a>
       <a href="hotdeal.html#g-travel">✈️ 여행·레저 4</a>
     </div>
-    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 (347개) <span class="arr">→</span></a>
+    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 (348개) <span class="arr">→</span></a>
   </section>
   <script>
 (function(){

@@ -122,19 +122,23 @@ ok(r.status === 403, '약관 동의 전에는 현금 교환 불가');
 r = await call('/me/agree', { method: 'POST', headers: H, body: { ver: me.termsVer, terms: true, privacy: false } });
 ok(r.status === 400, '개인정보 동의를 빼면 거절');
 r = await call('/me/agree', { method: 'POST', headers: H, body: { ver: me.termsVer, terms: true, privacy: true } });
+const agreed = await r.json();
 me = await (await call('/me', { headers: H })).json();
 ok(r.status === 200 && me.needTerms === false, '약관·개인정보 동의 → 적립 시작');
+ok(agreed.bonus === 1000 && me.log.some(l => l.kind === 'bonus' && l.amount === 1000) && me.sums.balance === 61000, '처음 동의하면 가입 축하 1,000P (잔액 60,000 + 1,000)');
+const again = await (await call('/me/agree', { method: 'POST', headers: H, body: { ver: me.termsVer, terms: true, privacy: true } })).json();
+ok(again.bonus === 0, '다시 동의해도 가입 축하는 한 번만');
 ok(me.sums.expiringSoon === 60000, `350일 된 적립 60,000P → 30일 안에 사라질 포인트 ${me.sums.expiringSoon}P 로 안내`);
 await call('/admin/settings', { method: 'POST', headers: { Authorization: 'Bearer stats-test', 'Content-Type': 'application/json' },
   body: { share: 0.1, min_cashout: 10000, expire_days: 365, collect_rrn: 1, withholding_rate: 0.033, withholding_free_upto: 0 } });
 const co = await (await call('/me/cashout', { method: 'POST', headers: H, body: acct })).json();
-ok(co.amount === 60000 && co.tax === 1980 && co.net === 58020, `사업소득 3.3%: 60,000P → 소득세 1,800 + 지방소득세 180 = ${co.tax}원 · 입금 ${co.net}원`);
+ok(co.amount === 61000 && co.tax === 2010 && co.net === 58990, `사업소득 3.3%: 61,000P → 소득세 1,830 + 지방소득세 180 = ${co.tax}원 · 입금 ${co.net}원`);
 const cid = db.prepare("SELECT id FROM cashouts WHERE status='requested'").get().id;
 await call('/admin/cashout/done', { method: 'POST', headers: { Authorization: 'Bearer stats-test', 'Content-Type': 'application/json' }, body: { id: cid } });
 const mo = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 7);
 const ex = await call('/admin/export?month=' + mo, { headers: { Authorization: 'Bearer stats-test' } });
 const text = await ex.text(), lines = text.replace(/^﻿/, '').split('\r\n');
-ok(ex.headers.get('Content-Type').startsWith('text/csv') && lines.length === 3 && lines[1].includes('900101-1234567') && lines[1].endsWith(',60000,1800,180,1980,58020,관리 키') && lines[2].startsWith('합계'),
+ok(ex.headers.get('Content-Type').startsWith('text/csv') && lines.length === 3 && lines[1].includes('900101-1234567') && lines[1].endsWith(',61000,1830,180,2010,58990,관리 키') && lines[2].startsWith('합계'),
   '지급 내역 CSV: 예금주·계좌·주민번호·세금·실지급액·합계 줄');
 ok(db.prepare("SELECT COUNT(*) n FROM audit WHERE action='지급 내역 내보내기'").get().n === 1, '내보내기는 작업 기록에 남음');
 const small = taxCheck => taxCheck;
@@ -146,5 +150,19 @@ ok(co2.amount === 30000 && co2.tax === 0 && co2.net === 30000, '소득세 1,000�
 const rep = await (await call('/admin/report', { headers: { Authorization: 'Bearer stats-test' } })).json();
 ok(rep.cashPending.n === 1 && rep.members.n === 1 && rep.newOrders.n >= 2 && typeof rep.syncStale === 'boolean', `아침 보고 요약: 교환 대기 ${rep.cashPending.n}건 · 새 주문 ${rep.newOrders.n}건`);
 ok(me.rows.every(x => 'createdAt' in x && 'confirmedAt' in x), '회원 알림용 시각(처음 잡힘·확정) 제공');
+// 11. 탈퇴 후 같은 카카오 계정으로 재가입 → 가입 축하 다시 안 줌
+const pendId = db.prepare("SELECT id FROM cashouts WHERE status='requested'").get().id;
+await call('/admin/cashout/reject', { method: 'POST', headers: { Authorization: 'Bearer stats-test', 'Content-Type': 'application/json' }, body: { id: pendId, reason: '시험' } });
+const del = await call('/me/delete', { method: 'POST', headers: H });
+ok(del.status === 200, '처리 중 교환이 없으면 탈퇴 됨');
+const t4 = (await login('my')).dest.split('#login=')[1];
+const H4 = { ...ORIGIN, Authorization: 'Bearer ' + t4, 'Content-Type': 'application/json' };
+const m4 = await (await call('/me', { headers: H4 })).json();
+const ag4 = await (await call('/me/agree', { method: 'POST', headers: H4, body: { ver: m4.termsVer, terms: true, privacy: true } })).json();
+const m5 = await (await call('/me', { headers: H4 })).json();
+ok(m4.needTerms === true && ag4.bonus === 0 && m5.sums.balance === 0, '탈퇴 후 같은 카카오 계정 재가입 → 가입 축하 다시 안 줌');
+ok(db.prepare('SELECT COUNT(*) n FROM bonus_claims').get().n === 1 && !db.prepare('SELECT kakao_hash h FROM bonus_claims').get().h.includes('4242001'), '중복 방지에는 카카오 회원번호 해시만 보관');
+const st = await (await call('/rw/status', { headers: ORIGIN })).json();
+ok(st.signupBonus === 1000, '상태 정보에 가입 축하 포인트 (화면 문구용)');
 console.log(fails ? `\n❌ ${fails}개 실패` : '\n모두 통과');
 process.exit(fails ? 1 : 0);

@@ -238,6 +238,36 @@
   .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
   .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
   .rw-agree a{color:inherit}
+    .hz-top{display:grid;gap:12px;background:var(--rw-bar);border:2px solid var(--rw-bar-line);border-radius:18px;padding:16px 16px 14px;margin:18px 0 6px;box-shadow:0 3px 14px #00000012}
+  .hz-top[hidden],.hz-top [hidden],.hz-dim[hidden],.hz-sheet[hidden]{display:none!important}
+  .hz-top #hz-top-out,.hz-top #hz-top-in{display:grid;gap:12px}
+  .hz-top .t{font-size:21px;font-weight:900;line-height:1.35;color:var(--txt)}
+  .hz-top .s{font-size:17px;color:var(--sub);line-height:1.5}
+  .hz-top .s b{color:var(--rw-pend)}
+  .hz-top .bonus{font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:9px 12px}
+  :root[data-theme="dark"] .hz-top .bonus{background:#3a1520;color:#fda4af}
+  .hz-k{display:flex;align-items:center;justify-content:center;gap:9px;background:#FEE500;color:rgba(0,0,0,.85);font-size:20px;font-weight:900;padding:15px;border-radius:14px;text-decoration:none}
+  .hz-k:focus-visible,.hz-o:focus-visible,.hz-sheet .later:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+  .hz-top .row{display:flex;gap:10px}
+  .hz-top .tile{flex:1;background:var(--card);border:2px solid var(--rw-bar-line);border-radius:14px;padding:10px 12px}
+  .hz-top .tile small{display:block;font-size:14px;font-weight:800;color:var(--sub)}
+  .hz-top .tile b{font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}
+  .hz-top .tile.g b{color:var(--badge-ok)}.hz-top .tile.o b{color:var(--rw-pend)}
+  .hz-o{display:flex;align-items:center;justify-content:center;background:var(--card);border:2px solid var(--line);color:var(--txt);font-size:18px;font-weight:900;padding:12px;border-radius:14px;text-decoration:none}
+  .hz-dim{position:fixed;inset:0;background:#1a140dcc;z-index:60}
+  .hz-sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:720px;margin:0 auto;background:var(--card);color:var(--txt);border-radius:24px 24px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom));display:grid;gap:14px;box-shadow:0 -8px 30px #0005;max-height:90vh;overflow:auto}
+  .hz-sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:-8px auto 2px}
+  .hz-sheet h2{margin:0;font-size:25px;line-height:1.3;text-align:center}
+  .hz-sheet p{margin:0;text-align:center;font-size:17px;color:var(--sub)}
+  .hz-sheet ol{list-style:none;margin:4px 0;padding:0;display:grid;gap:10px}
+  .hz-sheet li{display:flex;align-items:center;gap:12px;background:var(--rw-bar);border-radius:14px;padding:12px 14px;font-size:18px;font-weight:800}
+  .hz-sheet li span{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:22px;border:2px solid var(--rw-bar-line)}
+  .hz-sheet li em{font-style:normal;color:#be123c}
+  .hz-sheet .later{font-family:inherit;background:none;border:0;text-align:center;font-size:17px;color:var(--mut);font-weight:700;padding:6px;cursor:pointer}
+  .rw-bonus{margin:10px 0 0;font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:10px 12px}
+  :root[data-theme="dark"] .rw-bonus{background:#3a1520;color:#fda4af}
+  .rw-bonus[hidden]{display:none!important}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
@@ -477,7 +507,7 @@
       { h: '취소', r: 1, v: o => o.cancel ? won(o.cancel) : '' }, { h: '수수료', r: 1, v: o => won(o.commission) },
       { h: '포인트', r: 1, v: o => won(o.points) }, { h: '상태', v: o => ST[o.status] + (o.status === 'pending' ? ` (${o.confirmOn.slice(5)} 확정)` : '') }], d.rows));
     box.appendChild(el('h3', 'ad-h', '포인트 변동'));
-    box.appendChild(table([{ h: '시각', v: l => ts(l.at) }, { h: '종류', v: l => ({ cashout: '현금 교환', refund: '반려 복구', adjust: '조정', expire: '소멸' })[l.kind] || l.kind },
+    box.appendChild(table([{ h: '시각', v: l => ts(l.at) }, { h: '종류', v: l => ({ cashout: '현금 교환', refund: '반려 복구', adjust: '조정', expire: '소멸', bonus: '가입 축하' })[l.kind] || l.kind },
       { h: '포인트', r: 1, v: l => (l.amount > 0 ? '+' : '') + won(l.amount) }, { h: '내용', v: l => l.memo || '' }], d.log));
   }
 
@@ -486,7 +516,8 @@
     c.appendChild(el('div', 'ad-h', '적립 설정'));
     c.appendChild(el('p', 'ad-muted', '적립 비율은 바꾼 뒤 새로 잡히는 주문부터 적용돼요. 이미 잡힌 주문은 그때 비율 그대로입니다.'));
     const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days],
-      ['withholding_rate', '원천징수율 합계 (%) — 사업소득 3.3, 0이면 안 뗌', Math.round(s.withholding_rate * 1000) / 10], ['withholding_free_upto', '이 금액(원) 이하 교환은 안 뗌 (사업소득은 0)', s.withholding_free_upto]];
+      ['withholding_rate', '원천징수율 합계 (%) — 사업소득 3.3, 0이면 안 뗌', Math.round(s.withholding_rate * 1000) / 10], ['withholding_free_upto', '이 금액(원) 이하 교환은 안 뗌 (사업소득은 0)', s.withholding_free_upto],
+      ['signup_bonus', '가입 축하 포인트 (P) — 0이면 안 줌', s.signup_bonus]];
     const inputs = {};
     f.forEach(([k, label, v]) => { const r = el('label', 'ad-row'); r.appendChild(el('span', null, label)); const i = el('input'); i.type = 'number'; i.value = v; i.step = 'any'; inputs[k] = i; r.appendChild(i); c.appendChild(r); });
     const quick = el('div', 'ad-row'); quick.appendChild(el('span', 'ad-muted', '빠른 선택'));
@@ -503,7 +534,8 @@
     c.appendChild(el('p', 'ad-muted', '지금은 사업소득 3.3%(소득세 3% + 지방소득세 0.3%)로 떼요. 소득세가 1,000원 미만(교환 33,333원 이하)이면 떼지 않아요(소액부징수). 바꾸면 그 뒤 신청부터 적용되고, 지급 내역 엑셀에 소득세·지방소득세가 나뉘어 나와요.'));
     c.appendChild(btn('저장', 'pri', async () => { try { await api('/admin/settings', { share: Number(inputs.share.value) / 100,
       min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked,
-      withholding_rate: Number(inputs.withholding_rate.value) / 100, withholding_free_upto: Number(inputs.withholding_free_upto.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
+      withholding_rate: Number(inputs.withholding_rate.value) / 100, withholding_free_upto: Number(inputs.withholding_free_upto.value),
+      signup_bonus: Number(inputs.signup_bonus.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
     box.appendChild(c);
     box.appendChild(el('h3', 'ad-h', '관리자 작업 기록'));
     const a = await api('/admin/audit');

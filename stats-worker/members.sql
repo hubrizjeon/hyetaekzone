@@ -75,6 +75,11 @@ CREATE TABLE IF NOT EXISTS cashouts (
   admin        TEXT
 );
 CREATE UNIQUE INDEX IF NOT EXISTS cashouts_one_pending ON cashouts(member_id) WHERE status = 'requested';
+-- 가입 축하 포인트 중복 방지: 카카오 회원번호의 해시만 (원래 번호로 되돌릴 수 없음). 탈퇴해도 남겨 재가입 시 다시 안 줌
+CREATE TABLE IF NOT EXISTS bonus_claims (
+  kakao_hash TEXT    PRIMARY KEY,
+  at         INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS settings (
   k TEXT PRIMARY KEY,
   v TEXT NOT NULL

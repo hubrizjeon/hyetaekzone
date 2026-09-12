@@ -191,6 +191,36 @@ CSS = CSS_START + """
   .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
   .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
   .rw-agree a{color:inherit}
+    .hz-top{display:grid;gap:12px;background:var(--rw-bar);border:2px solid var(--rw-bar-line);border-radius:18px;padding:16px 16px 14px;margin:18px 0 6px;box-shadow:0 3px 14px #00000012}
+  .hz-top[hidden],.hz-top [hidden],.hz-dim[hidden],.hz-sheet[hidden]{display:none!important}
+  .hz-top #hz-top-out,.hz-top #hz-top-in{display:grid;gap:12px}
+  .hz-top .t{font-size:21px;font-weight:900;line-height:1.35;color:var(--txt)}
+  .hz-top .s{font-size:17px;color:var(--sub);line-height:1.5}
+  .hz-top .s b{color:var(--rw-pend)}
+  .hz-top .bonus{font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:9px 12px}
+  :root[data-theme="dark"] .hz-top .bonus{background:#3a1520;color:#fda4af}
+  .hz-k{display:flex;align-items:center;justify-content:center;gap:9px;background:#FEE500;color:rgba(0,0,0,.85);font-size:20px;font-weight:900;padding:15px;border-radius:14px;text-decoration:none}
+  .hz-k:focus-visible,.hz-o:focus-visible,.hz-sheet .later:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+  .hz-top .row{display:flex;gap:10px}
+  .hz-top .tile{flex:1;background:var(--card);border:2px solid var(--rw-bar-line);border-radius:14px;padding:10px 12px}
+  .hz-top .tile small{display:block;font-size:14px;font-weight:800;color:var(--sub)}
+  .hz-top .tile b{font-size:25px;font-weight:900;font-variant-numeric:tabular-nums}
+  .hz-top .tile.g b{color:var(--badge-ok)}.hz-top .tile.o b{color:var(--rw-pend)}
+  .hz-o{display:flex;align-items:center;justify-content:center;background:var(--card);border:2px solid var(--line);color:var(--txt);font-size:18px;font-weight:900;padding:12px;border-radius:14px;text-decoration:none}
+  .hz-dim{position:fixed;inset:0;background:#1a140dcc;z-index:60}
+  .hz-sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:720px;margin:0 auto;background:var(--card);color:var(--txt);border-radius:24px 24px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom));display:grid;gap:14px;box-shadow:0 -8px 30px #0005;max-height:90vh;overflow:auto}
+  .hz-sheet .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:-8px auto 2px}
+  .hz-sheet h2{margin:0;font-size:25px;line-height:1.3;text-align:center}
+  .hz-sheet p{margin:0;text-align:center;font-size:17px;color:var(--sub)}
+  .hz-sheet ol{list-style:none;margin:4px 0;padding:0;display:grid;gap:10px}
+  .hz-sheet li{display:flex;align-items:center;gap:12px;background:var(--rw-bar);border-radius:14px;padding:12px 14px;font-size:18px;font-weight:800}
+  .hz-sheet li span{flex:none;width:40px;height:40px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:22px;border:2px solid var(--rw-bar-line)}
+  .hz-sheet li em{font-style:normal;color:#be123c}
+  .hz-sheet .later{font-family:inherit;background:none;border:0;text-align:center;font-size:17px;color:var(--mut);font-weight:700;padding:6px;cursor:pointer}
+  .rw-bonus{margin:10px 0 0;font-size:18px;font-weight:900;color:#be123c;background:#fff1f2;border-radius:12px;padding:10px 12px}
+  :root[data-theme="dark"] .rw-bonus{background:#3a1520;color:#fda4af}
+  .rw-bonus[hidden]{display:none!important}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   """ + CSS_END
@@ -248,6 +278,82 @@ REWARD_SCRIPT = """<script>
 })();
 </script>""".replace("__API__", R.API)
 
+
+
+# ── 메인 첫 화면: 포인트 안내 카드(A, 목차 위) + 첫 방문 안내 창(C, 로그인 안 한 기기에 하루 한 번) ──
+TOP_START, TOP_END = "<!-- REWARD-TOP:START", "<!-- REWARD-TOP:END -->"
+REWARD_TOP = (TOP_START + """ — scripts/hotdeal.py 가 만듭니다 (포인트 안내 카드·첫 방문 안내 창). 손으로 고치지 마세요 (야간 갱신도 건드리지 않음) -->
+  <section class="hz-top" id="hz-top" hidden aria-label="포인트 적립">
+    <div id="hz-top-out">
+      <div class="t">🪙 로그인하고 포인트 받으세요</div>
+      <div class="s">혜택존 핫딜로 사면 포인트가 쌓이고, <b>1만 P부터 현금</b>으로 받아요</div>
+      <div class="bonus" id="hz-top-bonus" hidden></div>
+      <a class="hz-k" href="__API__/auth/kakao?back=my">__KAKAO__카카오로 간편하게 시작</a>
+    </div>
+    <div id="hz-top-in" hidden>
+      <div class="t" id="hz-top-hi"></div>
+      <div class="row" id="hz-top-row"><div class="tile g"><small>쓸 수 있는 포인트</small><b id="hz-top-bal"></b></div><div class="tile o"><small>적립 예정</small><b id="hz-top-pend"></b></div></div>
+      <a class="hz-o" id="hz-top-go" href="my.html">내 포인트 보기 →</a>
+    </div>
+  </section>
+  <div class="hz-dim" id="hz-dim" hidden></div>
+  <div class="hz-sheet" id="hz-sheet" role="dialog" aria-modal="true" aria-labelledby="hz-sheet-h" hidden>
+    <div class="grab" aria-hidden="true"></div>
+    <h2 id="hz-sheet-h">혜택존이 새로워졌어요 🎉</h2>
+    <p>이제 혜택존 핫딜로 사면 포인트가 쌓여요</p>
+    <ol><li><span aria-hidden="true">💬</span><div>카카오로 로그인<em id="hz-sheet-bonus"></em></div></li><li><span aria-hidden="true">🛒</span><div>핫딜에서 「구매하러 가기」로 구매</div></li><li><span aria-hidden="true">💸</span><div>1만 P부터 현금으로 받기</div></li></ol>
+    <a class="hz-k" href="__API__/auth/kakao?back=my">__KAKAO__카카오로 간편하게 시작</a>
+    <button type="button" class="later" id="hz-sheet-x">나중에 할게요</button>
+  </div>
+  <script>
+  (function(){
+    var API='__API__', KEY='hz_rw', top=document.getElementById('hz-top'); if(!top||!window.fetch) return;
+    function $(i){ return document.getElementById(i); }
+    function won(n){ return Number(n||0).toLocaleString('ko-KR'); }
+    function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+    function kday(){ return new Date(Date.now()+9*3600e3).toISOString().slice(0,10); }
+    function t(label){ try{ window.hzTrack&&window.hzTrack('rw',label); }catch(e){} }
+    function out(st){
+      if(st.signupBonus>0){ var b=$('hz-top-bonus'); b.textContent='🎁 지금 가입하면 '+won(st.signupBonus)+'P를 바로 드려요'; b.hidden=false; }
+      $('hz-top-out').hidden=false; $('hz-top-in').hidden=true;
+    }
+    /* 로그인 안 한 기기에 하루 한 번만 (한국 날짜 기준) */
+    function sheet(st){
+      var seen=''; try{ seen=localStorage.getItem('hz_sheet_day')||''; }catch(e){}
+      if(seen===kday()) return;
+      try{ localStorage.setItem('hz_sheet_day',kday()); }catch(e){}
+      if(st.signupBonus>0) $('hz-sheet-bonus').textContent=' · 가입하면 '+won(st.signupBonus)+'P';
+      var dim=$('hz-dim'), sh=$('hz-sheet'), prev=document.activeElement;
+      function close(){ dim.hidden=true; sh.hidden=true; document.removeEventListener('keydown',esc); if(prev&&prev.focus) prev.focus(); }
+      function esc(e){ if(e.key==='Escape') close(); }
+      dim.hidden=false; sh.hidden=false; t('안내창 보임');
+      $('hz-sheet-x').onclick=function(){ t('안내창 나중에'); close(); };
+      dim.onclick=close; document.addEventListener('keydown',esc);
+      setTimeout(function(){ var k=sh.querySelector('.hz-k'); if(k) k.focus(); },60);
+    }
+    top.addEventListener('click',function(e){ if(e.target.closest&&e.target.closest('.hz-k')) t('카드 로그인'); });
+    $('hz-sheet').addEventListener('click',function(e){ if(e.target.closest&&e.target.closest('.hz-k')) t('안내창 로그인'); });
+    fetch(API+'/rw/status').then(function(r){ return r.json(); }).then(function(st){
+      if(!st.on) return; top.hidden=false;
+      var s=load();
+      if(!s||!s.token){ out(st); sheet(st); return; }
+      return fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
+        if(r.status===401){ try{ localStorage.removeItem(KEY); }catch(e){} out(st); sheet(st); return; }
+        return r.json().then(function(d){
+          $('hz-top-out').hidden=true; $('hz-top-in').hidden=false;
+          if(d.needTerms){
+            $('hz-top-hi').textContent='🪙 '+d.nick+' 님, 약관 동의만 하면 적립이 시작돼요'+(d.signupBonus>0?' · 가입 축하 '+won(d.signupBonus)+'P':'');
+            $('hz-top-row').hidden=true; $('hz-top-go').textContent=d.signupBonus>0?'동의하고 '+won(d.signupBonus)+'P 받기 →':'동의하러 가기 →'; return;
+          }
+          $('hz-top-hi').textContent='🪙 '+d.nick+' 님, 포인트가 쌓이고 있어요';
+          $('hz-top-bal').textContent=won(d.sums.balance)+'P'; $('hz-top-pend').textContent=won(d.sums.pending)+'P';
+          $('hz-top-go').textContent=d.sums.balance>=d.min?'💸 현금으로 받을 수 있어요 · 내 포인트 →':'내 포인트 보기 →';
+        });
+      });
+    }).catch(function(){});
+  })();
+  </script>
+  """ + TOP_END).replace("__API__", R.API).replace("__KAKAO__", R.KAKAO_ICON)
 
 SEARCH_API = K.STATS.rsplit("/", 1)[0] + "/search"   # 쿠팡 검색 (stats-worker 의 /search, 키는 Worker 비밀값)
 
@@ -530,6 +636,11 @@ def apply_index(src, block):
     lines[k + 1:k + 1] = ["    " + CHIP, "    " + POINT_CHIP]
     src = src[:i] + "\n".join(lines) + src[j:]
 
+    src = re.sub(r"[ \t]*" + re.escape(TOP_START) + r".*?" + re.escape(TOP_END) + r"\n?", "", src, flags=re.S)
+    t0 = src.index('<div class="toc">')
+    ls = src.rfind("\n", 0, t0) + 1
+    src = src[:ls] + "  " + REWARD_TOP + "\n" + src[ls:]
+
     if P_START in src:
         s = src.rfind("\n", 0, src.index(P_START)) + 1
         e = src.index(P_END, s) + len(P_END)
@@ -609,6 +720,7 @@ def validate(old, new, page):
     problems = K.problems(new, page)
     for label, text, n in [("PARTNERS 시작", P_START, 1), ("PARTNERS 끝", P_END, 1),
                            ("핫딜 CSS", CSS_START, 1), ("목차 칩", CHIP, 1), ("포인트 칩", POINT_CHIP, 1),
+                           ("포인트 안내 시작", TOP_START, 1), ("포인트 안내 끝", TOP_END, 1),
                            ("꿀팁", '<div class="tips">', 1)]:
         if new.count(text) != n:
             problems.append(f"index.html {label} {new.count(text)}곳 (정상 {n})")
@@ -616,6 +728,8 @@ def validate(old, new, page):
     toc = toc[:toc.index("</div>")]
     if 'href="#new"' in toc and toc.index('href="#new"') > toc.index("hotdeal.html"):
         problems.append("핫딜 칩이 새소식 앞에 있음")
+    if new.index(TOP_START) > new.index('<div class="toc">'):
+        problems.append("포인트 안내 카드가 목차 뒤에 있음")
     if new.index(P_START) > new.index('<div class="tips">'):
         problems.append("핫딜 칸이 꿀팁 뒤에 있음")
     if new.count("네이버") != old.count("네이버") or "네이버" in page:
