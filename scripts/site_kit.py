@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""혜택존 공통 장치 — 카톡 공유 미리보기 · 「동료 선생님께 보내기」 · 「홈 화면에 추가」 · 방문·클릭 집계.
+"""혜택존 공통 장치 — 카톡 공유 미리보기 · 「공유하기」 · 「홈 화면에 추가」 · 방문·클릭 집계.
 
 scripts/hotdeal.py 가 실행될 때마다 함께 적용됩니다 (야간 23시 · 아침 8시).
 야간 갱신이 index.html 을 다시 써서 이 장치가 빠져도 여기서 되살립니다.
@@ -66,7 +66,7 @@ def meta(title, desc, url):
 
 TOOLS = f"""  {M['TOOLS'][0]} — scripts/site_kit.py 가 관리 -->
   <div class="hz-tools" hidden>
-    <button type="button" class="hz-share" data-share>📤 동료 선생님께 보내기</button>
+    <button type="button" class="hz-share" data-share>📤 공유하기</button>
     <button type="button" class="hz-home" data-home>📲 홈 화면에 추가</button>
   </div>
   <div class="hz-guide" id="hz-guide" hidden>
@@ -80,7 +80,7 @@ TOOLS = f"""  {M['TOOLS'][0]} — scripts/site_kit.py 가 관리 -->
 SHARE = f"""  {M['SHARE'][0]} — scripts/site_kit.py 가 관리 -->
   <div class="hz-share-end" hidden>
     도움이 됐다면 동료 선생님께도 알려 주세요 💙
-    <button type="button" class="hz-share" data-share>📤 동료 선생님께 보내기</button>
+    <button type="button" class="hz-share" data-share>📤 공유하기</button>
   </div>
   {M['SHARE'][1]}
 """

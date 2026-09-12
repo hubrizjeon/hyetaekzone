@@ -339,7 +339,7 @@ index.html 의 `HZ-META` · `HZ-TOOLS` · `HZ-SHARE` · `HZ-TRACK` · `HZ-JS` �
 | 장치 | 내용 |
 |---|---|
 | 카톡 공유 미리보기 | og 제목·설명·이미지(`og.png` 1200×630). 핫딜 페이지는 핫딜용 미리보기 |
-| 동료 선생님께 보내기 | 목차 아래 · 페이지 끝. 휴대폰 공유창(없으면 주소 복사). 공유 주소 `?ref=share` |
+| 공유하기 (2026-09-12 「동료 선생님께 보내기」에서 이름 변경) | 목차 아래 · 페이지 끝. 휴대폰 공유창(없으면 주소 복사). 공유 주소 `?ref=share` |
 | 홈 화면에 추가 | `manifest.webmanifest` + 아이콘(`icon-192/512.png`, `apple-touch-icon.png`). 누르면 기종별 안내(아이폰·삼성·카톡 인앱). 홈 화면에서 열면 `?ref=home` |
 | 방문·클릭 집계 | Cloudflare Worker `hyetaekzone-stats` + D1 (`stats-worker/`). **개인정보 없이 날짜별 개수만**. 계정: baglebagle@me.com |
 
