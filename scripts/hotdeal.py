@@ -68,6 +68,7 @@ ETC = GROUPS[-1]
 P_START, P_END = "<!-- PARTNERS:START", "<!-- PARTNERS:END -->"
 CSS_START, CSS_END = "/* HOTDEAL-CSS:START */", "/* HOTDEAL-CSS:END */"
 CHIP = '<a class="hot" href="hotdeal.html">🔥 핫딜 상품</a>'   # 목차 두 번째 칸 (「🆕 새소식」 바로 옆)
+POINT_CHIP = '<a class="hot" href="my.html">🪙 내 포인트</a>'  # 목차 세 번째 칸 (핫딜 옆)
 NEW_OLD, NEW_LABEL = ">🆕 오늘 새 소식<", ">🆕 새소식<"         # 대표 결정 2026-09-10
 TIPS_ANCHOR = '  <div class="tips">'
 E = lambda s: html.escape(str(s), quote=True)
@@ -180,6 +181,16 @@ CSS = CSS_START + """
   .rw-rrn-row input{flex:1;width:0;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
     background:var(--bg);color:var(--txt);letter-spacing:.08em}
   .rw-rrn p{margin:0;font-size:14px;color:var(--mut);line-height:1.55}
+    .rw-news{list-style:none;margin:12px 0 0;padding:12px 14px;border:2px solid #93c5fd;border-radius:14px;background:var(--badge-info-bg);display:grid;gap:6px}
+  .rw-news[hidden]{display:none!important}
+  .rw-news li{font-size:16px;font-weight:700;color:var(--txt);line-height:1.5}
+  .rw-soon{font-size:16px;font-weight:800;color:var(--badge-warn);background:var(--badge-warn-bg);border-radius:12px;padding:10px 14px;margin-top:10px}
+  .rw-tax{margin:0;font-size:16px;font-weight:800;color:var(--rw-pend);background:var(--rw-pend-bg);border-radius:10px;padding:10px 12px}
+  .rw-agree{display:grid;gap:12px}
+  .rw-agree p{margin:0;font-size:17px;color:var(--sub)}
+  .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
+  .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
+  .rw-agree a{color:inherit}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   """ + CSS_END
@@ -221,8 +232,11 @@ REWARD_SCRIPT = """<script>
     return fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
       if(r.status===401){ try{ localStorage.removeItem(KEY); }catch(e){} return; }
       return r.json().then(function(d){
+        var t=document.getElementById('hz-rw-t');
+        if(d.needTerms){ delete s.sid; try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){}
+          t.textContent='🪙 '+d.nick+' 님, 약관 동의만 하면 적립이 시작돼요'; document.getElementById('hz-rw-b').textContent='동의하러 가기'; return; }
         s.sid=d.subId; s.nick=d.nick; try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){}
-        var t=document.getElementById('hz-rw-t'); t.textContent='';
+        t.textContent='';
         t.appendChild(document.createTextNode('🪙 '+d.nick+' 님 · 쓸 수 있는 포인트 '));
         var b=document.createElement('b'); b.textContent=Number(d.sums.balance).toLocaleString('ko-KR')+'P'; t.appendChild(b);
         t.appendChild(document.createTextNode(' · 적립 예정 '));
@@ -511,9 +525,9 @@ def apply_index(src, block):
     # 목차: 「🆕 새소식」 바로 옆에 「🔥 핫딜 상품」. 야간 갱신이 문구·순서를 되돌려도 여기서 바로잡는다
     i = src.index('<div class="toc">')
     j = src.index("</div>", i)
-    lines = [ln.replace(NEW_OLD, NEW_LABEL) for ln in src[i:j].split("\n") if 'href="hotdeal.html"' not in ln]
+    lines = [ln.replace(NEW_OLD, NEW_LABEL) for ln in src[i:j].split("\n") if 'href="hotdeal.html"' not in ln and 'href="my.html"' not in ln]
     k = next((n for n, ln in enumerate(lines) if 'href="#new"' in ln), 0)
-    lines.insert(k + 1, "    " + CHIP)
+    lines[k + 1:k + 1] = ["    " + CHIP, "    " + POINT_CHIP]
     src = src[:i] + "\n".join(lines) + src[j:]
 
     if P_START in src:
@@ -594,7 +608,7 @@ def build_page(index_src, picks, st, fb, now):
 def validate(old, new, page):
     problems = K.problems(new, page)
     for label, text, n in [("PARTNERS 시작", P_START, 1), ("PARTNERS 끝", P_END, 1),
-                           ("핫딜 CSS", CSS_START, 1), ("목차 칩", CHIP, 1),
+                           ("핫딜 CSS", CSS_START, 1), ("목차 칩", CHIP, 1), ("포인트 칩", POINT_CHIP, 1),
                            ("꿀팁", '<div class="tips">', 1)]:
         if new.count(text) != n:
             problems.append(f"index.html {label} {new.count(text)}곳 (정상 {n})")
@@ -669,11 +683,12 @@ def main():
         return 0
     write(INDEX, new)
     write(PAGE, page)
-    my, pv, ad = R.build(new)
+    my, pv, ad, tm = R.build(new)
     write(ROOT / "my.html", my)
     write(ROOT / "privacy.html", pv)
     write(ROOT / "admin.html", ad)
-    print("저장: index.html (핫딜 칸) · hotdeal.html · my.html · privacy.html · admin.html")
+    write(ROOT / "terms.html", tm)
+    print("저장: index.html (핫딜 칸) · hotdeal.html · my.html · privacy.html · admin.html · terms.html")
     return 0
 
 

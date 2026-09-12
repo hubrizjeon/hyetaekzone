@@ -109,5 +109,42 @@ ok(me.sums.balance === 0 && me.sums.expired === 1230, '적립 완료 후 1년 �
 await call('/me/logout', { method: 'POST', headers: { ...ORIGIN, Authorization: 'Bearer ' + token2 } });
 ok((await call('/me', { headers: { ...ORIGIN, Authorization: 'Bearer ' + token2 } })).status === 401, '로그아웃하면 그 토큰은 더 못 씀');
 ok(db.prepare('SELECT COUNT(*) n FROM sessions WHERE token_hash = ?').get(token).n === 0, 'DB 에는 로그인 토큰 원문이 없음 (해시만)');
+// 10. 약관 동의 · 곧 사라질 포인트 · 원천징수 · 지급 내역 · 아침 보고
+const t3 = (await login('my')).dest.split('#login=')[1];
+const H = { ...ORIGIN, Authorization: 'Bearer ' + t3, 'Content-Type': 'application/json' };
+me = await (await call('/me', { headers: H })).json();
+ok(me.needTerms === true, '약관 동의 전에는 needTerms (적립 줄이 이름표를 안 붙임)');
+db.prepare("INSERT INTO orders (order_id, product_id, sub_id, day, name, qty, gmv, commission, share, confirm_on, confirmed_at, points, created_at) VALUES ('X1','1','hzm00001','20250910','오래된 적립',1,2000000,600000,0.1,'2025-10-25',?,60000,?)")
+  .run(Math.floor(Date.now() / 1000) - 350 * 86400, Math.floor(Date.now() / 1000) - 350 * 86400);
+const acct = { holder: '홍길동', bank: '신한', account: '110123456789', agree: true, rrn1: '900101', rrn2: '1234567', agreeRrn: true };
+let r = await call('/me/cashout', { method: 'POST', headers: H, body: acct });
+ok(r.status === 403, '약관 동의 전에는 현금 교환 불가');
+r = await call('/me/agree', { method: 'POST', headers: H, body: { ver: me.termsVer, terms: true, privacy: false } });
+ok(r.status === 400, '개인정보 동의를 빼면 거절');
+r = await call('/me/agree', { method: 'POST', headers: H, body: { ver: me.termsVer, terms: true, privacy: true } });
+me = await (await call('/me', { headers: H })).json();
+ok(r.status === 200 && me.needTerms === false, '약관·개인정보 동의 → 적립 시작');
+ok(me.sums.expiringSoon === 60000, `350일 된 적립 60,000P → 30일 안에 사라질 포인트 ${me.sums.expiringSoon}P 로 안내`);
+await call('/admin/settings', { method: 'POST', headers: { Authorization: 'Bearer stats-test', 'Content-Type': 'application/json' },
+  body: { share: 0.1, min_cashout: 10000, expire_days: 365, collect_rrn: 1, withholding_rate: 0.22, withholding_free_upto: 50000 } });
+const co = await (await call('/me/cashout', { method: 'POST', headers: H, body: acct })).json();
+ok(co.amount === 60000 && co.tax === 13200 && co.net === 46800, `원천징수 22%: 60,000P → 세금 ${co.tax}원 · 입금 ${co.net}원`);
+const cid = db.prepare("SELECT id FROM cashouts WHERE status='requested'").get().id;
+await call('/admin/cashout/done', { method: 'POST', headers: { Authorization: 'Bearer stats-test', 'Content-Type': 'application/json' }, body: { id: cid } });
+const mo = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 7);
+const ex = await call('/admin/export?month=' + mo, { headers: { Authorization: 'Bearer stats-test' } });
+const text = await ex.text(), lines = text.replace(/^﻿/, '').split('\r\n');
+ok(ex.headers.get('Content-Type').startsWith('text/csv') && lines.length === 3 && lines[1].includes('900101-1234567') && lines[1].endsWith(',13200,46800,관리 키'),
+  '지급 내역 CSV: 예금주·계좌·주민번호·세금·실지급액·합계 줄');
+ok(db.prepare("SELECT COUNT(*) n FROM audit WHERE action='지급 내역 내보내기'").get().n === 1, '내보내기는 작업 기록에 남음');
+const small = taxCheck => taxCheck;
+await call('/admin/settings', { method: 'POST', headers: { Authorization: 'Bearer stats-test', 'Content-Type': 'application/json' },
+  body: { share: 0.1, min_cashout: 10000, expire_days: 365, collect_rrn: 1, withholding_rate: 0.22, withholding_free_upto: 50000 } });
+await call('/admin/adjust', { method: 'POST', headers: { Authorization: 'Bearer stats-test', 'Content-Type': 'application/json' }, body: { id: 1, amount: 30000, memo: '시험' } });
+const co2 = await (await call('/me/cashout', { method: 'POST', headers: H, body: acct })).json();
+ok(co2.amount === 30000 && co2.tax === 0 && co2.net === 30000, '5만원 이하 교환은 원천징수 안 함 (30,000P → 30,000원)');
+const rep = await (await call('/admin/report', { headers: { Authorization: 'Bearer stats-test' } })).json();
+ok(rep.cashPending.n === 1 && rep.members.n === 1 && rep.newOrders.n >= 2 && typeof rep.syncStale === 'boolean', `아침 보고 요약: 교환 대기 ${rep.cashPending.n}건 · 새 주문 ${rep.newOrders.n}건`);
+ok(me.rows.every(x => 'createdAt' in x && 'confirmedAt' in x), '회원 알림용 시각(처음 잡힘·확정) 제공');
 console.log(fails ? `\n❌ ${fails}개 실패` : '\n모두 통과');
 process.exit(fails ? 1 : 0);

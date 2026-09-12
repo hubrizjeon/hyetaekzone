@@ -228,6 +228,16 @@
   .rw-rrn-row input{flex:1;width:0;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
     background:var(--bg);color:var(--txt);letter-spacing:.08em}
   .rw-rrn p{margin:0;font-size:14px;color:var(--mut);line-height:1.55}
+    .rw-news{list-style:none;margin:12px 0 0;padding:12px 14px;border:2px solid #93c5fd;border-radius:14px;background:var(--badge-info-bg);display:grid;gap:6px}
+  .rw-news[hidden]{display:none!important}
+  .rw-news li{font-size:16px;font-weight:700;color:var(--txt);line-height:1.5}
+  .rw-soon{font-size:16px;font-weight:800;color:var(--badge-warn);background:var(--badge-warn-bg);border-radius:12px;padding:10px 14px;margin-top:10px}
+  .rw-tax{margin:0;font-size:16px;font-weight:800;color:var(--rw-pend);background:var(--rw-pend-bg);border-radius:10px;padding:10px 12px}
+  .rw-agree{display:grid;gap:12px}
+  .rw-agree p{margin:0;font-size:17px;color:var(--sub)}
+  .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
+  .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
+  .rw-agree a{color:inherit}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
@@ -284,13 +294,26 @@
     </div>
   </section>
 
+  <section id="rw-terms" hidden>
+    <form class="card rw-agree" id="rw-agree">
+      <div class="what" id="rw-terms-nick"></div>
+      <p>포인트 적립을 시작하기 전에 처음 한 번만 동의해 주세요.</p>
+      <label class="rw-check"><input type="checkbox" name="terms" required> <span>[필수] <a href="terms.html" target="_blank">포인트 이용약관</a>에 동의해요</span></label>
+      <label class="rw-check"><input type="checkbox" name="privacy" required> <span>[필수] <a href="privacy.html" target="_blank">개인정보 수집·이용</a>(카카오 회원번호·닉네임, 적립 구매 기록)에 동의해요</span></label>
+      <button type="submit" class="rw-go">동의하고 시작하기</button>
+      <p class="rw-fine">동의하지 않으면 적립되지 않아요. 언제든 「탈퇴하기」로 모든 정보를 지울 수 있어요.</p>
+    </form>
+  </section>
+
   <section id="rw-me" hidden>
     <h2 class="rw-hello" id="rw-nick"></h2>
+    <ul class="rw-news" id="rw-news" hidden aria-label="새 소식"></ul>
     <div class="rw-sum">
       <div class="rw-tile done"><small>쓸 수 있는 포인트</small><b id="rw-bal">0P</b><span>적립 완료된 포인트 (1P = 1원)</span></div>
       <div class="rw-tile pend"><small>적립 예정</small><b id="rw-pend">0P</b><span>구매한 달의 다음 달 25일에 확정</span></div>
     </div>
     <p class="rw-sync" id="rw-totals"></p>
+    <p class="rw-soon" id="rw-soon" hidden></p>
 
     <h3 class="rw-h3">💸 현금으로 받기</h3>
     <div id="rw-cash-box"></div>
@@ -308,6 +331,7 @@
           암호화해 보관하고 관리자만 세금 신고에 씁니다. 신고 서류 보관 기간(5년)이 지나면 지워요.</p>
         <label class="rw-check"><input type="checkbox" name="agreeRrn"> 세금 신고를 위한 주민등록번호 수집·이용에 동의해요.</label>
       </fieldset>
+      <p class="rw-tax" id="rw-tax" hidden></p>
       <button type="submit" class="rw-go" id="rw-cash-go">현금으로 받기</button>
     </form>
 
@@ -333,7 +357,7 @@
   function el(tag,cls,text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
   function save(s){ try{ if(s) localStorage.setItem(KEY,JSON.stringify(s)); else localStorage.removeItem(KEY); }catch(e){} }
-  function show(id){ ['rw-wait','rw-off','rw-login','rw-me'].forEach(function(x){ $(x).hidden = x!==id; }); }
+  function show(id){ ['rw-wait','rw-off','rw-login','rw-terms','rw-me'].forEach(function(x){ $(x).hidden = x!==id; }); }
   function won(n){ return Number(n||0).toLocaleString('ko-KR'); }
   function md(d){ return (+d.slice(4,6))+'/'+(+d.slice(6,8)); }
   function mdDash(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10)); }
@@ -364,9 +388,12 @@
   function cash(d){
     var box=$('rw-cash-box'), form=$('rw-cash'); box.textContent=''; form.hidden=true;
     var pend=d.cashouts.filter(function(c){ return c.status==='requested'; })[0];
-    if(pend){ box.appendChild(el('div','rw-cash-msg','💸 '+won(pend.amount)+'원 입금을 준비하고 있어요 ('+mdTs(pend.requested_at)+' 신청 · '+pend.bank+' '+pend.acct_mask+')')); return; }
+    if(pend){ box.appendChild(el('div','rw-cash-msg','💸 '+won(pend.net!=null?pend.net:pend.amount)+'원 입금을 준비하고 있어요'+(pend.tax?' (세금 '+won(pend.tax)+'원 제외)':'')+' · '+mdTs(pend.requested_at)+' 신청 · '+pend.bank+' '+pend.acct_mask)); return; }
     if(d.status!=='ok'){ box.appendChild(el('div','rw-cash-msg','이용이 멈춘 계정이라 지금은 현금 교환을 할 수 없어요.')); return; }
-    if(d.sums.balance>=d.min){ form.hidden=false; $('rw-cash-go').textContent=won(d.sums.balance)+'원 현금으로 받기';
+    if(d.sums.balance>=d.min){ form.hidden=false;
+      var tax=d.withholdingRate>0&&d.sums.balance>d.withholdingFreeUpto?Math.floor(d.sums.balance*d.withholdingRate/10)*10:0, tx=$('rw-tax');
+      tx.hidden=!tax; if(tax) tx.textContent='세금(원천징수 '+pct(d.withholdingRate)+') '+won(tax)+'원을 빼고 '+won(d.sums.balance-tax)+'원이 입금돼요.';
+      $('rw-cash-go').textContent=won(d.sums.balance-tax)+'원 현금으로 받기';
       var rr=$('rw-rrn'); rr.hidden=!d.collectRrn; form.rrn1.required=form.rrn2.required=form.agreeRrn.required=!!d.collectRrn; return; }
     var left=d.min-d.sums.balance, bar=el('div','rw-prog'), fill=el('i');
     fill.style.width=Math.max(2,Math.min(100,d.sums.balance/d.min*100))+'%'; bar.appendChild(fill);
@@ -377,7 +404,10 @@
     $('rw-nick').textContent=d.nick+' 님의 포인트';
     $('rw-bal').textContent=won(d.sums.balance)+'P';
     $('rw-pend').textContent=won(d.sums.pending)+'P';
-    $('rw-totals').textContent='지금까지 적립 완료 '+won(d.sums.earned)+'P · 현금으로 받음 '+won(d.sums.used)+'원'+(d.sums.expired?' · 사라짐 '+won(d.sums.expired)+'P':'');
+    $('rw-totals').textContent='지금까지 적립 완료 '+won(d.sums.earned)+'P · 현금으로 바꾼 포인트 '+won(d.sums.used)+'P'+(d.sums.expired?' · 사라짐 '+won(d.sums.expired)+'P':'');
+    var soon=$('rw-soon'); soon.hidden=!d.sums.expiringSoon;
+    if(d.sums.expiringSoon) soon.textContent='⏳ 30일 안에 사라질 포인트 '+won(d.sums.expiringSoon)+'P — '+(d.sums.balance>=d.min?'지금 현금으로 받아 두세요.':'적립 완료 후 '+(d.expireDays>=365&&d.expireDays%365===0?(d.expireDays/365)+'년':d.expireDays+'일')+'이 지나면 사라져요.');
+    news(d);
     rules(d); cash(d);
     var list=$('rw-list'); list.textContent=''; $('rw-empty').hidden=d.rows.length>0;
     d.rows.forEach(function(r){
@@ -391,7 +421,7 @@
       side.appendChild(el('small',null, r.status==='pending' ? mdDash(r.confirmOn)+' 확정 예정' : st[1]));
       row.appendChild(side); list.appendChild(row);
     });
-    var use=[]; d.cashouts.forEach(function(c){ use.push({at:c.requested_at, name:'현금 교환 · '+c.bank+' '+c.acct_mask, pt:-c.amount, pill:CASH[c.status], sub:c.status==='rejected'?(c.reason||''):(c.done_at?mdTs(c.done_at)+' 입금':'')}); });
+    var use=[]; d.cashouts.forEach(function(c){ use.push({at:c.requested_at, name:'현금 교환 · '+c.bank+' '+c.acct_mask+(c.tax?' · 세금 '+won(c.tax)+'원 제외 '+won(c.net)+'원 입금':''), pt:-c.amount, pill:CASH[c.status], sub:c.status==='rejected'?(c.reason||''):(c.done_at?mdTs(c.done_at)+' 입금':'')}); });
     d.log.forEach(function(l){ if(l.kind==='adjust') use.push({at:l.at, name:'관리자 조정 · '+(l.memo||''), pt:l.amount, pill:['조정','done'], sub:''});
       if(l.kind==='expire') use.push({at:l.at, name:l.memo||'유효기간 지나 소멸', pt:l.amount, pill:['소멸','canceled'], sub:''}); });
     use.sort(function(a,b){ return b.at-a.at; });
@@ -404,11 +434,43 @@
       $('rw-sync').textContent='쿠팡 구매 확인: '+(t.getMonth()+1)+'월 '+t.getDate()+'일 '+t.getHours()+'시 기준 · 하루 한 번 확인해요'; }
     $('rw-admin').hidden=!d.admin;
   }
+  /* 지난번에 본 뒤로 바뀐 것 (이 기기 기준) */
+  function news(d){
+    var box=$('rw-news'), seen=0; box.textContent=''; box.hidden=true;
+    try{ seen=+localStorage.getItem('hz_rw_seen')||0; }catch(e){}
+    var now=Math.floor(Date.now()/1000), items=[];
+    if(seen){
+      d.rows.forEach(function(r){
+        if(r.createdAt>seen && r.status==='pending') items.push([r.createdAt,'🛒 새 구매가 잡혔어요 · '+r.name+' · 적립 예정 '+won(r.points)+'P']);
+        if(r.confirmedAt>seen && r.status==='done') items.push([r.confirmedAt,'✅ 적립 완료 · '+r.name+' · '+won(r.points)+'P']);
+      });
+      d.cashouts.forEach(function(c){
+        if(c.done_at>seen && c.status==='paid') items.push([c.done_at,'💸 '+won(c.net!=null?c.net:c.amount)+'원을 입금했어요']);
+        if(c.done_at>seen && c.status==='rejected') items.push([c.done_at,'↩️ 현금 교환이 반려됐어요 · '+(c.reason||'')+' · 포인트는 돌려드렸어요']);
+      });
+      d.log.forEach(function(l){
+        if(l.at>seen && l.kind==='expire') items.push([l.at,'⏳ '+won(-l.amount)+'P가 유효기간이 지나 사라졌어요']);
+        if(l.at>seen && l.kind==='adjust') items.push([l.at,'🛠️ 포인트 조정 '+(l.amount>0?'+':'−')+won(Math.abs(l.amount))+'P · '+(l.memo||'')]);
+      });
+    }
+    items.sort(function(a,b){ return b[0]-a[0]; }).slice(0,6).forEach(function(it){ box.appendChild(el('li',null,it[1])); });
+    box.hidden=!box.children.length;
+    try{ localStorage.setItem('hz_rw_seen', String(now)); }catch(e){}
+  }
+  $('rw-agree').addEventListener('submit',function(e){ e.preventDefault(); var f=e.target, s=load()||{};
+    fetch(API+'/me/agree',{method:'POST',headers:{Authorization:'Bearer '+(s.token||''),'Content-Type':'application/json'},
+      body:JSON.stringify({ver:f.dataset.ver, terms:f.terms.checked, privacy:f.privacy.checked})})
+      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||''); }); })
+      .then(function(){ note('✅ 동의했어요. 이제 핫딜로 사면 포인트가 쌓여요.'); me(); })
+      .catch(function(err){ alert(err.message||'잠시 뒤 다시 눌러 주세요.'); });
+  });
   function me(){
     var s=load(); if(!s||!s.token){ show('rw-login'); return; }
     fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
       if(r.status===401){ save(null); show('rw-login'); return; }
-      return r.json().then(function(d){ s.sid=d.subId; s.nick=d.nick; save(s); render(d); show('rw-me'); });
+      return r.json().then(function(d){
+        if(d.needTerms){ delete s.sid; s.nick=d.nick; save(s); $('rw-agree').dataset.ver=d.termsVer; $('rw-terms-nick').textContent=d.nick+' 님, 반가워요!'; show('rw-terms'); return; }
+        s.sid=d.subId; s.nick=d.nick; save(s); render(d); show('rw-me'); });
     }).catch(fail);
   }
   function fail(){ $('rw-off-t').textContent='지금 적립 내역을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'; show('rw-off'); }
@@ -434,7 +496,7 @@
 })();
 </script>
 
-  <footer>HUBRIZ 돌봄플러스 혜택존 · <a href="privacy.html">개인정보 처리방침</a></footer>
+  <footer>HUBRIZ 돌봄플러스 혜택존 · <a href="terms.html">포인트 이용약관</a> · <a href="privacy.html">개인정보 처리방침</a></footer>
 </div>
 </body>
 </html>

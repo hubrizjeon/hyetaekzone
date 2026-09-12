@@ -36,7 +36,7 @@ def _page(index_src, title, desc, path, h1, hello, body, noindex=False):
 <div class="wrap">
   <a class="hd-back" href="./">← 혜택존으로 돌아가기</a>
 {body}
-  <footer>HUBRIZ 돌봄플러스 혜택존 · <a href="privacy.html">개인정보 처리방침</a></footer>
+  <footer>HUBRIZ 돌봄플러스 혜택존 · <a href="terms.html">포인트 이용약관</a> · <a href="privacy.html">개인정보 처리방침</a></footer>
 </div>
 </body>
 </html>
@@ -51,7 +51,7 @@ MY_SCRIPT = """<script>
   function el(tag,cls,text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
   function save(s){ try{ if(s) localStorage.setItem(KEY,JSON.stringify(s)); else localStorage.removeItem(KEY); }catch(e){} }
-  function show(id){ ['rw-wait','rw-off','rw-login','rw-me'].forEach(function(x){ $(x).hidden = x!==id; }); }
+  function show(id){ ['rw-wait','rw-off','rw-login','rw-terms','rw-me'].forEach(function(x){ $(x).hidden = x!==id; }); }
   function won(n){ return Number(n||0).toLocaleString('ko-KR'); }
   function md(d){ return (+d.slice(4,6))+'/'+(+d.slice(6,8)); }
   function mdDash(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10)); }
@@ -82,9 +82,12 @@ MY_SCRIPT = """<script>
   function cash(d){
     var box=$('rw-cash-box'), form=$('rw-cash'); box.textContent=''; form.hidden=true;
     var pend=d.cashouts.filter(function(c){ return c.status==='requested'; })[0];
-    if(pend){ box.appendChild(el('div','rw-cash-msg','💸 '+won(pend.amount)+'원 입금을 준비하고 있어요 ('+mdTs(pend.requested_at)+' 신청 · '+pend.bank+' '+pend.acct_mask+')')); return; }
+    if(pend){ box.appendChild(el('div','rw-cash-msg','💸 '+won(pend.net!=null?pend.net:pend.amount)+'원 입금을 준비하고 있어요'+(pend.tax?' (세금 '+won(pend.tax)+'원 제외)':'')+' · '+mdTs(pend.requested_at)+' 신청 · '+pend.bank+' '+pend.acct_mask)); return; }
     if(d.status!=='ok'){ box.appendChild(el('div','rw-cash-msg','이용이 멈춘 계정이라 지금은 현금 교환을 할 수 없어요.')); return; }
-    if(d.sums.balance>=d.min){ form.hidden=false; $('rw-cash-go').textContent=won(d.sums.balance)+'원 현금으로 받기';
+    if(d.sums.balance>=d.min){ form.hidden=false;
+      var tax=d.withholdingRate>0&&d.sums.balance>d.withholdingFreeUpto?Math.floor(d.sums.balance*d.withholdingRate/10)*10:0, tx=$('rw-tax');
+      tx.hidden=!tax; if(tax) tx.textContent='세금(원천징수 '+pct(d.withholdingRate)+') '+won(tax)+'원을 빼고 '+won(d.sums.balance-tax)+'원이 입금돼요.';
+      $('rw-cash-go').textContent=won(d.sums.balance-tax)+'원 현금으로 받기';
       var rr=$('rw-rrn'); rr.hidden=!d.collectRrn; form.rrn1.required=form.rrn2.required=form.agreeRrn.required=!!d.collectRrn; return; }
     var left=d.min-d.sums.balance, bar=el('div','rw-prog'), fill=el('i');
     fill.style.width=Math.max(2,Math.min(100,d.sums.balance/d.min*100))+'%'; bar.appendChild(fill);
@@ -95,7 +98,10 @@ MY_SCRIPT = """<script>
     $('rw-nick').textContent=d.nick+' 님의 포인트';
     $('rw-bal').textContent=won(d.sums.balance)+'P';
     $('rw-pend').textContent=won(d.sums.pending)+'P';
-    $('rw-totals').textContent='지금까지 적립 완료 '+won(d.sums.earned)+'P · 현금으로 받음 '+won(d.sums.used)+'원'+(d.sums.expired?' · 사라짐 '+won(d.sums.expired)+'P':'');
+    $('rw-totals').textContent='지금까지 적립 완료 '+won(d.sums.earned)+'P · 현금으로 바꾼 포인트 '+won(d.sums.used)+'P'+(d.sums.expired?' · 사라짐 '+won(d.sums.expired)+'P':'');
+    var soon=$('rw-soon'); soon.hidden=!d.sums.expiringSoon;
+    if(d.sums.expiringSoon) soon.textContent='⏳ 30일 안에 사라질 포인트 '+won(d.sums.expiringSoon)+'P — '+(d.sums.balance>=d.min?'지금 현금으로 받아 두세요.':'적립 완료 후 '+(d.expireDays>=365&&d.expireDays%365===0?(d.expireDays/365)+'년':d.expireDays+'일')+'이 지나면 사라져요.');
+    news(d);
     rules(d); cash(d);
     var list=$('rw-list'); list.textContent=''; $('rw-empty').hidden=d.rows.length>0;
     d.rows.forEach(function(r){
@@ -109,7 +115,7 @@ MY_SCRIPT = """<script>
       side.appendChild(el('small',null, r.status==='pending' ? mdDash(r.confirmOn)+' 확정 예정' : st[1]));
       row.appendChild(side); list.appendChild(row);
     });
-    var use=[]; d.cashouts.forEach(function(c){ use.push({at:c.requested_at, name:'현금 교환 · '+c.bank+' '+c.acct_mask, pt:-c.amount, pill:CASH[c.status], sub:c.status==='rejected'?(c.reason||''):(c.done_at?mdTs(c.done_at)+' 입금':'')}); });
+    var use=[]; d.cashouts.forEach(function(c){ use.push({at:c.requested_at, name:'현금 교환 · '+c.bank+' '+c.acct_mask+(c.tax?' · 세금 '+won(c.tax)+'원 제외 '+won(c.net)+'원 입금':''), pt:-c.amount, pill:CASH[c.status], sub:c.status==='rejected'?(c.reason||''):(c.done_at?mdTs(c.done_at)+' 입금':'')}); });
     d.log.forEach(function(l){ if(l.kind==='adjust') use.push({at:l.at, name:'관리자 조정 · '+(l.memo||''), pt:l.amount, pill:['조정','done'], sub:''});
       if(l.kind==='expire') use.push({at:l.at, name:l.memo||'유효기간 지나 소멸', pt:l.amount, pill:['소멸','canceled'], sub:''}); });
     use.sort(function(a,b){ return b.at-a.at; });
@@ -122,11 +128,43 @@ MY_SCRIPT = """<script>
       $('rw-sync').textContent='쿠팡 구매 확인: '+(t.getMonth()+1)+'월 '+t.getDate()+'일 '+t.getHours()+'시 기준 · 하루 한 번 확인해요'; }
     $('rw-admin').hidden=!d.admin;
   }
+  /* 지난번에 본 뒤로 바뀐 것 (이 기기 기준) */
+  function news(d){
+    var box=$('rw-news'), seen=0; box.textContent=''; box.hidden=true;
+    try{ seen=+localStorage.getItem('hz_rw_seen')||0; }catch(e){}
+    var now=Math.floor(Date.now()/1000), items=[];
+    if(seen){
+      d.rows.forEach(function(r){
+        if(r.createdAt>seen && r.status==='pending') items.push([r.createdAt,'🛒 새 구매가 잡혔어요 · '+r.name+' · 적립 예정 '+won(r.points)+'P']);
+        if(r.confirmedAt>seen && r.status==='done') items.push([r.confirmedAt,'✅ 적립 완료 · '+r.name+' · '+won(r.points)+'P']);
+      });
+      d.cashouts.forEach(function(c){
+        if(c.done_at>seen && c.status==='paid') items.push([c.done_at,'💸 '+won(c.net!=null?c.net:c.amount)+'원을 입금했어요']);
+        if(c.done_at>seen && c.status==='rejected') items.push([c.done_at,'↩️ 현금 교환이 반려됐어요 · '+(c.reason||'')+' · 포인트는 돌려드렸어요']);
+      });
+      d.log.forEach(function(l){
+        if(l.at>seen && l.kind==='expire') items.push([l.at,'⏳ '+won(-l.amount)+'P가 유효기간이 지나 사라졌어요']);
+        if(l.at>seen && l.kind==='adjust') items.push([l.at,'🛠️ 포인트 조정 '+(l.amount>0?'+':'−')+won(Math.abs(l.amount))+'P · '+(l.memo||'')]);
+      });
+    }
+    items.sort(function(a,b){ return b[0]-a[0]; }).slice(0,6).forEach(function(it){ box.appendChild(el('li',null,it[1])); });
+    box.hidden=!box.children.length;
+    try{ localStorage.setItem('hz_rw_seen', String(now)); }catch(e){}
+  }
+  $('rw-agree').addEventListener('submit',function(e){ e.preventDefault(); var f=e.target, s=load()||{};
+    fetch(API+'/me/agree',{method:'POST',headers:{Authorization:'Bearer '+(s.token||''),'Content-Type':'application/json'},
+      body:JSON.stringify({ver:f.dataset.ver, terms:f.terms.checked, privacy:f.privacy.checked})})
+      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||''); }); })
+      .then(function(){ note('✅ 동의했어요. 이제 핫딜로 사면 포인트가 쌓여요.'); me(); })
+      .catch(function(err){ alert(err.message||'잠시 뒤 다시 눌러 주세요.'); });
+  });
   function me(){
     var s=load(); if(!s||!s.token){ show('rw-login'); return; }
     fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
       if(r.status===401){ save(null); show('rw-login'); return; }
-      return r.json().then(function(d){ s.sid=d.subId; s.nick=d.nick; save(s); render(d); show('rw-me'); });
+      return r.json().then(function(d){
+        if(d.needTerms){ delete s.sid; s.nick=d.nick; save(s); $('rw-agree').dataset.ver=d.termsVer; $('rw-terms-nick').textContent=d.nick+' 님, 반가워요!'; show('rw-terms'); return; }
+        s.sid=d.subId; s.nick=d.nick; save(s); render(d); show('rw-me'); });
     }).catch(fail);
   }
   function fail(){ $('rw-off-t').textContent='지금 적립 내역을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'; show('rw-off'); }
@@ -175,13 +213,26 @@ MY_BODY = f"""
     </div>
   </section>
 
+  <section id="rw-terms" hidden>
+    <form class="card rw-agree" id="rw-agree">
+      <div class="what" id="rw-terms-nick"></div>
+      <p>포인트 적립을 시작하기 전에 처음 한 번만 동의해 주세요.</p>
+      <label class="rw-check"><input type="checkbox" name="terms" required> <span>[필수] <a href="terms.html" target="_blank">포인트 이용약관</a>에 동의해요</span></label>
+      <label class="rw-check"><input type="checkbox" name="privacy" required> <span>[필수] <a href="privacy.html" target="_blank">개인정보 수집·이용</a>(카카오 회원번호·닉네임, 적립 구매 기록)에 동의해요</span></label>
+      <button type="submit" class="rw-go">동의하고 시작하기</button>
+      <p class="rw-fine">동의하지 않으면 적립되지 않아요. 언제든 「탈퇴하기」로 모든 정보를 지울 수 있어요.</p>
+    </form>
+  </section>
+
   <section id="rw-me" hidden>
     <h2 class="rw-hello" id="rw-nick"></h2>
+    <ul class="rw-news" id="rw-news" hidden aria-label="새 소식"></ul>
     <div class="rw-sum">
       <div class="rw-tile done"><small>쓸 수 있는 포인트</small><b id="rw-bal">0P</b><span>적립 완료된 포인트 (1P = 1원)</span></div>
       <div class="rw-tile pend"><small>적립 예정</small><b id="rw-pend">0P</b><span>구매한 달의 다음 달 25일에 확정</span></div>
     </div>
     <p class="rw-sync" id="rw-totals"></p>
+    <p class="rw-soon" id="rw-soon" hidden></p>
 
     <h3 class="rw-h3">💸 현금으로 받기</h3>
     <div id="rw-cash-box"></div>
@@ -199,6 +250,7 @@ MY_BODY = f"""
           암호화해 보관하고 관리자만 세금 신고에 씁니다. 신고 서류 보관 기간(5년)이 지나면 지워요.</p>
         <label class="rw-check"><input type="checkbox" name="agreeRrn"> 세금 신고를 위한 주민등록번호 수집·이용에 동의해요.</label>
       </fieldset>
+      <p class="rw-tax" id="rw-tax" hidden></p>
       <button type="submit" class="rw-go" id="rw-cash-go">현금으로 받기</button>
     </form>
 
@@ -334,17 +386,27 @@ ADMIN_SCRIPT = """<script>
     [['requested', '입금 대기'], ['paid', '지급 완료'], ['rejected', '반려'], ['all', '전체']].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; sel.appendChild(o); });
     sel.value = cash.st || 'requested'; sel.addEventListener('change', () => { cash.st = sel.value; go('cash'); });
     row.appendChild(el('b', null, '현금 교환 신청')); row.appendChild(sel); box.appendChild(row);
+    const ex = el('div', 'ad-row'), mon = el('input'); mon.type = 'month'; mon.value = new Date().toISOString().slice(0, 7);
+    ex.appendChild(el('span', 'ad-muted', '세금 신고용')); ex.appendChild(mon);
+    ex.appendChild(btn('지급 내역 엑셀(CSV) 받기', '', async () => {
+      if (!confirm(mon.value + ' 지급 내역을 받을까요? 계좌번호·주민번호가 들어 있어 기록에 남고, 파일은 안전한 곳에 보관해 주세요.')) return;
+      const s = load() || {}; const r = await fetch(API + '/admin/export?month=' + mon.value, { headers: { Authorization: 'Bearer ' + (s.token || '') } });
+      if (!r.ok) { alert('받지 못했어요'); return; }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob()); a.download = `혜택존-지급내역-${mon.value}.csv`;
+      document.body.appendChild(a); a.click(); a.remove(); }));
+    box.appendChild(ex);
     box.appendChild(el('p', 'ad-muted', '계좌로 직접 보낸 뒤 「지급 완료」를 눌러 주세요. 반려하면 포인트가 회원에게 돌아갑니다. 계좌·주민번호 보기는 기록에 남고, 주민번호는 세금 신고에만 쓰세요.'));
     const d = await api('/admin/cashouts?status=' + sel.value);
     box.appendChild(table([
       { h: '#', v: c => c.id }, { h: '신청', v: c => ts(c.requested_at) }, { h: '회원', v: c => `${c.nick || '(탈퇴)'} #${c.member_id}` },
-      { h: '금액', r: 1, v: c => won(c.amount) + '원' }, { h: '계좌', v: c => `${c.bank} ${c.acct_mask}` },
+      { h: '교환', r: 1, v: c => won(c.amount) + 'P' }, { h: '세금', r: 1, v: c => c.tax ? won(c.tax) + '원' : '—' },
+      { h: '보낼 돈', r: 1, v: c => won(c.net != null ? c.net : c.amount) + '원' }, { h: '계좌', v: c => `${c.bank} ${c.acct_mask}` },
       { h: '상태', v: c => ST[c.status] + (c.reason ? ` · ${c.reason}` : '') + (c.done_at ? ` (${ts(c.done_at)})` : '') },
       { h: '처리', v: c => { const w = el('div');
         if (c.status === 'requested') {
           w.appendChild(btn('계좌 보기', '', async () => { try { const i = await api('/admin/cashout/reveal', { id: c.id });
             const r = el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}` + (i.rrn ? ` · 주민번호 ${i.rrn}` : '')); w.appendChild(r); } catch (e) { alert(e.message); } }));
-          w.appendChild(btn('지급 완료', 'pri', async () => { if (!confirm(`${c.nick}님에게 ${won(c.amount)}원을 보내셨나요?`)) return;
+          w.appendChild(btn('지급 완료', 'pri', async () => { if (!confirm(`${c.nick}님에게 ${won(c.net != null ? c.net : c.amount)}원을 보내셨나요?`)) return;
             try { await api('/admin/cashout/done', { id: c.id }); go('cash'); } catch (e) { alert(e.message); } }));
           w.appendChild(btn('반려', 'bad', async () => { const reason = prompt('반려 사유 (회원에게 보입니다)'); if (!reason) return;
             try { await api('/admin/cashout/reject', { id: c.id, reason }); go('cash'); } catch (e) { alert(e.message); } }));
@@ -405,7 +467,8 @@ ADMIN_SCRIPT = """<script>
     const s = await api('/admin/settings'), c = el('div', 'ad-card');
     c.appendChild(el('div', 'ad-h', '적립 설정'));
     c.appendChild(el('p', 'ad-muted', '적립 비율은 바꾼 뒤 새로 잡히는 주문부터 적용돼요. 이미 잡힌 주문은 그때 비율 그대로입니다.'));
-    const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days]];
+    const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days],
+      ['withholding_rate', '원천징수율 (%) — 0이면 안 뗌', Math.round(s.withholding_rate * 1000) / 10], ['withholding_free_upto', '이 금액(원) 이하 교환은 안 뗌', s.withholding_free_upto]];
     const inputs = {};
     f.forEach(([k, label, v]) => { const r = el('label', 'ad-row'); r.appendChild(el('span', null, label)); const i = el('input'); i.type = 'number'; i.value = v; i.step = 'any'; inputs[k] = i; r.appendChild(i); c.appendChild(r); });
     const quick = el('div', 'ad-row'); quick.appendChild(el('span', 'ad-muted', '빠른 선택'));
@@ -419,8 +482,10 @@ ADMIN_SCRIPT = """<script>
     inputs.share.addEventListener('input', preview); inputs.min_cashout.addEventListener('input', preview); preview();
     const rr = el('label', 'ad-row'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!s.collect_rrn;
     rr.appendChild(cb); rr.appendChild(el('span', null, '현금 교환 때 주민등록번호 받기 (세금 신고·원천징수용)')); c.appendChild(rr);
+    c.appendChild(el('p', 'ad-muted', '원천징수는 세무사 확인 후 켜세요. 예: 기타소득이면 22%(소득세 20% + 지방소득세 2%), 건당 5만원 이하는 과세하지 않는 경우가 많아요. 바꾸면 그 뒤 신청부터 적용돼요.'));
     c.appendChild(btn('저장', 'pri', async () => { try { await api('/admin/settings', { share: Number(inputs.share.value) / 100,
-      min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
+      min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked,
+      withholding_rate: Number(inputs.withholding_rate.value) / 100, withholding_free_upto: Number(inputs.withholding_free_upto.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
     box.appendChild(c);
     box.appendChild(el('h3', 'ad-h', '관리자 작업 기록'));
     const a = await api('/admin/audit');
@@ -487,12 +552,44 @@ PRIVACY_BODY = f"""
 """
 
 
+TERMS_BODY = """
+  <div class="card rw-doc">
+    <p>이 약관은 HUBRIZ 돌봄플러스 혜택존(이하 "혜택존")의 포인트 적립과 현금 교환에 관한 약속입니다. 처음 로그인할 때 동의해 주셔야 적립이 시작됩니다.</p>
+    <h3>제1조 (포인트가 쌓이는 방법)</h3>
+    <ul><li>카카오로 로그인한 기기에서 혜택존의 쿠팡 링크(핫딜·검색의 「구매하러 가기」)를 누르고 24시간 안에 쿠팡에서 결제한 구매에 포인트가 쌓입니다.</li>
+        <li>포인트는 그 구매로 혜택존이 쿠팡에서 받는 수수료에 적립 비율을 곱한 만큼입니다. 적립 비율은 「내 포인트 → 적립 규정」에 표시되며, 바뀌면 그 뒤 새로 확인되는 구매부터 적용하고 이미 확인된 구매에는 소급하지 않습니다.</li>
+        <li>적립은 쿠팡 파트너스가 알려주는 구매 기록만을 기준으로 합니다. 쿠팡이 집계하지 않은 구매(로그인하지 않은 상태, 다른 사이트 링크, 쿠팡 정책상 제외되는 구매 등)는 적립되지 않습니다.</li></ul>
+    <h3>제2조 (적립 예정과 적립 완료)</h3>
+    <ul><li>구매가 확인되면 「적립 예정」으로 표시되고, 쿠팡이 취소·반품을 반영해 확정하는 구매한 달의 다음 달 25일에 「적립 완료」가 됩니다.</li>
+        <li>취소·반품된 구매는 적립되지 않으며, 일부만 취소되면 남은 금액만큼 적립됩니다.</li></ul>
+    <h3>제3조 (현금 교환)</h3>
+    <ul><li>1포인트는 1원이며, 「내 포인트」에 표시된 최소 포인트 이상이 모이면 모인 포인트 전부를 본인 명의 계좌로 받을 수 있습니다.</li>
+        <li>신청 후 확인을 거쳐 보통 7영업일 안에 입금합니다. 예금주가 회원 본인과 다르거나 정보가 틀리면 반려하고 포인트를 돌려드립니다.</li>
+        <li>관련 법령에 따라 세금을 원천징수해야 하는 경우 세금을 뺀 금액을 입금하며, 세금 신고를 위해 주민등록번호를 받을 수 있습니다.</li></ul>
+    <h3>제4조 (유효기간)</h3>
+    <ul><li>적립 완료된 포인트는 적립 완료 후 「내 포인트」에 표시된 기간(현재 1년)이 지나면 사라집니다. 먼저 쌓인 포인트부터 쓴 것으로 봅니다.</li>
+        <li>사라지기 30일 전부터 「내 포인트」에 안내합니다.</li></ul>
+    <h3>제5조 (부정 이용)</h3>
+    <ul><li>구매 조작, 비정상적인 반복 구매·취소, 다른 사람의 정보 사용 등 부정한 방법으로 쌓은 포인트는 회수하고 이용을 멈출 수 있습니다.</li></ul>
+    <h3>제6조 (탈퇴)</h3>
+    <ul><li>언제든 「내 포인트 → 탈퇴하기」로 탈퇴할 수 있으며, 남은 포인트와 적립 내역은 함께 사라집니다. 현금 교환이 처리 중이면 입금 후 탈퇴할 수 있습니다.</li></ul>
+    <h3>제7조 (서비스 변경·종료)</h3>
+    <ul><li>적립 규정이 바뀌면 사이트에 알립니다. 서비스를 끝낼 때는 30일 전에 알리고, 그동안 최소 교환 기준과 관계없이 남은 적립 완료 포인트를 현금으로 교환할 수 있게 합니다.</li></ul>
+    <h3>제8조 (문의)</h3>
+    <ul><li>개인정보 보호책임자: {OFFICER}</li></ul>
+    <p class="rw-fine">시행일: 2026년 9월 12일 (약관 버전 2026-09-12)</p>
+  </div>
+"""
+
+
 def build(index_src):
-    """(my.html, privacy.html, admin.html) 내용을 돌려준다."""
+    """(my.html, privacy.html, admin.html, terms.html) 내용을 돌려준다."""
     my = _page(index_src, "내 적립 · 돌봄플러스 혜택존", "혜택존 핫딜로 사면 포인트가 쌓이고 1만 포인트부터 현금으로 받아요", "my.html",
                "🪙 내 <b>포인트</b>", "카카오로 로그인하고 혜택존 핫딜로 사면 포인트가 쌓여요. <b>1만 포인트부터 현금</b>으로 받을 수 있어요.", MY_BODY)
     pv = _page(index_src, "개인정보 처리방침 · 돌봄플러스 혜택존", "혜택존 포인트 적립 개인정보 처리방침", "privacy.html",
                "개인정보 <b>처리방침</b>", "포인트 적립과 현금 교환에 필요한 정보만 받습니다.", PRIVACY_BODY)
     ad = _page(index_src, "관리자 · 돌봄플러스 혜택존", "혜택존 관리자", "admin.html",
                "🛠️ <b>관리자</b>", "회원·포인트·현금 교환을 관리합니다.", ADMIN_BODY, noindex=True)
-    return my, pv, ad
+    tm = _page(index_src, "포인트 이용약관 · 돌봄플러스 혜택존", "혜택존 포인트 적립·현금 교환 이용약관", "terms.html",
+               "포인트 <b>이용약관</b>", "포인트 적립과 현금 교환에 관한 약속입니다.", TERMS_BODY.replace("{OFFICER}", OFFICER))
+    return my, pv, ad, tm

@@ -228,6 +228,16 @@
   .rw-rrn-row input{flex:1;width:0;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
     background:var(--bg);color:var(--txt);letter-spacing:.08em}
   .rw-rrn p{margin:0;font-size:14px;color:var(--mut);line-height:1.55}
+    .rw-news{list-style:none;margin:12px 0 0;padding:12px 14px;border:2px solid #93c5fd;border-radius:14px;background:var(--badge-info-bg);display:grid;gap:6px}
+  .rw-news[hidden]{display:none!important}
+  .rw-news li{font-size:16px;font-weight:700;color:var(--txt);line-height:1.5}
+  .rw-soon{font-size:16px;font-weight:800;color:var(--badge-warn);background:var(--badge-warn-bg);border-radius:12px;padding:10px 14px;margin-top:10px}
+  .rw-tax{margin:0;font-size:16px;font-weight:800;color:var(--rw-pend);background:var(--rw-pend-bg);border-radius:10px;padding:10px 12px}
+  .rw-agree{display:grid;gap:12px}
+  .rw-agree p{margin:0;font-size:17px;color:var(--sub)}
+  .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
+  .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
+  .rw-agree a{color:inherit}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
@@ -394,17 +404,27 @@
     [['requested', '입금 대기'], ['paid', '지급 완료'], ['rejected', '반려'], ['all', '전체']].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; sel.appendChild(o); });
     sel.value = cash.st || 'requested'; sel.addEventListener('change', () => { cash.st = sel.value; go('cash'); });
     row.appendChild(el('b', null, '현금 교환 신청')); row.appendChild(sel); box.appendChild(row);
+    const ex = el('div', 'ad-row'), mon = el('input'); mon.type = 'month'; mon.value = new Date().toISOString().slice(0, 7);
+    ex.appendChild(el('span', 'ad-muted', '세금 신고용')); ex.appendChild(mon);
+    ex.appendChild(btn('지급 내역 엑셀(CSV) 받기', '', async () => {
+      if (!confirm(mon.value + ' 지급 내역을 받을까요? 계좌번호·주민번호가 들어 있어 기록에 남고, 파일은 안전한 곳에 보관해 주세요.')) return;
+      const s = load() || {}; const r = await fetch(API + '/admin/export?month=' + mon.value, { headers: { Authorization: 'Bearer ' + (s.token || '') } });
+      if (!r.ok) { alert('받지 못했어요'); return; }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob()); a.download = `혜택존-지급내역-${mon.value}.csv`;
+      document.body.appendChild(a); a.click(); a.remove(); }));
+    box.appendChild(ex);
     box.appendChild(el('p', 'ad-muted', '계좌로 직접 보낸 뒤 「지급 완료」를 눌러 주세요. 반려하면 포인트가 회원에게 돌아갑니다. 계좌·주민번호 보기는 기록에 남고, 주민번호는 세금 신고에만 쓰세요.'));
     const d = await api('/admin/cashouts?status=' + sel.value);
     box.appendChild(table([
       { h: '#', v: c => c.id }, { h: '신청', v: c => ts(c.requested_at) }, { h: '회원', v: c => `${c.nick || '(탈퇴)'} #${c.member_id}` },
-      { h: '금액', r: 1, v: c => won(c.amount) + '원' }, { h: '계좌', v: c => `${c.bank} ${c.acct_mask}` },
+      { h: '교환', r: 1, v: c => won(c.amount) + 'P' }, { h: '세금', r: 1, v: c => c.tax ? won(c.tax) + '원' : '—' },
+      { h: '보낼 돈', r: 1, v: c => won(c.net != null ? c.net : c.amount) + '원' }, { h: '계좌', v: c => `${c.bank} ${c.acct_mask}` },
       { h: '상태', v: c => ST[c.status] + (c.reason ? ` · ${c.reason}` : '') + (c.done_at ? ` (${ts(c.done_at)})` : '') },
       { h: '처리', v: c => { const w = el('div');
         if (c.status === 'requested') {
           w.appendChild(btn('계좌 보기', '', async () => { try { const i = await api('/admin/cashout/reveal', { id: c.id });
             const r = el('div', 'ad-reveal', `${i.holder} · ${i.bank} ${i.account}` + (i.rrn ? ` · 주민번호 ${i.rrn}` : '')); w.appendChild(r); } catch (e) { alert(e.message); } }));
-          w.appendChild(btn('지급 완료', 'pri', async () => { if (!confirm(`${c.nick}님에게 ${won(c.amount)}원을 보내셨나요?`)) return;
+          w.appendChild(btn('지급 완료', 'pri', async () => { if (!confirm(`${c.nick}님에게 ${won(c.net != null ? c.net : c.amount)}원을 보내셨나요?`)) return;
             try { await api('/admin/cashout/done', { id: c.id }); go('cash'); } catch (e) { alert(e.message); } }));
           w.appendChild(btn('반려', 'bad', async () => { const reason = prompt('반려 사유 (회원에게 보입니다)'); if (!reason) return;
             try { await api('/admin/cashout/reject', { id: c.id, reason }); go('cash'); } catch (e) { alert(e.message); } }));
@@ -465,7 +485,8 @@
     const s = await api('/admin/settings'), c = el('div', 'ad-card');
     c.appendChild(el('div', 'ad-h', '적립 설정'));
     c.appendChild(el('p', 'ad-muted', '적립 비율은 바꾼 뒤 새로 잡히는 주문부터 적용돼요. 이미 잡힌 주문은 그때 비율 그대로입니다.'));
-    const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days]];
+    const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days],
+      ['withholding_rate', '원천징수율 (%) — 0이면 안 뗌', Math.round(s.withholding_rate * 1000) / 10], ['withholding_free_upto', '이 금액(원) 이하 교환은 안 뗌', s.withholding_free_upto]];
     const inputs = {};
     f.forEach(([k, label, v]) => { const r = el('label', 'ad-row'); r.appendChild(el('span', null, label)); const i = el('input'); i.type = 'number'; i.value = v; i.step = 'any'; inputs[k] = i; r.appendChild(i); c.appendChild(r); });
     const quick = el('div', 'ad-row'); quick.appendChild(el('span', 'ad-muted', '빠른 선택'));
@@ -479,8 +500,10 @@
     inputs.share.addEventListener('input', preview); inputs.min_cashout.addEventListener('input', preview); preview();
     const rr = el('label', 'ad-row'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!s.collect_rrn;
     rr.appendChild(cb); rr.appendChild(el('span', null, '현금 교환 때 주민등록번호 받기 (세금 신고·원천징수용)')); c.appendChild(rr);
+    c.appendChild(el('p', 'ad-muted', '원천징수는 세무사 확인 후 켜세요. 예: 기타소득이면 22%(소득세 20% + 지방소득세 2%), 건당 5만원 이하는 과세하지 않는 경우가 많아요. 바꾸면 그 뒤 신청부터 적용돼요.'));
     c.appendChild(btn('저장', 'pri', async () => { try { await api('/admin/settings', { share: Number(inputs.share.value) / 100,
-      min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
+      min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked,
+      withholding_rate: Number(inputs.withholding_rate.value) / 100, withholding_free_upto: Number(inputs.withholding_free_upto.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
     box.appendChild(c);
     box.appendChild(el('h3', 'ad-h', '관리자 작업 기록'));
     const a = await api('/admin/audit');
@@ -493,7 +516,7 @@
 })();
 </script>
 
-  <footer>HUBRIZ 돌봄플러스 혜택존 · <a href="privacy.html">개인정보 처리방침</a></footer>
+  <footer>HUBRIZ 돌봄플러스 혜택존 · <a href="terms.html">포인트 이용약관</a> · <a href="privacy.html">개인정보 처리방침</a></footer>
 </div>
 </body>
 </html>

@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS members (
   last_login INTEGER,
   is_admin   INTEGER NOT NULL DEFAULT 0,
   status     TEXT    NOT NULL DEFAULT 'ok',   -- ok | blocked
-  memo       TEXT                        -- 관리자 메모
+  memo       TEXT,                       -- 관리자 메모
+  terms_ver  TEXT,                       -- 동의한 포인트 이용약관 버전
+  terms_at   INTEGER
 );
 CREATE TABLE IF NOT EXISTS sessions (
   token_hash TEXT    PRIMARY KEY,       -- 로그인 토큰의 SHA-256 (토큰 자체는 저장 안 함)
@@ -31,6 +33,7 @@ CREATE TABLE IF NOT EXISTS orders (
   confirm_on   TEXT    NOT NULL,        -- 적립 확정일 YYYY-MM-DD (구매한 달의 다음 달 25일)
   confirmed_at INTEGER,                 -- 확정 처리한 시각
   points       INTEGER,                 -- 확정 때 고정한 포인트
+  created_at   INTEGER,                 -- 우리 DB에 처음 잡힌 시각 (회원 알림용)
   PRIMARY KEY (order_id, product_id)
 );
 CREATE INDEX IF NOT EXISTS orders_sub ON orders(sub_id);
@@ -57,7 +60,9 @@ CREATE TABLE IF NOT EXISTS cashouts (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
   member_id    INTEGER NOT NULL,
   nick         TEXT,                    -- 신청 당시 닉네임 (탈퇴 후에도 지급 기록 보관용)
-  amount       INTEGER NOT NULL,
+  amount       INTEGER NOT NULL,        -- 교환 포인트
+  tax          INTEGER NOT NULL DEFAULT 0,   -- 원천징수세액
+  net          INTEGER,                 -- 실제 입금액 (amount − tax)
   bank         TEXT    NOT NULL,
   acct_mask    TEXT    NOT NULL,        -- ****1234
   pii          TEXT,                    -- 암호화된 {예금주, 은행, 계좌번호}. 반려 즉시·지급 5년 뒤 삭제

@@ -18,7 +18,10 @@
 const SESSION_DAYS = 90;
 const SUB_PREFIX = 'hzm';
 const BACK = { my: 'my.html', hotdeal: 'hotdeal.html', main: '', admin: 'admin.html' };
-const DEFAULTS = { share: 0.10, min_cashout: 10000, expire_days: 365, collect_rrn: 1 };   // collect_rrn: 현금 교환 때 주민등록번호 받기 (원천징수용)
+const DEFAULTS = { share: 0.10, min_cashout: 10000, expire_days: 365, collect_rrn: 1, withholding_rate: 0, withholding_free_upto: 50000 };
+// withholding_rate: 원천징수율 (0 = 안 뗌. 기타소득이면 0.22) · withholding_free_upto: 이 금액 이하 교환은 떼지 않음
+const TERMS_VER = '2026-09-12';   // 포인트 이용약관 버전 — 약관을 바꾸면 올려서 다시 동의받음
+const SOON_DAYS = 30;             // '곧 사라질 포인트' 안내 기간   // collect_rrn: 현금 교환 때 주민등록번호 받기 (원천징수용)
 const PII_KEEP_DAYS = 5 * 365;     // 지급 기록의 계좌 정보 보관 (세무 증빙)
 const CP_HOST = 'https://api-gateway.coupang.com';
 const CP_BASE = '/v2/providers/affiliate_open_api/apis/openapi/v1';
@@ -84,7 +87,7 @@ async function memberFromAuth(req, env) {
   const t = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/, '');
   if (!t || t.length < 20) return null;
   return env.MEM.prepare(
-    `SELECT m.id, m.nick, m.sub_id, m.is_admin, m.status FROM sessions s JOIN members m ON m.id = s.member_id
+    `SELECT m.id, m.nick, m.sub_id, m.is_admin, m.status, m.terms_ver FROM sessions s JOIN members m ON m.id = s.member_id
      WHERE s.token_hash = ? AND s.exp > ?`).bind(await sha256(t), now()).first();
 }
 async function adminFrom(req, env) {
@@ -121,12 +124,12 @@ export async function syncOrders(env) {
     const st = [];
     for (const r of orders.filter(mine)) {
       st.push(env.MEM.prepare(
-        `INSERT INTO orders (order_id, product_id, sub_id, day, name, qty, gmv, commission, share, confirm_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO orders (order_id, product_id, sub_id, day, name, qty, gmv, commission, share, confirm_on, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(order_id, product_id) DO UPDATE SET sub_id = excluded.sub_id, day = excluded.day, name = excluded.name,
            qty = excluded.qty, gmv = excluded.gmv, commission = excluded.commission, confirm_on = excluded.confirm_on
          WHERE orders.confirmed_at IS NULL`
       ).bind(String(r.orderId), String(r.productId), r.subId, String(r.date), String(r.productName || '').slice(0, 120),
-        num(r.quantity) || 1, Math.round(Math.abs(num(r.gmv))), Math.round(Math.abs(num(r.commission))), s.share, confirmOn(String(r.date))));
+        num(r.quantity) || 1, Math.round(Math.abs(num(r.gmv))), Math.round(Math.abs(num(r.commission))), s.share, confirmOn(String(r.date)), now()));
     }
     for (const r of cancels.filter(mine)) {
       st.push(env.MEM.prepare(
@@ -170,14 +173,14 @@ export async function expirePoints(env) {
 /* 회원 한 명의 장부 */
 async function ledger(env, m) {
   const [ord, log, cash] = await Promise.all([
-    env.MEM.prepare(`SELECT o.order_id, o.day, o.name, o.qty, o.gmv, o.commission, o.share, o.confirm_on, o.confirmed_at, o.points,
+    env.MEM.prepare(`SELECT o.order_id, o.day, o.name, o.qty, o.gmv, o.commission, o.share, o.confirm_on, o.confirmed_at, o.points, o.created_at,
         COALESCE((SELECT SUM(c.gmv) FROM cancels c WHERE c.order_id = o.order_id AND c.product_id = o.product_id), 0) AS cancel
       FROM orders o WHERE o.sub_id = ? ORDER BY o.day DESC, o.order_id DESC LIMIT 500`).bind(m.sub_id).all(),
     env.MEM.prepare('SELECT kind, amount, memo, at FROM points_log WHERE member_id = ? ORDER BY at DESC, id DESC LIMIT 300').bind(m.id).all(),
-    env.MEM.prepare(`SELECT id, amount, bank, acct_mask, status, reason, requested_at, done_at FROM cashouts
+    env.MEM.prepare(`SELECT id, amount, tax, net, bank, acct_mask, status, reason, requested_at, done_at FROM cashouts
       WHERE member_id = ? ORDER BY id DESC LIMIT 100`).bind(m.id).all(),
   ]);
-  const sums = { pending: 0, earned: 0, canceled: 0, used: 0, expired: 0, balance: 0 };
+  const sums = { pending: 0, earned: 0, canceled: 0, used: 0, expired: 0, balance: 0, expiringSoon: 0 };
   const rows = ord.results.map(o => {
     let status, p;
     if (o.confirmed_at) { p = o.points; status = p > 0 ? 'done' : 'canceled'; }
@@ -186,7 +189,7 @@ async function ledger(env, m) {
     const full = orderPoints({ ...o, cancel: 0 });
     if (status === 'done') sums.earned += p; else if (status === 'pending') sums.pending += p; else sums.canceled += full;
     return { day: o.day, name: o.name, qty: o.qty, gmv: o.gmv, cancel: o.cancel, commission: o.commission,
-             points: status === 'canceled' ? full : p, status, confirmOn: o.confirm_on };
+             points: status === 'canceled' ? full : p, status, confirmOn: o.confirm_on, createdAt: o.created_at, confirmedAt: o.confirmed_at };
   });
   let logSum = 0;
   for (const l of log.results) {
@@ -196,10 +199,22 @@ async function ledger(env, m) {
   sums.used = cash.results.filter(c => c.status !== 'rejected').reduce((a, c) => a + c.amount, 0);
   const allLog = await env.MEM.prepare('SELECT COALESCE(SUM(amount), 0) AS t FROM points_log WHERE member_id = ?').bind(m.id).first();
   sums.balance = sums.earned + allLog.t;
+  // 곧 사라질 포인트: 유효기간이 30일 안에 끝나는 적립 중 아직 쓰지 않은 만큼 (소멸과 같은 계산)
+  const s = await settings(env), soon = now() - (s.expire_days - SOON_DAYS) * 86400;
+  const e = await env.MEM.prepare(`SELECT
+      COALESCE((SELECT SUM(points) FROM orders WHERE sub_id = ? AND confirmed_at IS NOT NULL AND confirmed_at <= ?), 0)
+    + COALESCE((SELECT SUM(amount) FROM points_log WHERE member_id = ? AND kind = 'adjust' AND amount > 0 AND at <= ?), 0) AS old,
+      COALESCE((SELECT -SUM(amount) FROM points_log WHERE member_id = ? AND amount < 0), 0)
+    - COALESCE((SELECT SUM(amount) FROM points_log WHERE member_id = ? AND kind = 'refund'), 0) AS used`)
+    .bind(m.sub_id, soon, m.id, soon, m.id, m.id).first();
+  sums.expiringSoon = Math.max(0, Math.min(sums.balance, e.old - e.used));
   return { sums, rows, log: log.results, cashouts: cash.results };
 }
 
 const BANK_RE = /^[가-힣A-Za-z0-9() ]{2,20}$/;
+/* 원천징수: 설정 비율로, 10원 미만 버림. free_upto 이하 교환은 떼지 않음 */
+const taxOf = (amount, s) => s.withholding_rate > 0 && amount > s.withholding_free_upto ? Math.floor(amount * s.withholding_rate / 10) * 10 : 0;
+const csv = rows => '\uFEFF' + rows.map(r => r.map(v => { const t = v == null ? '' : String(v); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; }).join(',')).join('\r\n');
 /* 주민등록번호 형식: 앞 6자리 생년월일이 실제 날짜이고 뒤 첫 자리가 1~8 (2020년 이후 번호는 검증숫자 규칙이 없어 형식만 봄) */
 function validRrn(front, back) {
   if (!/^\d{6}$/.test(front) || !/^[1-8]\d{6}$/.test(back)) return false;
@@ -217,7 +232,8 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
 
   if (p === '/rw/status' && req.method === 'GET') {
     const s = await settings(env);
-    return json({ on: !!env.KAKAO_REST_KEY, share: s.share, min: s.min_cashout, expireDays: s.expire_days, collectRrn: !!s.collect_rrn }, 200, cors);
+    return json({ on: !!env.KAKAO_REST_KEY, share: s.share, min: s.min_cashout, expireDays: s.expire_days, collectRrn: !!s.collect_rrn,
+      withholdingRate: s.withholding_rate, withholdingFreeUpto: s.withholding_free_upto, termsVer: TERMS_VER }, 200, cors);
   }
 
   if (p === '/auth/kakao' && req.method === 'GET') {
@@ -275,10 +291,20 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
       const [led, s, last] = await Promise.all([ledger(env, me), settings(env),
         env.MEM.prepare('SELECT at FROM sync_log WHERE ok = 1 ORDER BY at DESC LIMIT 1').first()]);
       return json({ nick: me.nick, subId: me.sub_id, status: me.status, admin: !!me.is_admin,
-        share: s.share, min: s.min_cashout, expireDays: s.expire_days, collectRrn: !!s.collect_rrn, ...led, syncedAt: last ? last.at : null }, 200, cors);
+        share: s.share, min: s.min_cashout, expireDays: s.expire_days, collectRrn: !!s.collect_rrn,
+        withholdingRate: s.withholding_rate, withholdingFreeUpto: s.withholding_free_upto,
+        needTerms: me.terms_ver !== TERMS_VER, termsVer: TERMS_VER, ...led, syncedAt: last ? last.at : null }, 200, cors);
+    }
+
+    if (p === '/me/agree' && req.method === 'POST') {
+      const d = await body();
+      if (d.ver !== TERMS_VER || !d.terms || !d.privacy) return json({ error: '이용약관과 개인정보 수집·이용에 모두 동의해 주세요.' }, 400, cors);
+      await env.MEM.prepare('UPDATE members SET terms_ver = ?, terms_at = ? WHERE id = ?').bind(TERMS_VER, now(), me.id).run();
+      return json({ ok: true }, 200, cors);
     }
 
     if (p === '/me/cashout' && req.method === 'POST') {
+      if (me.terms_ver !== TERMS_VER) return json({ error: '포인트 이용약관에 먼저 동의해 주세요.' }, 403, cors);
       if (me.status !== 'ok') return json({ error: '이용이 멈춘 계정이에요. 고객센터로 문의해 주세요.' }, 403, cors);
       const d = await body();
       const holder = String(d.holder || '').trim(), bank = String(d.bank || '').trim(), account = String(d.account || '').replace(/[\s-]/g, '');
@@ -297,18 +323,18 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
       if (led.cashouts.some(c => c.status === 'requested')) return json({ error: '이미 신청한 교환이 처리 중이에요.' }, 409, cors);
       const amount = led.sums.balance;
       if (amount < s.min_cashout) return json({ error: `${s.min_cashout.toLocaleString('ko-KR')}P부터 바꿀 수 있어요.` }, 400, cors);
-      const t = now();
+      const t = now(), tax = taxOf(amount, s), net = amount - tax;
       try {
         await env.MEM.batch([
-          env.MEM.prepare(`INSERT INTO cashouts (member_id, nick, amount, bank, acct_mask, pii, status, requested_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'requested', ?)`).bind(me.id, me.nick, amount, bank, '****' + account.slice(-4),
+          env.MEM.prepare(`INSERT INTO cashouts (member_id, nick, amount, tax, net, bank, acct_mask, pii, status, requested_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'requested', ?)`).bind(me.id, me.nick, amount, tax, net, bank, '****' + account.slice(-4),
             await seal(env, rrn ? { holder, bank, account, rrn } : { holder, bank, account }), t),
           env.MEM.prepare(`INSERT INTO points_log (member_id, kind, amount, memo, at)
             SELECT ?, 'cashout', ?, '현금 교환 신청 #' || id, ? FROM cashouts WHERE member_id = ? AND status = 'requested'`)
             .bind(me.id, -amount, t, me.id),
         ]);
       } catch { return json({ error: '이미 신청한 교환이 처리 중이에요.' }, 409, cors); }
-      return json({ ok: true, amount }, 200, cors);
+      return json({ ok: true, amount, tax, net }, 200, cors);
     }
 
     if (p === '/me/logout' && req.method === 'POST') {
@@ -410,7 +436,7 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
 
     if (p === '/admin/cashouts' && req.method === 'GET') {
       const st = url.searchParams.get('status') || 'requested';
-      const { results } = await env.MEM.prepare(`SELECT id, member_id, nick, amount, bank, acct_mask, status, reason, requested_at, done_at, admin
+      const { results } = await env.MEM.prepare(`SELECT id, member_id, nick, amount, tax, net, bank, acct_mask, status, reason, requested_at, done_at, admin
         FROM cashouts ${st === 'all' ? '' : 'WHERE status = ?'} ORDER BY id DESC LIMIT 300`).bind(...(st === 'all' ? [] : [st])).all();
       return json({ cashouts: results }, 200, cors);
     }
@@ -424,12 +450,12 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
     }
 
     if ((p === '/admin/cashout/done' || p === '/admin/cashout/reject') && req.method === 'POST') {
-      const c = await env.MEM.prepare(`SELECT id, member_id, amount FROM cashouts WHERE id = ? AND status = 'requested'`).bind(id).first();
+      const c = await env.MEM.prepare(`SELECT id, member_id, amount, tax, net FROM cashouts WHERE id = ? AND status = 'requested'`).bind(id).first();
       if (!c) return json({ error: '처리할 신청이 없어요 (이미 처리됨)' }, 409, cors);
       if (p.endsWith('/done')) {
         await env.MEM.batch([
           env.MEM.prepare(`UPDATE cashouts SET status = 'paid', done_at = ?, admin = ? WHERE id = ? AND status = 'requested'`).bind(now(), A.name, id),
-          audit(env, A.name, '현금 지급 완료', id, `${c.amount}원`)]);
+          audit(env, A.name, '현금 지급 완료', id, `${c.net ?? c.amount}원 (세금 ${c.tax || 0}원)`)]);
       } else {
         const reason = String(d.reason || '').trim().slice(0, 200);
         if (!reason) return json({ error: '반려 사유를 넣어 주세요.' }, 400, cors);
@@ -445,15 +471,56 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
 
     if (p === '/admin/settings') {
       if (req.method === 'POST') {
-        const v = { share: num(d.share), min_cashout: Math.trunc(num(d.min_cashout)), expire_days: Math.trunc(num(d.expire_days)), collect_rrn: d.collect_rrn ? 1 : 0 };
-        if (!(v.share > 0 && v.share <= 1) || v.min_cashout < 1000 || v.min_cashout > 1000000 || v.expire_days < 30 || v.expire_days > 1825)
-          return json({ error: '비율 1~100%, 최소 교환 1,000~1,000,000P, 유효기간 30~1,825일' }, 400, cors);
+        const v = { share: num(d.share), min_cashout: Math.trunc(num(d.min_cashout)), expire_days: Math.trunc(num(d.expire_days)), collect_rrn: d.collect_rrn ? 1 : 0,
+          withholding_rate: num(d.withholding_rate), withholding_free_upto: Math.trunc(num(d.withholding_free_upto)) };
+        if (!(v.share > 0 && v.share <= 1) || v.min_cashout < 1000 || v.min_cashout > 1000000 || v.expire_days < 30 || v.expire_days > 1825
+            || !(v.withholding_rate >= 0 && v.withholding_rate <= 0.5) || !(v.withholding_free_upto >= 0 && v.withholding_free_upto <= 10000000))
+          return json({ error: '비율 1~100%, 최소 교환 1,000~1,000,000P, 유효기간 30~1,825일, 원천징수율 0~50%' }, 400, cors);
         const before = await settings(env);
         await env.MEM.batch([
           ...Object.entries(v).map(([k, val]) => env.MEM.prepare('INSERT INTO settings (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').bind(k, String(val))),
           audit(env, A.name, '설정 변경', null, JSON.stringify({ before, after: v }))]);
       }
       return json(await settings(env), 200, cors);
+    }
+
+    if (p === '/admin/export' && req.method === 'GET') {
+      // 지급 내역 (세금 신고·지급명세서용). 그 달에 '지급 완료'한 건. 계좌·주민번호를 풀어 넣으니 기록을 남김
+      const mo = String(url.searchParams.get('month') || kst().toISOString().slice(0, 7));
+      if (!/^\d{4}-\d{2}$/.test(mo)) return json({ error: '월은 2026-09 형식' }, 400, cors);
+      const from = Math.floor(Date.UTC(+mo.slice(0, 4), +mo.slice(5, 7) - 1, 1) / 1000) - 9 * 3600;
+      const to = Math.floor(Date.UTC(+mo.slice(0, 4), +mo.slice(5, 7), 1) / 1000) - 9 * 3600;
+      const { results } = await env.MEM.prepare(`SELECT * FROM cashouts WHERE status = 'paid' AND done_at >= ? AND done_at < ? ORDER BY done_at`).bind(from, to).all();
+      const day = t => new Date((t + 9 * 3600) * 1000).toISOString().slice(0, 10);
+      const rows = [['지급일', '신청번호', '회원번호', '닉네임', '예금주', '은행', '계좌번호', '주민등록번호', '교환 포인트', '원천징수세액', '실지급액', '처리자']];
+      for (const c of results) {
+        let i = {};
+        if (c.pii) { try { i = await unseal(env, c.pii); } catch { i = {}; } }
+        rows.push([day(c.done_at), c.id, c.member_id, c.nick, i.holder || '(보관 기간 지남)', c.bank, i.account || c.acct_mask, i.rrn || '',
+          c.amount, c.tax || 0, c.net ?? c.amount, c.admin]);
+      }
+      rows.push(['합계', '', '', '', '', '', '', '', results.reduce((a, c) => a + c.amount, 0), results.reduce((a, c) => a + (c.tax || 0), 0),
+        results.reduce((a, c) => a + (c.net ?? c.amount), 0), '']);
+      await audit(env, A.name, '지급 내역 내보내기', mo, `${results.length}건`).run();
+      return new Response(csv(rows), { headers: { ...cors, 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'no-store',
+        'Content-Disposition': `attachment; filename="hyetaekzone-payouts-${mo}.csv"` } });
+    }
+
+    if (p === '/admin/report' && req.method === 'GET') {
+      // 아침 메일용 요약 (scripts/points_report.py)
+      const since = Number(url.searchParams.get('since')) || now() - 86400;
+      const [mem, ord, all, cash, last, lastOk, lg] = await Promise.all([
+        env.MEM.prepare('SELECT COUNT(*) n, COALESCE(SUM(created >= ?), 0) new, COALESCE(SUM(terms_ver IS NULL OR terms_ver != ?), 0) noterms FROM members').bind(since, TERMS_VER).first(),
+        env.MEM.prepare('SELECT COUNT(*) n, COALESCE(SUM(gmv), 0) gmv, COUNT(DISTINCT sub_id) buyers FROM orders WHERE created_at >= ?').bind(since).first(),
+        env.MEM.prepare('SELECT COUNT(*) n FROM orders').first(),
+        env.MEM.prepare(`SELECT COUNT(*) n, COALESCE(SUM(amount), 0) amt, MIN(requested_at) oldest FROM cashouts WHERE status = 'requested'`).first(),
+        env.MEM.prepare('SELECT at, ok, note FROM sync_log ORDER BY at DESC LIMIT 1').first(),
+        env.MEM.prepare('SELECT at FROM sync_log WHERE ok = 1 ORDER BY at DESC LIMIT 1').first(),
+        env.MEM.prepare(`SELECT COALESCE(SUM(amount), 0) t FROM points_log`).first(),
+      ]);
+      const earned = await env.MEM.prepare('SELECT COALESCE(SUM(points), 0) t FROM orders WHERE confirmed_at IS NOT NULL').first();
+      return json({ since, members: mem, newOrders: ord, firstEver: ord.n > 0 && ord.n === all.n, cashPending: cash, lastSync: last,
+        syncStale: !lastOk || lastOk.at < now() - 36 * 3600, liability: earned.t + lg.t, settings: await settings(env) }, 200, cors);
     }
 
     if (p === '/admin/audit' && req.method === 'GET') {

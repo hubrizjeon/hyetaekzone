@@ -228,6 +228,16 @@
   .rw-rrn-row input{flex:1;width:0;min-width:0;font-family:inherit;font-size:19px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;
     background:var(--bg);color:var(--txt);letter-spacing:.08em}
   .rw-rrn p{margin:0;font-size:14px;color:var(--mut);line-height:1.55}
+    .rw-news{list-style:none;margin:12px 0 0;padding:12px 14px;border:2px solid #93c5fd;border-radius:14px;background:var(--badge-info-bg);display:grid;gap:6px}
+  .rw-news[hidden]{display:none!important}
+  .rw-news li{font-size:16px;font-weight:700;color:var(--txt);line-height:1.5}
+  .rw-soon{font-size:16px;font-weight:800;color:var(--badge-warn);background:var(--badge-warn-bg);border-radius:12px;padding:10px 14px;margin-top:10px}
+  .rw-tax{margin:0;font-size:16px;font-weight:800;color:var(--rw-pend);background:var(--rw-pend-bg);border-radius:10px;padding:10px 12px}
+  .rw-agree{display:grid;gap:12px}
+  .rw-agree p{margin:0;font-size:17px;color:var(--sub)}
+  .rw-agree .rw-check{display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;line-height:1.5}
+  .rw-agree .rw-check input{width:24px;height:24px;flex:none;margin-top:2px}
+  .rw-agree a{color:inherit}
     .rw-doc h3{font-size:19px;margin:18px 0 4px}
   .rw-doc ul{margin-left:22px;color:var(--sub)}
   /* HOTDEAL-CSS:END */
@@ -266,6 +276,7 @@
   <div class="toc">
     <a class="hot" href="#new">🆕 새소식</a>
     <a class="hot" href="hotdeal.html">🔥 핫딜 상품</a>
+    <a class="hot" href="my.html">🪙 내 포인트</a>
     <a href="#gov">🏛️ 정부·동네혜택</a>
     <a href="#health">💊 내 몸 챙기기</a>
     <a href="#family">🎁 가족·경조사</a>
@@ -687,7 +698,7 @@
       <span class="cat-emoji">🔥</span>
       <div>
         <div class="cat-title">오늘의 핫딜</div>
-        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 12일 오후 4:19 기준</div>
+        <div class="cat-note">쿠팡 골드박스·인기 상품 · 제휴 링크 · 9월 12일 오후 4:58 기준</div>
       </div>
     </div>
     <div class="hd-notice">
@@ -706,47 +717,47 @@
         placeholder="예: 물티슈, 기저귀, 에어프라이어"><button type="submit">검색</button></div>
       <small>쿠팡 상품을 찾아 제휴 링크로 보여드려요 (광고)</small>
     </form>
-    <div class="card ad" data-g="life" data-p="21000" data-o="0" data-gb="1">
-      <div class="tagrow"><span class="where">생활용품</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://img5a.coupangcdn.com/image/retail/images/415626065407355-d0563bdf-b7fe-4df5-a5ba-0669ac0d5378.png" alt="유니레버 썬 식기세척기용 타블렛 세제 베이킹소다 앤 소금 50개입" loading="lazy">
-      <div class="what">유니레버 썬 식기세척기용 타블렛 세제 베이킹소다 앤 소금 50개입</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>21,000원</b> <small>(9월 12일 오후 4:19 확인)</small></span></div>
-      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
-      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
-      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8341650588&amp;itemId=24096815400&amp;vendorItemId=91116197924&amp;traceid=V0-143-b308a6226153946a&amp;pt=0&amp;slot=1" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
-    </div>
-    <div class="card ad" data-g="home" data-p="39900" data-o="1" data-gb="1">
+    <div class="card ad" data-g="home" data-p="28780" data-o="0" data-gb="1">
       <div class="tagrow"><span class="where">가구·인테리어</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://img5c.coupangcdn.com/image/vendor_inventory/0619/4fcf8740ceb41014a9274fe781a8cd3748f087a907c88dfb89710b32e5bb.jpg" alt="Kipnos 폴딩 대용량 리빙박스 수납장 대용량 수납 정리함 접이식 보관함 다용도 수납함 플라스틱 수납함 사물함 정리함 리빙박 스수납박스 대형가정용 장난감 수납장 옷정리함" loading="lazy">
+      <img class="hd-img" src="https://image15.coupangcdn.com/image/vendor_inventory/8e28/10b3fbcd5eb469388b7f2448ddb4ac2f053c1966ecda1185c56388f93ba2.png" alt="Kipnos 폴딩 대용량 리빙박스 수납장 대용량 수납 정리함 접이식 보관함 다용도 수납함 플라스틱 수납함 사물함 정리함 리빙박 스수납박스 대형가정용 장난감 수납장 옷정리함" loading="lazy">
       <div class="what">Kipnos 폴딩 대용량 리빙박스 수납장 대용량 수납 정리함 접이식 보관함 다용도 수납함 플라스틱 수납함 사물함 정리함 리빙박 스수납박스 대형가정용 장난감 수납장 옷정리함</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>39,900원</b> <small>(9월 12일 오후 4:19 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>28,780원</b> <small>(9월 12일 오후 4:58 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8837247802&amp;itemId=25753267122&amp;vendorItemId=95821723194&amp;traceid=V0-143-1b2493c00f511edd&amp;pt=0&amp;slot=2" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8837247802&amp;itemId=24983983526&amp;vendorItemId=95821723193&amp;traceid=V0-143-1b2493c00f511edd&amp;pt=0&amp;slot=1" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
     </div>
-    <div class="card ad" data-g="food" data-p="26090" data-o="3" data-gb="1">
+    <div class="card ad" data-g="digital" data-p="16900" data-o="1" data-gb="1">
+      <div class="tagrow"><span class="where">가전·디지털</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
+      <img class="hd-img" src="https://img3a.coupangcdn.com/image/retail/images/464978795235211-5dc5ca31-fe08-4714-843c-c36f02ae4feb.jpg" alt="헤이홈 원격 제어 콘센트 스마트 mini 플러그" loading="lazy">
+      <div class="what">헤이홈 원격 제어 콘센트 스마트 mini 플러그</div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>16,900원</b> <small>(9월 12일 오후 4:58 확인)</small></span></div>
+      <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
+      <div class="how"><span class="ic">🚚</span><span>🚀 로켓배송 · 배송비는 쿠팡에서 확인</span></div>
+      <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=8520311165&amp;itemId=26157462767&amp;vendorItemId=85586691678&amp;traceid=V0-143-f867f0c5bda5fa3f&amp;pt=0&amp;slot=2" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+    </div>
+    <div class="card ad" data-g="food" data-p="26090" data-o="2" data-gb="1">
       <div class="tagrow"><span class="where">먹거리</span><span class="adtag">광고</span><span class="gbtag">🔥 골드박스</span></div>
-      <img class="hd-img" src="https://img1a.coupangcdn.com/image/vendor_inventory/image_audit/stage/manual/fd5245cbb4710fe44bf56ae7446e8623320614ded2644dc3be0978cac547_1776647972386.jpg" alt="행복미트 프리미엄 소 스지 수육 탕 전골용" loading="lazy">
+      <img class="hd-img" src="https://image15.coupangcdn.com/image/vendor_inventory/image_audit/stage/manual/fd5245cbb4710fe44bf56ae7446e8623320614ded2644dc3be0978cac547_1776647972386.jpg" alt="행복미트 프리미엄 소 스지 수육 탕 전골용" loading="lazy">
       <div class="what">행복미트 프리미엄 소 스지 수육 탕 전골용</div>
-      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>26,090원</b> <small>(9월 12일 오후 4:19 확인)</small></span></div>
+      <div class="how"><span class="ic">💰</span><span>쿠팡 판매가 <b>26,090원</b> <small>(9월 12일 오후 4:58 확인)</small></span></div>
       <div class="how"><span class="ic">🏷️</span><span>쿠팡 골드박스 선정 상품</span></div>
       <div class="how"><span class="ic">🚚</span><span>📦 일반배송 · 무료배송</span></div>
       <span class="badge info">가격은 수시로 바뀝니다 · 쿠팡에서 최종 확인</span>
-      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7484261404&amp;itemId=19543928276&amp;vendorItemId=86422174034&amp;traceid=V0-143-7ecbbf88a8a1abaa&amp;pt=0&amp;slot=4" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
+      <a class="btn" href="https://link.coupang.com/re/AFFSDP?lptag=AF7078394&amp;subid=hyetaekzone&amp;pageKey=7484261404&amp;itemId=19543928276&amp;vendorItemId=86422174034&amp;traceid=V0-143-7ecbbf88a8a1abaa&amp;pt=0&amp;slot=3" target="_blank" rel="noopener nofollow sponsored">구매하러 가기 <span class="arr">→</span></a>
     </div>
     <div class="hd-cats"><b>카테고리별로 보기</b>
-      <a href="hotdeal.html#g-gb">🔥 골드박스 특가 28</a>
-      <a href="hotdeal.html#g-life">🧻 생활용품 28</a>
-      <a href="hotdeal.html#g-food">🍚 먹거리 51</a>
+      <a href="hotdeal.html#g-gb">🔥 골드박스 특가 27</a>
+      <a href="hotdeal.html#g-life">🧻 생활용품 27</a>
+      <a href="hotdeal.html#g-food">🍚 먹거리 52</a>
       <a href="hotdeal.html#g-kitchen">🍳 주방용품 15</a>
       <a href="hotdeal.html#g-beauty">💄 뷰티 20</a>
       <a href="hotdeal.html#g-fashion">👗 패션·잡화 43</a>
       <a href="hotdeal.html#g-home">🛏️ 가구·인테리어 9</a>
       <a href="hotdeal.html#g-travel">✈️ 여행·레저 4</a>
     </div>
-    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 (348개) <span class="arr">→</span></a>
+    <a class="hd-more" href="hotdeal.html">🔥 핫딜 상품 전체 보기 (347개) <span class="arr">→</span></a>
   </section>
   <script>
 (function(){
@@ -763,8 +774,11 @@
     return fetch(API+'/me',{headers:{Authorization:'Bearer '+s.token}}).then(function(r){
       if(r.status===401){ try{ localStorage.removeItem(KEY); }catch(e){} return; }
       return r.json().then(function(d){
+        var t=document.getElementById('hz-rw-t');
+        if(d.needTerms){ delete s.sid; try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){}
+          t.textContent='🪙 '+d.nick+' 님, 약관 동의만 하면 적립이 시작돼요'; document.getElementById('hz-rw-b').textContent='동의하러 가기'; return; }
         s.sid=d.subId; s.nick=d.nick; try{ localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){}
-        var t=document.getElementById('hz-rw-t'); t.textContent='';
+        t.textContent='';
         t.appendChild(document.createTextNode('🪙 '+d.nick+' 님 · 쓸 수 있는 포인트 '));
         var b=document.createElement('b'); b.textContent=Number(d.sums.balance).toLocaleString('ko-KR')+'P'; t.appendChild(b);
         t.appendChild(document.createTextNode(' · 적립 예정 '));
