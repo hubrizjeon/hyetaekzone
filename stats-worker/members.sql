@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS cashouts (
   nick         TEXT,                    -- 신청 당시 닉네임 (탈퇴 후에도 지급 기록 보관용)
   amount       INTEGER NOT NULL,        -- 교환 포인트
   tax          INTEGER NOT NULL DEFAULT 0,   -- 원천징수세액
+  tax_income   INTEGER NOT NULL DEFAULT 0,   -- 그중 소득세
+  tax_local    INTEGER NOT NULL DEFAULT 0,   -- 그중 지방소득세
   net          INTEGER,                 -- 실제 입금액 (amount − tax)
   bank         TEXT    NOT NULL,
   acct_mask    TEXT    NOT NULL,        -- ****1234

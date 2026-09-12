@@ -19,7 +19,7 @@ const SESSION_DAYS = 90;
 const SUB_PREFIX = 'hzm';
 const BACK = { my: 'my.html', hotdeal: 'hotdeal.html', main: '', admin: 'admin.html' };
 const DEFAULTS = { share: 0.10, min_cashout: 10000, expire_days: 365, collect_rrn: 1, withholding_rate: 0, withholding_free_upto: 50000 };
-// withholding_rate: 원천징수율 (0 = 안 뗌. 기타소득이면 0.22) · withholding_free_upto: 이 금액 이하 교환은 떼지 않음
+// withholding_rate: 원천징수율 합계 (0 = 안 뗌. 사업소득 0.033 = 소득세 3% + 지방소득세 0.3%) · withholding_free_upto: 이 금액 이하 교환은 떼지 않음 (사업소득은 0)
 const TERMS_VER = '2026-09-12';   // 포인트 이용약관 버전 — 약관을 바꾸면 올려서 다시 동의받음
 const SOON_DAYS = 30;             // '곧 사라질 포인트' 안내 기간   // collect_rrn: 현금 교환 때 주민등록번호 받기 (원천징수용)
 const PII_KEEP_DAYS = 5 * 365;     // 지급 기록의 계좌 정보 보관 (세무 증빙)
@@ -212,8 +212,16 @@ async function ledger(env, m) {
 }
 
 const BANK_RE = /^[가-힣A-Za-z0-9() ]{2,20}$/;
-/* 원천징수: 설정 비율로, 10원 미만 버림. free_upto 이하 교환은 떼지 않음 */
-const taxOf = (amount, s) => s.withholding_rate > 0 && amount > s.withholding_free_upto ? Math.floor(amount * s.withholding_rate / 10) * 10 : 0;
+/* 원천징수: 합계 비율 = 소득세 + 지방소득세(소득세의 10%). 각각 10원 미만 버림.
+   소득세가 1,000원 미만이면 떼지 않음(소득세법 제86조 소액부징수). free_upto 이하 교환도 떼지 않음 */
+function taxOf(amount, s) {
+  if (!(s.withholding_rate > 0) || amount <= s.withholding_free_upto) return { income: 0, local: 0, tax: 0 };
+  const incomeRate = Math.round(s.withholding_rate / 1.1 * 1e6) / 1e6;          // 0.033 → 0.03 (소수 계산 오차 제거)
+  const income = Math.floor(amount * incomeRate / 10 + 1e-9) * 10;
+  if (income < 1000) return { income: 0, local: 0, tax: 0 };
+  const local = Math.floor(income * 0.1 / 10) * 10;
+  return { income, local, tax: income + local };
+}
 const csv = rows => '\uFEFF' + rows.map(r => r.map(v => { const t = v == null ? '' : String(v); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; }).join(',')).join('\r\n');
 /* 주민등록번호 형식: 앞 6자리 생년월일이 실제 날짜이고 뒤 첫 자리가 1~8 (2020년 이후 번호는 검증숫자 규칙이 없어 형식만 봄) */
 function validRrn(front, back) {
@@ -323,11 +331,11 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
       if (led.cashouts.some(c => c.status === 'requested')) return json({ error: '이미 신청한 교환이 처리 중이에요.' }, 409, cors);
       const amount = led.sums.balance;
       if (amount < s.min_cashout) return json({ error: `${s.min_cashout.toLocaleString('ko-KR')}P부터 바꿀 수 있어요.` }, 400, cors);
-      const t = now(), tax = taxOf(amount, s), net = amount - tax;
+      const t = now(), tx = taxOf(amount, s), tax = tx.tax, net = amount - tax;
       try {
         await env.MEM.batch([
-          env.MEM.prepare(`INSERT INTO cashouts (member_id, nick, amount, tax, net, bank, acct_mask, pii, status, requested_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'requested', ?)`).bind(me.id, me.nick, amount, tax, net, bank, '****' + account.slice(-4),
+          env.MEM.prepare(`INSERT INTO cashouts (member_id, nick, amount, tax, tax_income, tax_local, net, bank, acct_mask, pii, status, requested_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'requested', ?)`).bind(me.id, me.nick, amount, tax, tx.income, tx.local, net, bank, '****' + account.slice(-4),
             await seal(env, rrn ? { holder, bank, account, rrn } : { holder, bank, account }), t),
           env.MEM.prepare(`INSERT INTO points_log (member_id, kind, amount, memo, at)
             SELECT ?, 'cashout', ?, '현금 교환 신청 #' || id, ? FROM cashouts WHERE member_id = ? AND status = 'requested'`)
@@ -492,14 +500,15 @@ export async function handleReward(req, env, ctx, url, cors, allowed) {
       const to = Math.floor(Date.UTC(+mo.slice(0, 4), +mo.slice(5, 7), 1) / 1000) - 9 * 3600;
       const { results } = await env.MEM.prepare(`SELECT * FROM cashouts WHERE status = 'paid' AND done_at >= ? AND done_at < ? ORDER BY done_at`).bind(from, to).all();
       const day = t => new Date((t + 9 * 3600) * 1000).toISOString().slice(0, 10);
-      const rows = [['지급일', '신청번호', '회원번호', '닉네임', '예금주', '은행', '계좌번호', '주민등록번호', '교환 포인트', '원천징수세액', '실지급액', '처리자']];
+      const rows = [['지급일', '신청번호', '회원번호', '닉네임', '예금주', '은행', '계좌번호', '주민등록번호', '지급액(교환 포인트)', '소득세', '지방소득세', '원천징수 합계', '실지급액', '처리자']];
       for (const c of results) {
         let i = {};
         if (c.pii) { try { i = await unseal(env, c.pii); } catch { i = {}; } }
         rows.push([day(c.done_at), c.id, c.member_id, c.nick, i.holder || '(보관 기간 지남)', c.bank, i.account || c.acct_mask, i.rrn || '',
-          c.amount, c.tax || 0, c.net ?? c.amount, c.admin]);
+          c.amount, c.tax_income || 0, c.tax_local || 0, c.tax || 0, c.net ?? c.amount, c.admin]);
       }
-      rows.push(['합계', '', '', '', '', '', '', '', results.reduce((a, c) => a + c.amount, 0), results.reduce((a, c) => a + (c.tax || 0), 0),
+      const sum = k => results.reduce((a, c) => a + (c[k] || 0), 0);
+      rows.push(['합계', '', '', '', '', '', '', '', sum('amount'), sum('tax_income'), sum('tax_local'), sum('tax'),
         results.reduce((a, c) => a + (c.net ?? c.amount), 0), '']);
       await audit(env, A.name, '지급 내역 내보내기', mo, `${results.length}건`).run();
       return new Response(csv(rows), { headers: { ...cors, 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'no-store',

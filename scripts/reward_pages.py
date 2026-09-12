@@ -85,8 +85,10 @@ MY_SCRIPT = """<script>
     if(pend){ box.appendChild(el('div','rw-cash-msg','💸 '+won(pend.net!=null?pend.net:pend.amount)+'원 입금을 준비하고 있어요'+(pend.tax?' (세금 '+won(pend.tax)+'원 제외)':'')+' · '+mdTs(pend.requested_at)+' 신청 · '+pend.bank+' '+pend.acct_mask)); return; }
     if(d.status!=='ok'){ box.appendChild(el('div','rw-cash-msg','이용이 멈춘 계정이라 지금은 현금 교환을 할 수 없어요.')); return; }
     if(d.sums.balance>=d.min){ form.hidden=false;
-      var tax=d.withholdingRate>0&&d.sums.balance>d.withholdingFreeUpto?Math.floor(d.sums.balance*d.withholdingRate/10)*10:0, tx=$('rw-tax');
-      tx.hidden=!tax; if(tax) tx.textContent='세금(원천징수 '+pct(d.withholdingRate)+') '+won(tax)+'원을 빼고 '+won(d.sums.balance-tax)+'원이 입금돼요.';
+      var ir=Math.round(d.withholdingRate/1.1*1e6)/1e6, inc=d.withholdingRate>0&&d.sums.balance>d.withholdingFreeUpto?Math.floor(d.sums.balance*ir/10+1e-9)*10:0;
+      if(inc<1000) inc=0;  /* 소득세 1,000원 미만은 떼지 않음 (서버와 같은 계산) */
+      var tax=inc?inc+Math.floor(inc*0.1/10)*10:0, tx=$('rw-tax');
+      tx.hidden=!tax; if(tax) tx.textContent='세금(사업소득 원천징수 '+pct(d.withholdingRate)+') '+won(tax)+'원을 빼고 '+won(d.sums.balance-tax)+'원이 입금돼요.';
       $('rw-cash-go').textContent=won(d.sums.balance-tax)+'원 현금으로 받기';
       var rr=$('rw-rrn'); rr.hidden=!d.collectRrn; form.rrn1.required=form.rrn2.required=form.agreeRrn.required=!!d.collectRrn; return; }
     var left=d.min-d.sums.balance, bar=el('div','rw-prog'), fill=el('i');
@@ -387,7 +389,7 @@ ADMIN_SCRIPT = """<script>
     sel.value = cash.st || 'requested'; sel.addEventListener('change', () => { cash.st = sel.value; go('cash'); });
     row.appendChild(el('b', null, '현금 교환 신청')); row.appendChild(sel); box.appendChild(row);
     const ex = el('div', 'ad-row'), mon = el('input'); mon.type = 'month'; mon.value = new Date().toISOString().slice(0, 7);
-    ex.appendChild(el('span', 'ad-muted', '세금 신고용')); ex.appendChild(mon);
+    ex.appendChild(el('span', 'ad-muted', '세금 신고용 (사업소득 간이지급명세서·원천세)')); ex.appendChild(mon);
     ex.appendChild(btn('지급 내역 엑셀(CSV) 받기', '', async () => {
       if (!confirm(mon.value + ' 지급 내역을 받을까요? 계좌번호·주민번호가 들어 있어 기록에 남고, 파일은 안전한 곳에 보관해 주세요.')) return;
       const s = load() || {}; const r = await fetch(API + '/admin/export?month=' + mon.value, { headers: { Authorization: 'Bearer ' + (s.token || '') } });
@@ -468,7 +470,7 @@ ADMIN_SCRIPT = """<script>
     c.appendChild(el('div', 'ad-h', '적립 설정'));
     c.appendChild(el('p', 'ad-muted', '적립 비율은 바꾼 뒤 새로 잡히는 주문부터 적용돼요. 이미 잡힌 주문은 그때 비율 그대로입니다.'));
     const f = [['share', '적립 비율 (쿠팡 수수료의 %)', Math.round(s.share * 1000) / 10], ['min_cashout', '최소 현금 교환 (P)', s.min_cashout], ['expire_days', '포인트 유효기간 (일)', s.expire_days],
-      ['withholding_rate', '원천징수율 (%) — 0이면 안 뗌', Math.round(s.withholding_rate * 1000) / 10], ['withholding_free_upto', '이 금액(원) 이하 교환은 안 뗌', s.withholding_free_upto]];
+      ['withholding_rate', '원천징수율 합계 (%) — 사업소득 3.3, 0이면 안 뗌', Math.round(s.withholding_rate * 1000) / 10], ['withholding_free_upto', '이 금액(원) 이하 교환은 안 뗌 (사업소득은 0)', s.withholding_free_upto]];
     const inputs = {};
     f.forEach(([k, label, v]) => { const r = el('label', 'ad-row'); r.appendChild(el('span', null, label)); const i = el('input'); i.type = 'number'; i.value = v; i.step = 'any'; inputs[k] = i; r.appendChild(i); c.appendChild(r); });
     const quick = el('div', 'ad-row'); quick.appendChild(el('span', 'ad-muted', '빠른 선택'));
@@ -482,7 +484,7 @@ ADMIN_SCRIPT = """<script>
     inputs.share.addEventListener('input', preview); inputs.min_cashout.addEventListener('input', preview); preview();
     const rr = el('label', 'ad-row'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!s.collect_rrn;
     rr.appendChild(cb); rr.appendChild(el('span', null, '현금 교환 때 주민등록번호 받기 (세금 신고·원천징수용)')); c.appendChild(rr);
-    c.appendChild(el('p', 'ad-muted', '원천징수는 세무사 확인 후 켜세요. 예: 기타소득이면 22%(소득세 20% + 지방소득세 2%), 건당 5만원 이하는 과세하지 않는 경우가 많아요. 바꾸면 그 뒤 신청부터 적용돼요.'));
+    c.appendChild(el('p', 'ad-muted', '지금은 사업소득 3.3%(소득세 3% + 지방소득세 0.3%)로 떼요. 소득세가 1,000원 미만(교환 33,333원 이하)이면 떼지 않아요(소액부징수). 바꾸면 그 뒤 신청부터 적용되고, 지급 내역 엑셀에 소득세·지방소득세가 나뉘어 나와요.'));
     c.appendChild(btn('저장', 'pri', async () => { try { await api('/admin/settings', { share: Number(inputs.share.value) / 100,
       min_cashout: Number(inputs.min_cashout.value), expire_days: Number(inputs.expire_days.value), collect_rrn: cb.checked,
       withholding_rate: Number(inputs.withholding_rate.value) / 100, withholding_free_upto: Number(inputs.withholding_free_upto.value) }); alert('저장했어요'); go('settings'); } catch (e) { alert(e.message); } }));
